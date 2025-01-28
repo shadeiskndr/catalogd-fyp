@@ -1,6 +1,7 @@
 "use client";
-import React, { useContext } from "react";
-import SideButton from "./SideButton";
+
+import React from "react";
+import Link from "next/link";
 import {
   FireIcon,
   FolderIcon,
@@ -13,245 +14,112 @@ import {
   CpuChipIcon,
   ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/solid";
-import { SidebarContext } from "@/utils/SidebarContext";
-import SeachBar from "./SeachBar";
-import Link from "next/link";
-import { BsGithub, BsLinkedin, BsTwitter } from "react-icons/bs";
 import { IoGameController } from "react-icons/io5";
+import { BsGithub, BsLinkedin, BsTwitter } from "react-icons/bs";
 
-//TODO: add animated colour buttons on hover?
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  useSidebar,
+} from "@/components/ui/sidebar";
 
-const Sidebar = () => {
-  const { isSidebarOpen, setIsSidebarOpen } = useContext(SidebarContext);
+const menuItems = [
+  { name: "Dashboard", path: "/dashboard", icon: HomeIcon },
+  { name: "My Library", path: "/MyLib", icon: FolderIcon },
+  { name: "Wishlist", path: "/Wish", icon: GiftIcon },
+  { name: "New Releases", path: "/New", icon: SparklesIcon },
+  { name: "Most Popular", path: "/Pop", icon: FireIcon },
+  { name: "Genres", path: "/genres", icon: IoGameController },
+  { name: "Write Review", path: "/Write", icon: PencilIcon },
+  { name: "Reviews", path: "/Review", icon: BookOpenIcon },
+  { name: "AI Recommender", path: "/AIRec", icon: CpuChipIcon },
+  { name: "Chat Room", path: "/Chat", icon: ChatBubbleLeftRightIcon },
+];
 
+function SidebarHeader_Content() {
   return (
-    <div className="h-screen">
-      <nav
-        className="hidden relative md:flex md:flex-col py-4 px-5 space-y-2
-      "
-      >
-        <div className="">
-          <SideButton name="Dashboard" path="/dashboard">
-            <HomeIcon className="w-6 h-6" />
-          </SideButton>
-        </div>
-        <div className="">
-          <SideButton name="My Library" path="/MyLib">
-            <FolderIcon className="w-6 h-6" />
-          </SideButton>
-        </div>
-        <div className="">
-          <SideButton name="Wishlist" path="/Wish">
-            <GiftIcon className="w-6 h-6" />
-          </SideButton>
-        </div>
-        <div className="">
-          <SideButton name="New Releases" path="/New">
-            <SparklesIcon className="w-6 h-6" />
-          </SideButton>
-        </div>
-        <div className="">
-          <SideButton name="Most Popular" path="/Pop">
-            <FireIcon className="w-6 h-6" />
-          </SideButton>
-        </div>
-        <div className="">
-          <SideButton name="Genres" path="/genres">
-            <IoGameController className="w-6 h-6" />
-          </SideButton>
-        </div>
-        <div className="">
-          <SideButton name="Write Review" path="/Write">
-            <PencilIcon className="w-6 h-6" />
-          </SideButton>
-        </div>
-        <div className="">
-          <SideButton name="Reviews" path="/Review">
-            <BookOpenIcon className="w-6 h-6" />
-          </SideButton>
-        </div>
-        <div className="">
-          <SideButton name="AI Recommender" path="/AIRec">
-            <CpuChipIcon className="w-6 h-6" />
-          </SideButton>
-        </div>
-        <div className="">
-          <SideButton name="Chat Room" path="/Chat">
-            <ChatBubbleLeftRightIcon className="w-6 h-6" />
-          </SideButton>
-        </div>
-      </nav>
+    <div className="flex items-center gap-2 px-4 py-2">
+      <h1 className="text-2xl font-bold text-gray-500">Catalogd</h1>
+    </div>
+  );
+}
 
-      {/* mobile nav  */}
-      <nav
-        className={`z-50 absolute md:hidden bg-black/80 py-4 h-[80vh] overflow-y-auto scrollbar-track-transparent
-                scrollbar-thumb-gray-600 scrollbar-thin
-       transition-all duration-300 ease-in-out backdrop-blur-lg
-       border-r-2 border-red-500  rounded-r-3xl my-6 space-y-2
-      ${isSidebarOpen ? "left-[-100%]" : "left-0"}`}
-      >
-        <div className="px-4">
-          <SeachBar />
+function SidebarFooter_Content() {
+  return (
+    <div className="space-y-4 border-t px-4 py-6">
+      <div className="text-center space-y-2">
+        <div className="text-indigo-500 text-xs flex flex-col items-center">
+          <h2>Built with</h2>
+          <span>
+            <HeartIcon className="w-2 h-2 text-red-500" />
+          </span>
+          <h2>by Shahathir Iskandar</h2>
         </div>
-        <div onClick={() => setIsSidebarOpen(true)} className="space-y-2">
-          <div className="">
-            <SideButton name="Dashboard" path="/dashboard">
-              <HomeIcon className="w-6 h-6" />
-            </SideButton>
-          </div>
-          <div className="">
-            <SideButton name="My Library" path="/MyLib">
-              <FolderIcon className="w-6 h-6" />
-            </SideButton>
-          </div>
-          <div className="">
-            <SideButton name="Wishlist" path="/Wish">
-              <GiftIcon className="w-6 h-6" />
-            </SideButton>
-          </div>
-          <div className="">
-            <SideButton name="New Releases" path="/New">
-              <SparklesIcon className="w-6 h-6" />
-            </SideButton>
-          </div>
-          <div className="">
-            <SideButton name="Most Popular" path="/Pop">
-              <FireIcon className="w-6 h-6" />
-            </SideButton>
-          </div>
-          <div className="">
-            <SideButton name="Genres" path="/genres">
-              <IoGameController className="w-6 h-6" />
-            </SideButton>
-          </div>
-          <div className="">
-            <SideButton name="Write Review" path="/Write">
-              <PencilIcon className="w-6 h-6" />
-            </SideButton>
-          </div>
-          <div className="">
-            <SideButton name="Reviews" path="/Review">
-              <BookOpenIcon className="w-6 h-6" />
-            </SideButton>
-          </div>
-          <div className="">
-            <SideButton name="AI Recommender" path="/AIRec">
-              <CpuChipIcon className="w-6 h-6" />
-            </SideButton>
-          </div>
-          <div className="">
-            <SideButton name="Chat Room" path="/Chat">
-              <ChatBubbleLeftRightIcon className="w-6 h-6" />
-            </SideButton>
-          </div>
-
-        </div>
-        <div className=" text-center flex flex-col justify-center items-center space-y-2 pt-20">
-          <div
-            className="text-indigo-500 font-medium text-xs flex flex-col
-          items-center"
+        <div className="flex justify-center space-x-4">
+          <Link
+            href="https://github.com/shadeiskndr"
+            target="_blank"
+            rel="noopener noreferrer"
           >
-            <h2>Built with </h2>
-            <span>
-              <HeartIcon className="w-2 h-2 text-red-500" />
-            </span>
-            <h2>by Shahathir Iskandar</h2>
-          </div>
-          <div className="flex space-x-2">
-            <Link href="https://github.com/shadeiskndr" target="_blank">
-              <BsGithub
-                className="w-6 h-6 text-gray-600 hover:text-gray-100 transition
-            duration-300 hover:scale-105 cursor-pointer"
-              />
-            </Link>
-            <Link href="https://twitter.com/shadeiskndr" target="_blank">
-              <BsTwitter
-                className="w-6 h-6 text-gray-600 hover:text-cyan-500 transition
-            duration-300 hover:scale-105 cursor-pointer"
-              />
-            </Link>
-            <Link
-              href="https://www.linkedin.com/in/shahathir-iskandar-b60869270/"
-              target="_blank"
-            >
-              <BsLinkedin
-                className="w-6 h-6 text-gray-600 hover:text-red-500 transition
-            duration-300 hover:scale-105 cursor-pointer"
-              />
-            </Link>
-          </div>
-        </div>
-      </nav>
-
-      {/* footer */}
-      <div
-        className="absolute md:flex flex-col pt-10 hidden font-bold
-        items-center bottom-10 left-10 group "
-      >
-        <h1
-          className="text-2xl text-gray-500 group-hover:text-gray-400
-        transition-all duration-300"
-        >
-          Catalogd
-        </h1>
-        <div className="text-xs text-gray-600 flex space-x-1">
-          <Link href="" target="_blank">
-            <h1
-              className="text-gray-600 hover:text-gray-100 transition
-            duration-300 hover:scale-105 cursor-pointer"
-            >
-              Discover
-            </h1>
+            <BsGithub className="w-5 h-5 text-gray-600 hover:text-gray-100 transition duration-300 hover:scale-105" />
           </Link>
-          <h2>Your</h2>
-          <Link href="" target="_blank">
-            <h1
-              className="text-gray-600 hover:text-red-500 transition
-            duration-300 hover:scale-105 cursor-pointer"
-            >
-              Games
-            </h1>
-          </Link>
-        </div>
-        {/*socials */}
-        <div className=" text-center space-y-2 mt-2">
-          <div
-            className="text-indigo-500 text-xs flex flex-col
-          items-center"
+          <Link
+            href="https://twitter.com/shadeiskndr"
+            target="_blank"
+            rel="noopener noreferrer"
           >
-            <h2>Built with </h2>
-            <span>
-              <HeartIcon className="w-2 h-2 text-red-500" />
-            </span>
-            <h2>by Shahathir Iskandar</h2>
-          </div>
-          <div className="flex space-x-2">
-            <Link href="https://github.com/shadeiskndr" target="_blank">
-              <BsGithub
-                className="w-6 h-6 text-gray-600 hover:text-gray-100 transition
-            duration-300 hover:scale-105 cursor-pointer"
-              />
-            </Link>
-            <Link href="https://twitter.com/shadeiskndr" target="_blank">
-              <BsTwitter
-                className="w-6 h-6 text-gray-600 hover:text-cyan-500 transition
-            duration-300 hover:scale-105 cursor-pointer"
-              />
-            </Link>
-            <Link
-              href="https://www.linkedin.com/in/shahathir-iskandar-b60869270/"
-              target="_blank"
-            >
-              <BsLinkedin
-                className="w-6 h-6 text-gray-600 hover:text-blue-500 transition
-            duration-300 hover:scale-105 cursor-pointer"
-              />
-            </Link>
-          </div>
+            <BsTwitter className="w-5 h-5 text-gray-600 hover:text-cyan-500 transition duration-300 hover:scale-105" />
+          </Link>
+          <Link
+            href="https://www.linkedin.com/in/shahathir-iskandar-b60869270/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <BsLinkedin className="w-5 h-5 text-gray-600 hover:text-blue-500 transition duration-300 hover:scale-105" />
+          </Link>
         </div>
       </div>
     </div>
   );
-};
+}
 
-export default Sidebar;
+function SidebarContent_Menu() {
+  return (
+    <SidebarMenu>
+      {menuItems.map((item) => (
+        <SidebarMenuItem key={item.path}>
+          <SidebarMenuButton asChild>
+            <Link href={item.path} className="flex items-center gap-2">
+              <item.icon className="w-5 h-5" />
+              <span>{item.name}</span>
+            </Link>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      ))}
+    </SidebarMenu>
+  );
+}
+
+export default function SidebarWrapper() {
+  return (
+    <SidebarProvider>
+      <Sidebar>
+        <SidebarHeader>
+          <SidebarHeader_Content />
+        </SidebarHeader>
+        <SidebarContent>
+          <SidebarContent_Menu />
+        </SidebarContent>
+        <SidebarFooter>
+          <SidebarFooter_Content />
+        </SidebarFooter>
+      </Sidebar>
+    </SidebarProvider>
+  );
+}
