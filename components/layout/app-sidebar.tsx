@@ -2,20 +2,21 @@
 
 import * as React from "react"
 import {
-  AudioWaveform,
-  BookOpen,
-  Bot,
-  Command,
-  Frame,
-  GalleryVerticalEnd,
-  Map,
-  PieChart,
-  Settings2,
-  SquareTerminal,
-} from "lucide-react"
+  FireIcon,
+  FolderIcon,
+  GiftIcon,
+  SparklesIcon,
+  HomeIcon,
+  HeartIcon,
+  PencilIcon,
+  BookOpenIcon,
+  CpuChipIcon,
+  ChatBubbleLeftRightIcon,
+} from "@heroicons/react/24/solid"
+import { IoGameController } from "react-icons/io5"
+import { BsGithub, BsLinkedin, BsTwitter } from "react-icons/bs"
 
 import { NavMain } from "@/components/layout/nav-main"
-import { NavProjects } from "@/components/layout/nav-projects"
 import { NavUser } from "@/components/layout/nav-user"
 import { TeamSwitcher } from "@/components/layout/team-switcher"
 import {
@@ -25,6 +26,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
+import Link from "next/link"
 
 // This is sample data.
 const data = {
@@ -33,125 +35,57 @@ const data = {
     email: "m@example.com",
     avatar: "/avatars/shadcn.jpg",
   },
-  teams: [
-    {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
-  ],
   navMain: [
     {
-      title: "Playground",
-      url: "#",
-      icon: SquareTerminal,
+      title: "Dashboard",
+      url: "/dashboard",
+      icon: HomeIcon,
       isActive: true,
-      items: [
-        {
-          title: "History",
-          url: "#",
-        },
-        {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
-        },
-      ],
     },
     {
-      title: "Models",
-      url: "#",
-      icon: Bot,
-      items: [
-        {
-          title: "Genesis",
-          url: "#",
-        },
-        {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
-        },
-      ],
+      title: "My Library",
+      url: "/MyLib",
+      icon: FolderIcon,
     },
     {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
-      items: [
-        {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
-        },
-      ],
+      title: "Wishlist",
+      url: "/Wish",
+      icon: GiftIcon,
     },
     {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
-        },
-      ],
-    },
-  ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
+      title: "New Releases",
+      url: "/New",
+      icon: SparklesIcon,
     },
     {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
+      title: "Most Popular",
+      url: "/Pop",
+      icon: FireIcon,
     },
     {
-      name: "Travel",
-      url: "#",
-      icon: Map,
+      title: "Genres",
+      url: "/genres",
+      icon: IoGameController,
+    },
+    {
+      title: "Write Review",
+      url: "/Write",
+      icon: PencilIcon,
+    },
+    {
+      title: "Reviews",
+      url: "/Review",
+      icon: BookOpenIcon,
+    },
+    {
+      title: "AI Recommender",
+      url: "/AIRec",
+      icon: CpuChipIcon,
+    },
+    {
+      title: "Chat Room",
+      url: "/Chat",
+      icon: ChatBubbleLeftRightIcon,
     },
   ],
 }
@@ -160,14 +94,54 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <TeamSwitcher
+          teams={[
+            {
+              name: "Catalogd",
+              logo: IoGameController,
+              plan: "Game Catalog",
+            },
+          ]}
+        />
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <div className="space-y-4 border-t px-4 py-6">
+          <div className="text-center space-y-2">
+            <div className="text-indigo-500 text-xs flex flex-col items-center">
+              <h2>Built with</h2>
+              <span>
+                <HeartIcon className="w-2 h-2 text-red-500" />
+              </span>
+              <h2>by Shahathir Iskandar</h2>
+            </div>
+            <div className="flex justify-center space-x-4">
+              <Link
+                href="https://github.com/shadeiskndr"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <BsGithub className="w-5 h-5 text-gray-600 hover:text-gray-100 transition duration-300 hover:scale-105" />
+              </Link>
+              <Link
+                href="https://twitter.com/shadeiskndr"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <BsTwitter className="w-5 h-5 text-gray-600 hover:text-cyan-500 transition duration-300 hover:scale-105" />
+              </Link>
+              <Link
+                href="https://www.linkedin.com/in/shahathir-iskandar-b60869270/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <BsLinkedin className="w-5 h-5 text-gray-600 hover:text-blue-500 transition duration-300 hover:scale-105" />
+              </Link>
+            </div>
+          </div>
+        </div>
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
