@@ -19,6 +19,7 @@ import { BsGithub, BsLinkedin, BsTwitter } from "react-icons/bs"
 import { NavMain } from "@/components/layout/nav-main"
 import { NavUser } from "@/components/layout/nav-user"
 import { TeamSwitcher } from "@/components/layout/team-switcher"
+import { ThemeToggle } from "@/components/layout/theme-toggle"
 import {
   Sidebar,
   SidebarContent,
@@ -118,28 +119,29 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <h2>by Shahathir Iskandar</h2>
             </div>
             <div className="flex justify-center space-x-4">
-              <Link
-                href="https://github.com/shadeiskndr"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <BsGithub className="w-5 h-5 text-gray-600 hover:text-gray-100 transition duration-300 hover:scale-105" />
-              </Link>
-              <Link
-                href="https://twitter.com/shadeiskndr"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <BsTwitter className="w-5 h-5 text-gray-600 hover:text-cyan-500 transition duration-300 hover:scale-105" />
-              </Link>
-              <Link
-                href="https://www.linkedin.com/in/shahathir-iskandar-b60869270/"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <BsLinkedin className="w-5 h-5 text-gray-600 hover:text-blue-500 transition duration-300 hover:scale-105" />
-              </Link>
-            </div>
+               <ThemeToggle />
+               <Link
+                 href="https://github.com/shadeiskndr"
+                 target="_blank"
+                 rel="noopener noreferrer"
+               >
+                 <BsGithub className="w-5 h-5 text-gray-600 hover:text-gray-100 transition duration-300 hover:scale-105" />
+               </Link>
+               <Link
+                 href="https://twitter.com/shadeiskndr"
+                 target="_blank"
+                 rel="noopener noreferrer"
+               >
+                 <BsTwitter className="w-5 h-5 text-gray-600 hover:text-cyan-500 transition duration-300 hover:scale-105" />
+               </Link>
+               <Link
+                 href="https://www.linkedin.com/in/shahathir-iskandar-b60869270/"
+                 target="_blank"
+                 rel="noopener noreferrer"
+               >
+                 <BsLinkedin className="w-5 h-5 text-gray-600 hover:text-blue-500 transition duration-300 hover:scale-105" />
+               </Link>
+             </div>
           </div>
         </div>
       </SidebarFooter>

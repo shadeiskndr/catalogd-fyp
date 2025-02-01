@@ -2,8 +2,8 @@
 @import "tw-animate-css";
 @import "./loaders.css";
 @import "./themes/default.css";
-/* @import "./themes/claude.css";
-@import "./themes/rose.css"; */
+@import "./themes/claude.css";
+@import "./themes/rose.css";
 
 @custom-variant dark (&:is(.dark *));
 

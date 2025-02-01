@@ -1,5 +1,7 @@
 import './globals.css'
 import { Toaster } from 'react-hot-toast'
+import { Providers } from '@/lib/theme-provider'
+import { ColorThemeProvider } from '@/lib/color-provider'
 
 
 export const metadata = {
@@ -14,9 +16,13 @@ export default async function RootLayout({
 }) {
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body>
-        {children}
+        <Providers>
+          <ColorThemeProvider>
+            {children}
+          </ColorThemeProvider>
+        </Providers>
         <Toaster />
       </body>
     </html>
