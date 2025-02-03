@@ -1,88 +1,84 @@
-"use client";
-import Banner from "@/components/game/Banner";
-import Info from "@/components/game/Info";
-import ReviewCardSlug from "@/components/ReviewCardSlug";
-import { Game } from "@/gameTypes";
-import { gameDetails, gameScreenshots } from "@/rawg";
-import { Screenshot } from "@/rawg/gameScreenshots";
-import { database, databaseId, reviewCol } from "@/utils/appwrite";
-import Image from "next/image";
-import React, { useEffect, useState } from "react";
-import { BeatLoader } from "react-spinners";
-import { Query } from "appwrite";
-import { PencilIcon } from "@heroicons/react/24/solid";
-import Link from "next/link";
+"use client"
+import Banner from "@/components/game/Banner"
+import Info from "@/components/game/Info"
+import ReviewCardSlug from "@/components/ReviewCardSlug"
+import { Game } from "@/gameTypes"
+import { gameDetails, gameScreenshots } from "@/rawg"
+import { Screenshot } from "@/rawg/gameScreenshots"
+import { database, databaseId, reviewCol } from "@/utils/appwrite"
+import Image from "next/image"
+import React, { useEffect, useState } from "react"
+import { BeatLoader } from "react-spinners"
+import { Query } from "appwrite"
+import { PencilIcon } from "@heroicons/react/24/solid"
+import Link from "next/link"
 
 //game page
 
 type GamePageProps = {
   params: {
-    slug: string;
-  };
-};
+    slug: string
+  }
+}
 
 interface Review {
-  user_id: string;
-  user_name: string;
-  game_name: string;
-  rating: number;
-  review: string;
+  user_id: string
+  user_name: string
+  game_name: string
+  rating: number
+  review: string
 }
 
 const GamePage = ({ params: { slug } }: GamePageProps) => {
-  const [game, setGame] = useState<Game | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [screenshots, setScreenshots] = useState<Screenshot | null>(null);
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [loadingReviews, setLoadingReviews] = useState(true);
-
-  
+  const [game, setGame] = useState<Game | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [screenshots, setScreenshots] = useState<Screenshot | null>(null)
+  const [reviews, setReviews] = useState<Review[]>([])
+  const [loadingReviews, setLoadingReviews] = useState(true)
 
   //function for getting game details
   useEffect(() => {
     const getGame = async () => {
       try {
-        setGame(await gameDetails({ slug: slug }));
-        setScreenshots(await gameScreenshots({ slug: slug }));
-        setLoading(false);
+        setGame(await gameDetails({ slug: slug }))
+        setScreenshots(await gameScreenshots({ slug: slug }))
+        setLoading(false)
       } catch (error) {
-        console.error("Error loading game:", error);
+        console.error("Error loading game:", error)
       }
-    };
-    getGame();
-  }, [slug]);
+    }
+    getGame()
+  }, [slug])
 
   //function for getting reviews
   useEffect(() => {
     const loadReviews = async () => {
-      if (!game?.name) return; // Ensure game name is defined
+      if (!game?.name) return // Ensure game name is defined
 
-      setLoadingReviews(true);
+      setLoadingReviews(true)
       try {
-        const response = await database.listDocuments(
-          databaseId,
-          reviewCol,
-          [Query.equal("game_name", game.name)]
-        );
+        const response = await database.listDocuments(databaseId, reviewCol, [
+          Query.equal("game_name", game.name),
+        ])
         const newReviews = response.documents.map((doc: any) => ({
           user_id: doc.user_id,
           user_name: doc.user_name,
           game_name: doc.game_name,
           rating: doc.rating,
           review: doc.review,
-        }));
-        setReviews(newReviews);
+        }))
+        setReviews(newReviews)
       } catch (error) {
-        console.error("Error loading reviews:", error);
+        console.error("Error loading reviews:", error)
       } finally {
-        setLoadingReviews(false);
+        setLoadingReviews(false)
       }
-    };
+    }
 
     if (game) {
-      loadReviews();
+      loadReviews()
     }
-  }, [game]);
+  }, [game])
 
   return (
     <div>
@@ -115,7 +111,10 @@ const GamePage = ({ params: { slug } }: GamePageProps) => {
               <h1 className="text-lg md:text-xl lg:text-2xl text-gray-200 font-semibold">
                 Reviews
               </h1>
-              <Link href="/Write" className="flex items-center text-sm text-gray-200 hover:underline">
+              <Link
+                href="/Write"
+                className="flex items-center text-sm text-gray-200 hover:underline"
+              >
                 <PencilIcon className="h-5 w-5 mr-1" />
                 Add a Review
               </Link>
@@ -140,7 +139,9 @@ const GamePage = ({ params: { slug } }: GamePageProps) => {
                 ))}
               </div>
             ) : (
-              <p className="text-gray-400">No reviews available for this game.</p>
+              <p className="text-gray-400">
+                No reviews available for this game.
+              </p>
             )}
           </div>
         </div>
@@ -153,7 +154,7 @@ const GamePage = ({ params: { slug } }: GamePageProps) => {
         />
       )}
     </div>
-  );
-};
+  )
+}
 
-export default GamePage;
+export default GamePage

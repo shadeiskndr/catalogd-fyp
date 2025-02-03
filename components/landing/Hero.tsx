@@ -1,5 +1,5 @@
-import React from "react";
-import Login from "../Login";
+import React from "react"
+import Login from "../Login"
 
 const Hero = () => {
   return (
@@ -25,7 +25,7 @@ const Hero = () => {
         </h2>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Hero;
+export default Hero

@@ -1,23 +1,22 @@
 "use client"
 
-import * as React from "react"
 import {
+  BookOpenIcon,
+  ChatBubbleLeftRightIcon,
+  CpuChipIcon,
   FireIcon,
   FolderIcon,
   GiftIcon,
-  SparklesIcon,
-  HomeIcon,
   HeartIcon,
+  HomeIcon,
   PencilIcon,
-  BookOpenIcon,
-  CpuChipIcon,
-  ChatBubbleLeftRightIcon,
+  SparklesIcon,
 } from "@heroicons/react/24/solid"
-import { IoGameController } from "react-icons/io5"
+import Link from "next/link"
+import type * as React from "react"
 import { BsGithub, BsLinkedin, BsTwitter } from "react-icons/bs"
-
+import { IoGameController } from "react-icons/io5"
 import { NavMain } from "@/components/layout/nav-main"
-import { NavUser } from "@/components/layout/nav-user"
 import { TeamSwitcher } from "@/components/layout/team-switcher"
 import { ThemeToggle } from "@/components/layout/theme-toggle"
 import {
@@ -27,7 +26,6 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
-import Link from "next/link"
 
 // This is sample data.
 const data = {
@@ -119,29 +117,29 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <h2>by Shahathir Iskandar</h2>
             </div>
             <div className="flex justify-center space-x-4">
-               <ThemeToggle />
-               <Link
-                 href="https://github.com/shadeiskndr"
-                 target="_blank"
-                 rel="noopener noreferrer"
-               >
-                 <BsGithub className="w-5 h-5 text-gray-600 hover:text-gray-100 transition duration-300 hover:scale-105" />
-               </Link>
-               <Link
-                 href="https://twitter.com/shadeiskndr"
-                 target="_blank"
-                 rel="noopener noreferrer"
-               >
-                 <BsTwitter className="w-5 h-5 text-gray-600 hover:text-cyan-500 transition duration-300 hover:scale-105" />
-               </Link>
-               <Link
-                 href="https://www.linkedin.com/in/shahathir-iskandar-b60869270/"
-                 target="_blank"
-                 rel="noopener noreferrer"
-               >
-                 <BsLinkedin className="w-5 h-5 text-gray-600 hover:text-blue-500 transition duration-300 hover:scale-105" />
-               </Link>
-             </div>
+              <ThemeToggle />
+              <Link
+                href="https://github.com/shadeiskndr"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <BsGithub className="w-5 h-5 text-gray-600 hover:text-gray-100 transition duration-300 hover:scale-105" />
+              </Link>
+              <Link
+                href="https://twitter.com/shadeiskndr"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <BsTwitter className="w-5 h-5 text-gray-600 hover:text-cyan-500 transition duration-300 hover:scale-105" />
+              </Link>
+              <Link
+                href="https://www.linkedin.com/in/shahathir-iskandar-b60869270/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <BsLinkedin className="w-5 h-5 text-gray-600 hover:text-blue-500 transition duration-300 hover:scale-105" />
+              </Link>
+            </div>
           </div>
         </div>
       </SidebarFooter>

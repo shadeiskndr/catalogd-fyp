@@ -1,26 +1,26 @@
-import React from 'react';
-import { FaStar } from 'react-icons/fa';
+import React from "react"
+import { FaStar } from "react-icons/fa"
 
 type ReviewCardProps = {
-  userName: string;
-  rating: number;
-  reviewText: string;
-};
+  userName: string
+  rating: number
+  reviewText: string
+}
 
 const ReviewCardSlug = ({ userName, rating, reviewText }: ReviewCardProps) => {
   const getRatingColor = (rating: number) => {
-    if (rating === 10) return 'text-green-400';
-    if (rating >= 7) return 'text-green-600';
-    if (rating >= 4) return 'text-yellow-400';
-    return 'text-red-500';
-  };
+    if (rating === 10) return "text-green-400"
+    if (rating >= 7) return "text-green-600"
+    if (rating >= 4) return "text-yellow-400"
+    return "text-red-500"
+  }
 
   const getReviewTitle = (rating: number) => {
-    if (rating === 10) return 'Recommended, amazing! 😍';
-    if (rating >= 7) return 'Satisfied, good game. 😊';
-    if (rating >= 4) return 'Fine, an okay game. 😐';
-    return 'Avoid, terrible game. 😞';
-  };
+    if (rating === 10) return "Recommended, amazing! 😍"
+    if (rating >= 7) return "Satisfied, good game. 😊"
+    if (rating >= 4) return "Fine, an okay game. 😐"
+    return "Avoid, terrible game. 😞"
+  }
 
   return (
     <div className="bg-gray-800 p-4 rounded-lg shadow-md flex flex-col md:flex-row justify-between items-start md:items-center hover:scale-105 transition-all duration-300 ease-in-out">
@@ -31,10 +31,10 @@ const ReviewCardSlug = ({ userName, rating, reviewText }: ReviewCardProps) => {
       </div>
       <div className="mt-4 md:mt-0 flex items-center text-xl font-bold">
         <span className={`mr-1 ${getRatingColor(rating)}`}>{rating}</span>
-          <FaStar className={getRatingColor(rating)} />
+        <FaStar className={getRatingColor(rating)} />
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ReviewCardSlug;
+export default ReviewCardSlug

@@ -1,12 +1,11 @@
-
-import Link from "next/link";
-import React from "react";
+import Link from "next/link"
+import React from "react"
 
 type SideButtonProps = {
-  name: string;
-  children: React.ReactNode;
-  path: string;
-};
+  name: string
+  children: React.ReactNode
+  path: string
+}
 
 const SideButton = ({ name, children, path }: SideButtonProps) => {
   return (
@@ -18,12 +17,16 @@ const SideButton = ({ name, children, path }: SideButtonProps) => {
         hover:scale-105 text-sm items-center font-semibold"
         >
           {children}
-          <h2 className="text-gray-400 hover:text-gray-200
-          transition-colors duration-300">{name}</h2>
+          <h2
+            className="text-gray-400 hover:text-gray-200
+          transition-colors duration-300"
+          >
+            {name}
+          </h2>
         </button>
       </Link>
     </>
-  );
-};
+  )
+}
 
-export default SideButton;
+export default SideButton

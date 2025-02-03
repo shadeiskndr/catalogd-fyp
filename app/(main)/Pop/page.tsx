@@ -1,53 +1,53 @@
 "use client"
-import Grid from '@/components/Grid';
-import { Game } from '@/gameTypes';
-import { gameList } from '@/rawg';
-import React, { useEffect, useState } from 'react'
-import { BeatLoader } from 'react-spinners';
+import Grid from "@/components/Grid"
+import { Game } from "@/gameTypes"
+import { gameList } from "@/rawg"
+import React, { useEffect, useState } from "react"
+import { BeatLoader } from "react-spinners"
 interface loadGamesOptions {
-  pageNo: number;
+  pageNo: number
 }
 
 const Mpop = () => {
-  const [games, setGames] = useState<Game[] | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [pageNo, setPageNo] = useState<number>(1);
-  const [hasNextPage, setHasNextPage] = useState(true);
+  const [games, setGames] = useState<Game[] | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [pageNo, setPageNo] = useState<number>(1)
+  const [hasNextPage, setHasNextPage] = useState(true)
 
   const loadGames = async ({ pageNo }: loadGamesOptions) => {
-    setLoading(true);
+    setLoading(true)
 
     const response = await gameList({
       pageIndex: 0,
       page: pageNo,
       pageSize: 40,
       ordering: "popularity",
-    });
-    let { results } = response;
-    console.log(results);
+    })
+    let { results } = response
+    console.log(results)
     //results.forEach((game) => (game.price = getPrice(game)));
-    return results || [];
-  };
+    return results || []
+  }
 
   const handleFetchNextPage = async () => {
-    setPageNo(pageNo + 1);
-  };
+    setPageNo(pageNo + 1)
+  }
 
   useEffect(() => {
-    (async () => {
+    ;(async () => {
       try {
-        const newGames = await loadGames({ pageNo });
-        setGames(games ? [...games, ...newGames] : newGames || []);
-        setLoading(false);
+        const newGames = await loadGames({ pageNo })
+        setGames(games ? [...games, ...newGames] : newGames || [])
+        setLoading(false)
         if (newGames?.length === 0) {
-          setHasNextPage(false);
+          setHasNextPage(false)
         }
       } catch (error) {
-        console.error("Error loading games:", error);
+        console.error("Error loading games:", error)
       }
-    })();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pageNo]);
+    })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pageNo])
 
   return (
     <div className="space-y-4">
@@ -64,11 +64,7 @@ const Mpop = () => {
                     duration-300 ease-in-out font-semibold text-gray-100"
                     onClick={handleFetchNextPage}
                   >
-                    {loading ? (
-                      <span>Loading...</span>
-                    ) : (
-                      <span>Load More</span>
-                    )}
+                    {loading ? <span>Loading...</span> : <span>Load More</span>}
                   </button>
                 </div>
               )}
@@ -83,7 +79,7 @@ const Mpop = () => {
         )}
       </div>
     </div>
-  );
-};
+  )
+}
 
 export default Mpop

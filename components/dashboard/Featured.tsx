@@ -1,53 +1,49 @@
-"use client";
-import { Game } from "@/gameTypes";
-import { gameList } from "@/rawg";
-import React, { useEffect, useState } from "react";
-import CarouselCard from "./CarouselCard";
-import { BeatLoader } from "react-spinners";
+"use client"
+import { useEffect, useState } from "react"
+import { BeatLoader } from "react-spinners"
+import type { Game } from "@/gameTypes"
+import { gameList } from "@/rawg"
+import CarouselCard from "./CarouselCard"
+
 // To do later, when doing ui/ux. use framer motion to animate the carousel
 
 const getSpotlightItems = (items: unknown[], length: number) => {
-  const randomItems: unknown[] = [];
+  const randomItems: unknown[] = []
   while (randomItems.length < length) {
-    const index = Math.floor(Math.random() * items.length);
+    const index = Math.floor(Math.random() * items.length)
     if (!randomItems.includes(items[index])) {
-      randomItems.push(items[index]);
+      randomItems.push(items[index])
     }
   }
-  return randomItems;
-};
+  return randomItems
+}
 
 const Featured = () => {
-  const [games, setGames] = useState<Game[] | null>(null);
+  const [games, setGames] = useState<Game[] | null>(null)
 
   useEffect(() => {
     const loadGames = async () => {
-      const pageNo = Math.floor(Math.random() * 3) + 1;
+      const pageNo = Math.floor(Math.random() * 3) + 1
       const response = await gameList({
         pageIndex: 0,
         page: pageNo,
         pageSize: 30,
-      });
-      let { results } = response;
-      results = results.filter((game) => game.metacritic > 40);
-      return results;
-    };
+      })
+      let { results } = response
+      results = results.filter((game) => game.metacritic > 40)
+      return results
+    }
     //setting games to the results of loadGames
-    (async () => {
-      const loadedGames = await loadGames();
-      const games = getSpotlightItems(loadedGames, 3) as Game[];
-      setGames(games);
-    })();
-  }, []);
+    ;(async () => {
+      const loadedGames = await loadGames()
+      const games = getSpotlightItems(loadedGames, 3) as Game[]
+      setGames(games)
+    })()
+  }, [])
 
   return (
     <div className="">
-      <h1
-        className="text-gray-100 text-xl md:text-3xl font-bold
-      "
-      >
-        Featured
-      </h1>
+      <h1 className="text-xl md:text-3xl font-bold">Featured</h1>
       {games ? (
         games.length ? (
           <div className="flex justify-center my-4">
@@ -70,7 +66,7 @@ const Featured = () => {
             </div>
           </div>
         ) : (
-          <p className="text-gray-100">No games found</p>
+          <p>No games found</p>
         )
       ) : (
         <div className="flex justify-center items-center">
@@ -78,7 +74,7 @@ const Featured = () => {
         </div>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default Featured;
+export default Featured

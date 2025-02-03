@@ -1,27 +1,32 @@
-import React, { useState } from 'react';
-import { FaStar, FaCommentDots } from 'react-icons/fa';
+import React, { useState } from "react"
+import { FaStar, FaCommentDots } from "react-icons/fa"
 
 type ReviewCardProps = {
-  userName: string;
-  gameName: string;
-  rating: number;
-  reviewText: string;
-};
+  userName: string
+  gameName: string
+  rating: number
+  reviewText: string
+}
 
-const ReviewCard = ({ userName, gameName, rating, reviewText }: ReviewCardProps) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const maxLength = 90; // Adjust this value as needed
+const ReviewCard = ({
+  userName,
+  gameName,
+  rating,
+  reviewText,
+}: ReviewCardProps) => {
+  const [isExpanded, setIsExpanded] = useState(false)
+  const maxLength = 90 // Adjust this value as needed
 
   const getRatingColor = (rating: number) => {
-    if (rating === 10) return 'text-green-400';
-    if (rating >= 7) return 'text-green-600';
-    if (rating >= 4) return 'text-yellow-400';
-    return 'text-red-500';
-  };
+    if (rating === 10) return "text-green-400"
+    if (rating >= 7) return "text-green-600"
+    if (rating >= 4) return "text-yellow-400"
+    return "text-red-500"
+  }
 
   const toggleReadMore = () => {
-    setIsExpanded(!isExpanded);
-  };
+    setIsExpanded(!isExpanded)
+  }
 
   return (
     <div
@@ -48,12 +53,12 @@ const ReviewCard = ({ userName, gameName, rating, reviewText }: ReviewCardProps)
             onClick={toggleReadMore}
             className="text-blue-500 hover:underline"
           >
-            {isExpanded ? 'Read Less' : 'Read More'}
+            {isExpanded ? "Read Less" : "Read More"}
           </button>
         )}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ReviewCard;
+export default ReviewCard

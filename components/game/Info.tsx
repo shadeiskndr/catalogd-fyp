@@ -1,16 +1,16 @@
-import { Game } from "@/gameTypes";
-import { ScreenshotItem } from "@/rawg/gameScreenshots";
-import Image from "next/image";
-import React from "react";
-import imgPlace from "../../public/imgs/imgPlaceholder.jpg";
+import { Game } from "@/gameTypes"
+import { ScreenshotItem } from "@/rawg/gameScreenshots"
+import Image from "next/image"
+import React from "react"
+import imgPlace from "../../public/imgs/imgPlaceholder.jpg"
 
 type InfoProps = {
-  game: Game;
-  screenshots: ScreenshotItem[];
-};
+  game: Game
+  screenshots: ScreenshotItem[]
+}
 
 const Info = ({ game, screenshots }: InfoProps) => {
-  const { description_raw, platforms, developers, publishers } = game;
+  const { description_raw, platforms, developers, publishers } = game
   return (
     <div className="">
       <div
@@ -19,8 +19,10 @@ const Info = ({ game, screenshots }: InfoProps) => {
       lg:space-x-4 mt-6 "
       >
         {/*Description*/}
-        <article className=" flex-1 p-6 space-y-4 bg-indigo-100/10
-        backdrop-blur-lg">
+        <article
+          className=" flex-1 p-6 space-y-4 bg-indigo-100/10
+        backdrop-blur-lg"
+        >
           <h1
             className="text-lg md:text-xl lg:text-2xl text-gray-200
           font-semibold"
@@ -38,8 +40,10 @@ const Info = ({ game, screenshots }: InfoProps) => {
         </article>
 
         {/*Details*/}
-        <div className=" p-6 space-y-4 bg-indigo-100/10 lg:max-w-md
-        backdrop-blur-sm">
+        <div
+          className=" p-6 space-y-4 bg-indigo-100/10 lg:max-w-md
+        backdrop-blur-sm"
+        >
           <div>
             <h1
               className="text-md md:text-lg lg:text-xl text-gray-200
@@ -126,7 +130,7 @@ const Info = ({ game, screenshots }: InfoProps) => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Info;
+export default Info

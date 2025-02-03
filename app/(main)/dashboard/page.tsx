@@ -1,8 +1,7 @@
 //dashboard page
-import Featured from "@/components/dashboard/Featured";
-import Upcoming from "@/components/dashboard/Upcoming";
+import Featured from "@/components/dashboard/Featured"
+import Upcoming from "@/components/dashboard/Upcoming"
 function Home() {
-
   return (
     <main className="text-white">
       <section className="">
@@ -13,7 +12,7 @@ function Home() {
       </section>
       <section></section>
     </main>
-  );
+  )
 }
 
-export default Home;
+export default Home

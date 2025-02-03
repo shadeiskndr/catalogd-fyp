@@ -37,7 +37,7 @@ export function NavMain({
     <SidebarGroup>
       <SidebarGroupLabel>Platform</SidebarGroupLabel>
       <SidebarMenu>
-        {items.map((item) => 
+        {items.map((item) =>
           item.items ? (
             <Collapsible
               key={item.title}
@@ -77,7 +77,7 @@ export function NavMain({
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
-          )
+          ),
         )}
       </SidebarMenu>
     </SidebarGroup>

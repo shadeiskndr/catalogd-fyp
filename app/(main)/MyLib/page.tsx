@@ -1,22 +1,22 @@
-"use client";
-import Grid from "@/components/Grid";
-import { Game } from "@/gameTypes";
-import { gameDetails } from "@/rawg";
-import { GameAddedContext } from "@/utils/GameAddedContext";
+"use client"
+import Grid from "@/components/Grid"
+import { Game } from "@/gameTypes"
+import { gameDetails } from "@/rawg"
+import { GameAddedContext } from "@/utils/GameAddedContext"
 
-import { database, databaseId, mylibCol, userID } from "@/utils/appwrite";
-import { Query } from "appwrite";
-import React, { useContext, useEffect, useState } from "react";
-import { BeatLoader } from "react-spinners";
+import { database, databaseId, mylibCol, userID } from "@/utils/appwrite"
+import { Query } from "appwrite"
+import React, { useContext, useEffect, useState } from "react"
+import { BeatLoader } from "react-spinners"
 
 const MyLib = () => {
-  const [games, setGames] = useState<Game[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [page, setPage] = useState<number>(1);
-  const [hasMore, setHasMore] = useState<boolean>(true);
-  const { gameAdded } = useContext(GameAddedContext);
+  const [games, setGames] = useState<Game[]>([])
+  const [loading, setLoading] = useState<boolean>(true)
+  const [page, setPage] = useState<number>(1)
+  const [hasMore, setHasMore] = useState<boolean>(true)
+  const { gameAdded } = useContext(GameAddedContext)
 
-  const PAGE_SIZE = 25;
+  const PAGE_SIZE = 25
 
   // Function to load games
   useEffect(() => {
@@ -25,36 +25,40 @@ const MyLib = () => {
         const response = await database.listDocuments(
           `${databaseId}`,
           `${mylibCol}`,
-          [Query.equal("user_id", userID), Query.limit(PAGE_SIZE), Query.offset((page - 1) * PAGE_SIZE)]
-        );
+          [
+            Query.equal("user_id", userID),
+            Query.limit(PAGE_SIZE),
+            Query.offset((page - 1) * PAGE_SIZE),
+          ],
+        )
 
-        const gameIds = response.documents.map((game) => game.game_id);
-        const uniqueGameIds = Array.from(new Set(gameIds)); // Ensure unique game IDs
+        const gameIds = response.documents.map((game) => game.game_id)
+        const uniqueGameIds = Array.from(new Set(gameIds)) // Ensure unique game IDs
         const gameDetailsPromises = uniqueGameIds.map((gameId) =>
-          gameDetails({ id: gameId })
-        );
+          gameDetails({ id: gameId }),
+        )
 
-        const newGames = await Promise.all(gameDetailsPromises);
-        setGames(newGames); // Replace existing games with new ones
-        setHasMore(response.documents.length === PAGE_SIZE);
-        setLoading(false);
+        const newGames = await Promise.all(gameDetailsPromises)
+        setGames(newGames) // Replace existing games with new ones
+        setHasMore(response.documents.length === PAGE_SIZE)
+        setLoading(false)
       } catch (error) {
-        console.error("Error loading games:", error);
-        setLoading(false);
+        console.error("Error loading games:", error)
+        setLoading(false)
       }
-    };
+    }
 
-    setLoading(true);
-    getGameIds(page);
-  }, [page, gameAdded]);
+    setLoading(true)
+    getGameIds(page)
+  }, [page, gameAdded])
 
   const loadMoreGames = () => {
-    setPage((prevPage) => prevPage + 1);
-  };
+    setPage((prevPage) => prevPage + 1)
+  }
 
   const loadPreviousGames = () => {
-    setPage((prevPage) => Math.max(prevPage - 1, 1));
-  };
+    setPage((prevPage) => Math.max(prevPage - 1, 1))
+  }
 
   return (
     <div className="space-y-4">
@@ -94,7 +98,7 @@ const MyLib = () => {
         </div>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default MyLib;
+export default MyLib

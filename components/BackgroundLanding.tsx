@@ -1,6 +1,6 @@
-import Image from "next/image";
-import React from "react";
-import bgTop from "../public/imgs/4.jpg"; // Adjust the path as needed
+import Image from "next/image"
+import React from "react"
+import bgTop from "../public/imgs/4.jpg" // Adjust the path as needed
 
 const BackgroundLanding = () => (
   <>
@@ -17,6 +17,6 @@ const BackgroundLanding = () => (
     <div className="fixed -z-50 -inset-y-0 w-[500px] h-[500px] md:w-[700px] md:h-[700px] bg-[#d7da54f1] dark:bg-[#669194a8] top-40 left-80 right-80 bottom-80 rounded-full blur-2xl opacity-70"></div>
     <div className="fixed -z-50 right-0 bottom-0 w-80 h-80 bg-[#325270a8] rounded-full blur-3xl opacity-80"></div>
   </>
-);
+)
 
-export default BackgroundLanding;
+export default BackgroundLanding

@@ -1,22 +1,22 @@
-"use client";
+"use client"
 
-import { CheckIcon, Palette } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { CheckIcon, Palette } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu"
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { useColorTheme } from "@/lib/color-provider";
+} from "@/components/ui/tooltip"
+import { useColorTheme } from "@/lib/color-provider"
 
 export function ColorThemeToggle() {
-  const { colorTheme, setColorThemeWithTransition } = useColorTheme();
+  const { colorTheme, setColorThemeWithTransition } = useColorTheme()
 
   return (
     <DropdownMenu>
@@ -33,7 +33,9 @@ export function ColorThemeToggle() {
         </TooltipContent>
       </Tooltip>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setColorThemeWithTransition("default")}>
+        <DropdownMenuItem
+          onClick={() => setColorThemeWithTransition("default")}
+        >
           Default
           <span className="ml-auto flex items-center">
             {colorTheme === "default" && <CheckIcon className="size-4" />}
@@ -53,5 +55,5 @@ export function ColorThemeToggle() {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  );
+  )
 }

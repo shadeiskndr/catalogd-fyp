@@ -1,98 +1,104 @@
-"use client";
-import React, { useState, ChangeEvent, useEffect, useRef } from "react";
-import { Search } from "@/rawg/search";
-import { Game } from "@/gameTypes";
-import { database, databaseId, reviewCol, getSessionData, userID } from "@/utils/appwrite";
-import { ID, Query } from "appwrite";
-import { toast } from "react-hot-toast";
-import Image from "next/image";
-import placeholderImg from "@/public/imgs/imgPlaceholder.jpg"; // Adjust the path if necessary
-import { FaStar } from "react-icons/fa";
+"use client"
+import React, { useState, ChangeEvent, useEffect, useRef } from "react"
+import { Search } from "@/rawg/search"
+import { Game } from "@/gameTypes"
+import {
+  database,
+  databaseId,
+  reviewCol,
+  getSessionData,
+  userID,
+} from "@/utils/appwrite"
+import { ID, Query } from "appwrite"
+import { toast } from "react-hot-toast"
+import Image from "next/image"
+import placeholderImg from "@/public/imgs/imgPlaceholder.jpg" // Adjust the path if necessary
+import { FaStar } from "react-icons/fa"
 
 type ReviewFormProps = {
-  collection: string;
-  gameId: number;
-  gameName: string;
-  gameReview: string;
-  gameRating: number;
-  userName: string;
-};
+  collection: string
+  gameId: number
+  gameName: string
+  gameReview: string
+  gameRating: number
+  userName: string
+}
 
 const WriteReview = () => {
-  const [searchTerm, setSearchTerm] = useState<string>("");
-  const [searchedGames, setSearchedGames] = useState<Game[]>([]);
-  const [selectedGame, setSelectedGame] = useState<Game | null>(null);
-  const [rating, setRating] = useState<number>(5); // Default rating set to 5
-  const [review, setReview] = useState<string>("");
-  const [userName, setUserName] = useState<string>("");
-  const searchTimeout = useRef<NodeJS.Timeout | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string>("")
+  const [searchedGames, setSearchedGames] = useState<Game[]>([])
+  const [selectedGame, setSelectedGame] = useState<Game | null>(null)
+  const [rating, setRating] = useState<number>(5) // Default rating set to 5
+  const [review, setReview] = useState<string>("")
+  const [userName, setUserName] = useState<string>("")
+  const searchTimeout = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     const fetchUserName = async () => {
       try {
-        const sessionData = await getSessionData();
+        const sessionData = await getSessionData()
         if (sessionData && sessionData.name) {
-          setUserName(sessionData.name);
+          setUserName(sessionData.name)
         }
       } catch (error) {
-        console.error("Error fetching user name:", error);
+        console.error("Error fetching user name:", error)
       }
-    };
+    }
 
-    fetchUserName();
-  }, []);
+    fetchUserName()
+  }, [])
 
   useEffect(() => {
     const fetchGames = async (term: string) => {
       if (term) {
-        const response = await Search({ term });
-        setSearchedGames(response.results);
+        const response = await Search({ term })
+        setSearchedGames(response.results)
       }
-    };
+    }
 
     if (searchTimeout.current) {
-      clearTimeout(searchTimeout.current);
+      clearTimeout(searchTimeout.current)
     }
 
     if (searchTerm.trim() !== "" && searchTerm.length > 2) {
       searchTimeout.current = setTimeout(() => {
-        fetchGames(searchTerm);
-      }, 300); // Adjust the delay duration as needed (e.g., 300ms)
+        fetchGames(searchTerm)
+      }, 300) // Adjust the delay duration as needed (e.g., 300ms)
     } else {
-      setSearchedGames([]);
+      setSearchedGames([])
     }
 
     return () => {
       if (searchTimeout.current) {
-        clearTimeout(searchTimeout.current);
+        clearTimeout(searchTimeout.current)
       }
-    };
-  }, [searchTerm]);
+    }
+  }, [searchTerm])
 
   const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-  };
+    setSearchTerm(e.target.value)
+  }
 
   const handleGameSelect = (game: Game) => {
-    setSelectedGame(game);
-    setSearchTerm("");
-    setSearchedGames([]);
-  };
+    setSelectedGame(game)
+    setSearchTerm("")
+    setSearchedGames([])
+  }
 
   const handleRatingChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setRating(Number(e.target.value));
-  };
+    setRating(Number(e.target.value))
+  }
 
   const handleReviewChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    setReview(e.target.value);
-  };
+    setReview(e.target.value)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
     if (!selectedGame || rating < 1 || rating > 10 || !review) {
-      toast.error("Please fill in all fields correctly.");
-      return;
+      toast.error("Please fill in all fields correctly.")
+      return
     }
 
     try {
@@ -103,12 +109,12 @@ const WriteReview = () => {
         [
           Query.equal("user_id", userID),
           Query.equal("game_id", selectedGame.id),
-        ]
-      );
+        ],
+      )
 
       if (existingReviews.total > 0) {
-        toast.error("You have already written a review for this game.");
-        return;
+        toast.error("You have already written a review for this game.")
+        return
       }
 
       const reviewData: ReviewFormProps = {
@@ -118,7 +124,7 @@ const WriteReview = () => {
         gameReview: review,
         gameRating: rating,
         userName: userName,
-      };
+      }
 
       const createPromise = database.createDocument(
         `${databaseId}`,
@@ -131,33 +137,35 @@ const WriteReview = () => {
           review: reviewData.gameReview,
           rating: reviewData.gameRating,
           user_name: reviewData.userName,
-        }
-      );
+        },
+      )
 
-      const response = await createPromise;
-      console.log("Review submitted successfully:", response);
-      toast.success("Review submitted successfully!");
-      setSelectedGame(null);
-      setRating(5); // Reset rating to default value
-      setReview("");
+      const response = await createPromise
+      console.log("Review submitted successfully:", response)
+      toast.success("Review submitted successfully!")
+      setSelectedGame(null)
+      setRating(5) // Reset rating to default value
+      setReview("")
     } catch (error) {
-      console.error("Error submitting review:", error);
-      toast.error("Error submitting review.");
+      console.error("Error submitting review:", error)
+      toast.error("Error submitting review.")
     }
-  };
+  }
 
   const getRatingColor = (rating: number) => {
-    if (rating === 10) return 'text-green-400';
-    if (rating >= 7) return 'text-green-600';
-    if (rating >= 4) return 'text-yellow-400';
-    return 'text-red-500';
-  };
+    if (rating === 10) return "text-green-400"
+    if (rating >= 7) return "text-green-600"
+    if (rating >= 4) return "text-yellow-400"
+    return "text-red-500"
+  }
 
   return (
     <div className="space-y-4">
       <h1 className="text-gray-300 text-3xl font-bold">Write Review</h1>
       <div className="w-full max-w-2xl bg-gray-800 p-6 rounded-lg shadow-lg mx-auto mt-10">
-        <h1 className="text-2xl font-bold mb-4 text-center text-white">Review and Rate a Game</h1>
+        <h1 className="text-2xl font-bold mb-4 text-center text-white">
+          Review and Rate a Game
+        </h1>
         <div className="mb-4">
           <input
             type="text"
@@ -198,7 +206,9 @@ const WriteReview = () => {
                 className="rounded"
               />
             </div>
-            <h2 className="text-xl font-semibold mb-2 text-center text-white">{selectedGame.name}</h2>
+            <h2 className="text-xl font-semibold mb-2 text-center text-white">
+              {selectedGame.name}
+            </h2>
             <div className="mb-4">
               <label className="block mb-1 text-white">Rating:</label>
               <input
@@ -212,7 +222,9 @@ const WriteReview = () => {
                 className="w-full"
               />
               <div className="flex justify-center items-center mt-2 text-2xl">
-                <span className={`mr-2 ${getRatingColor(rating)}`}>{rating}</span>
+                <span className={`mr-2 ${getRatingColor(rating)}`}>
+                  {rating}
+                </span>
                 <FaStar className={`ml-1 ${getRatingColor(rating)}`} />
               </div>
             </div>
@@ -235,7 +247,7 @@ const WriteReview = () => {
         )}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default WriteReview;
+export default WriteReview

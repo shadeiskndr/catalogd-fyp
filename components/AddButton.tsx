@@ -1,32 +1,33 @@
-'use client'
+"use client"
 import {
   database,
   databaseId,
   mylibCol,
   userID,
   wishlistCol,
-} from "@/utils/appwrite";
+} from "@/utils/appwrite"
+import { HeartIcon, MinusCircleIcon } from "@heroicons/react/24/solid"
+import { ID, Query } from "appwrite"
+import React, { useContext, useEffect, useState } from "react"
+import { toast } from "react-hot-toast"
+import { PlusCircleIcon } from "@heroicons/react/24/outline"
 import {
-  HeartIcon,
-  MinusCircleIcon,
-} from "@heroicons/react/24/solid";
-import { ID, Query } from "appwrite";
-import React, { useContext, useEffect, useState } from "react";
-import { toast } from "react-hot-toast";
-import { PlusCircleIcon } from "@heroicons/react/24/outline";
-import { GameAddedContext, GameAddedContextType } from "@/utils/GameAddedContext";
+  GameAddedContext,
+  GameAddedContextType,
+} from "@/utils/GameAddedContext"
 
 type AddButtonProps = {
-  collection: string;
-  gameId: number;
-  gameName: string;
-};
+  collection: string
+  gameId: number
+  gameName: string
+}
 
 const AddButton = ({ collection, gameId, gameName }: AddButtonProps) => {
   //checking if game is present in wishlist and mylib
-  const [gamePresent, setGamePresent] = useState<boolean>(false);
-  const { gameAdded, setGameAdded } = useContext<GameAddedContextType>(GameAddedContext);
-  const [documentId, setDocumentId] = useState<string>("");
+  const [gamePresent, setGamePresent] = useState<boolean>(false)
+  const { gameAdded, setGameAdded } =
+    useContext<GameAddedContextType>(GameAddedContext)
+  const [documentId, setDocumentId] = useState<string>("")
 
   useEffect(() => {
     const checkGame = () => {
@@ -34,37 +35,37 @@ const AddButton = ({ collection, gameId, gameName }: AddButtonProps) => {
         const searchPromise = database.listDocuments(
           `${databaseId}`,
           `${mylibCol}`,
-          [Query.equal("user_id", userID), Query.equal("game_id", gameId)]
-        );
+          [Query.equal("user_id", userID), Query.equal("game_id", gameId)],
+        )
         searchPromise.then(function (response) {
           if (response.documents.length === 0) {
-            setGamePresent(false);
+            setGamePresent(false)
           } else {
-            setGamePresent(true);
-            setGameAdded(true);
-            setDocumentId(response.documents[0].$id);
+            setGamePresent(true)
+            setGameAdded(true)
+            setDocumentId(response.documents[0].$id)
           }
-        });
+        })
       } else if (collection === "wishlist") {
         const searchPromise = database.listDocuments(
           `${databaseId}`,
           `${wishlistCol}`,
-          [Query.equal("user_id", userID), Query.equal("game_id", gameId)]
-        );
+          [Query.equal("user_id", userID), Query.equal("game_id", gameId)],
+        )
         searchPromise.then(function (response) {
           if (response.documents.length === 0) {
-            setGamePresent(false);
+            setGamePresent(false)
           } else {
-            setGamePresent(true);
-            setGameAdded(true);
-            setDocumentId(response.documents[0].$id);
+            setGamePresent(true)
+            setGameAdded(true)
+            setDocumentId(response.documents[0].$id)
           }
-        });
+        })
       }
-    };
-    checkGame();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [collection, gameId, gameName, gameAdded]);
+    }
+    checkGame()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [collection, gameId, gameName, gameAdded])
 
   const addToCollection = () => {
     if (collection === "mylib") {
@@ -76,18 +77,18 @@ const AddButton = ({ collection, gameId, gameName }: AddButtonProps) => {
           user_id: userID,
           game_id: gameId,
           game_name: gameName,
-        }
-      );
+        },
+      )
       createPromise.then(
         function (response) {
-          toast.success("Added to Library!");
-          setGamePresent(true);
-          setGameAdded(true);
+          toast.success("Added to Library!")
+          setGamePresent(true)
+          setGameAdded(true)
         },
         function (error) {
-          console.log(error);
-        }
-      );
+          console.log(error)
+        },
+      )
     } else if (collection === "wishlist") {
       const createPromise = database.createDocument(
         `${databaseId}`,
@@ -97,54 +98,54 @@ const AddButton = ({ collection, gameId, gameName }: AddButtonProps) => {
           user_id: userID,
           game_id: gameId,
           game_name: gameName,
-        }
-      );
+        },
+      )
       createPromise.then(
         function (response) {
-          toast.success("Added to Wishlist!");
-          setGamePresent(true);
-          setGameAdded(true);
+          toast.success("Added to Wishlist!")
+          setGamePresent(true)
+          setGameAdded(true)
         },
         function (error) {
-          console.log(error);
-        }
-      );
+          console.log(error)
+        },
+      )
     }
-  };
+  }
 
   const removeFromCollection = () => {
     if (collection === "mylib") {
       const deletePromise = database.deleteDocument(
         `${databaseId}`,
         `${mylibCol}`,
-        `${documentId}`
-      );
+        `${documentId}`,
+      )
       deletePromise.then(
         function (response) {
-          toast.success("Removed from Library!");
-          setGameAdded(false);
+          toast.success("Removed from Library!")
+          setGameAdded(false)
         },
         function (error) {
-          console.log(error);
-        }
-      );
+          console.log(error)
+        },
+      )
     } else if (collection === "wishlist") {
       const deletePromise = database.deleteDocument(
         `${databaseId}`,
         `${wishlistCol}`,
-        `${documentId}`
-      );
+        `${documentId}`,
+      )
       deletePromise.then(
         function (response) {
-          toast.success("Removed from Wishlist!");
-          setGameAdded(false);
+          toast.success("Removed from Wishlist!")
+          setGameAdded(false)
         },
         function (error) {
-          console.log(error);
-        }
-      );
+          console.log(error)
+        },
+      )
     }
-  };
+  }
 
   return (
     <div>
@@ -187,7 +188,7 @@ const AddButton = ({ collection, gameId, gameName }: AddButtonProps) => {
         )
       ) : null}
     </div>
-  );
-};
+  )
+}
 
-export default AddButton;
+export default AddButton

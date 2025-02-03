@@ -1,15 +1,15 @@
-import Image from "next/image";
-import React from "react";
-import AddButton from "../AddButton";
+import Image from "next/image"
+import React from "react"
+import AddButton from "../AddButton"
 
 type BannerProps = {
-  bannerImg: string;
-  gameName: string;
-  gameRating: number;
-  gameReleaseDate: string;
-  gameGenres: { name: string }[];
-  gameId: number;
-};
+  bannerImg: string
+  gameName: string
+  gameRating: number
+  gameReleaseDate: string
+  gameGenres: { name: string }[]
+  gameId: number
+}
 
 const Banner = ({
   bannerImg,
@@ -51,12 +51,16 @@ const Banner = ({
           </div>
           <div className="z-50 flex flex-col justify-end pb-8 px-8 space-y-4">
             <AddButton collection="mylib" gameId={gameId} gameName={gameName} />
-            <AddButton collection="wishlist" gameId={gameId} gameName={gameName} />
+            <AddButton
+              collection="wishlist"
+              gameId={gameId}
+              gameName={gameName}
+            />
           </div>
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Banner;
+export default Banner

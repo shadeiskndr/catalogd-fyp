@@ -1,23 +1,22 @@
-import { Game } from "@/gameTypes";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import React, { useEffect } from "react";
-import AddButton from "./AddButton";
+import { Game } from "@/gameTypes"
+import Image from "next/image"
+import { useRouter } from "next/navigation"
+import React, { useEffect } from "react"
+import AddButton from "./AddButton"
 
 type GameCardProps = {
-  game: Game;
-};
+  game: Game
+}
 
 const GameCard = ({ game }: GameCardProps) => {
-  const { slug, id, name, released, background_image, platforms, genres } =
-    game;
+  const { slug, id, name, released, background_image, platforms, genres } = game
 
-  const releasedDate = new Date(released).toLocaleDateString();
-  const genreList = genres.map((genre) => genre.name).join(", ");
+  const releasedDate = new Date(released).toLocaleDateString()
+  const genreList = genres.map((genre) => genre.name).join(", ")
   const platformList = platforms
     .map((platform) => platform.platform.slug)
-    .join(", ");
-  const router = useRouter();
+    .join(", ")
+  const router = useRouter()
 
   return (
     <div
@@ -33,11 +32,15 @@ const GameCard = ({ game }: GameCardProps) => {
       <div
         className="flex cursor-pointer"
         onClick={() => {
-          router.push(`/game/${slug}`);
+          router.push(`/game/${slug}`)
         }}
       >
         <Image
-          src={background_image ? background_image : "https://via.placeholder.com/800x400?text=Placeholder+Image"}
+          src={
+            background_image
+              ? background_image
+              : "https://via.placeholder.com/800x400?text=Placeholder+Image"
+          }
           alt={name}
           width={800}
           height={400}
@@ -61,7 +64,7 @@ const GameCard = ({ game }: GameCardProps) => {
         <div
           className="space-y-1 flex justify-between cursor-pointer"
           onClick={() => {
-            router.push(`/game/${slug}`);
+            router.push(`/game/${slug}`)
           }}
         >
           <div className="text-sm font-medium text-gray-200 space-y-1">
@@ -75,7 +78,7 @@ const GameCard = ({ game }: GameCardProps) => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default GameCard;
+export default GameCard

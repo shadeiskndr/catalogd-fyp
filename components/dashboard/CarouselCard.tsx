@@ -1,21 +1,21 @@
-import { Game } from "@/gameTypes";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import React from "react";
-import AddButton from "../AddButton";
+import { Game } from "@/gameTypes"
+import Image from "next/image"
+import { useRouter } from "next/navigation"
+import React from "react"
+import AddButton from "../AddButton"
 
 type CarouselCardProps = {
-  game: Game;
-};
+  game: Game
+}
 
 const CarouselCard = ({ game }: CarouselCardProps) => {
-  const { slug, id, name, released, background_image, platforms } = game;
+  const { slug, id, name, released, background_image, platforms } = game
 
-  const releasedDate = new Date(released).getFullYear();
-/*   const platformList = platforms
+  const releasedDate = new Date(released).getFullYear()
+  /*   const platformList = platforms
     .map((platform) => platform.platform.name)
     .join(", "); */
-  const router = useRouter();
+  const router = useRouter()
 
   return (
     <div
@@ -31,7 +31,7 @@ const CarouselCard = ({ game }: CarouselCardProps) => {
       <div
         className="flex cursor-pointer "
         onClick={() => {
-          router.push(`/game/${slug}`);
+          router.push(`/game/${slug}`)
         }}
       >
         <Image
@@ -51,7 +51,7 @@ const CarouselCard = ({ game }: CarouselCardProps) => {
         <div
           className="text-sm font-medium text-gray-200 space-y-2"
           onClick={() => {
-            router.push(`/game/${slug}`);
+            router.push(`/game/${slug}`)
           }}
         >
           <h3 className="font-extrabold text-sm">{name}</h3>
@@ -67,7 +67,7 @@ const CarouselCard = ({ game }: CarouselCardProps) => {
         </div> */}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default CarouselCard;
+export default CarouselCard

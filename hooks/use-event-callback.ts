@@ -1,7 +1,7 @@
-"use client";
+"use client"
 
-import { useCallback, useRef } from "react";
-import { useIsomorphicLayoutEffect } from "@/hooks/use-isomorphic-layout-effect";
+import { useCallback, useRef } from "react"
+import { useIsomorphicLayoutEffect } from "@/hooks/use-isomorphic-layout-effect"
 
 /**
  * Custom hook that creates a memoized event callback that's safe to call during rendering.
@@ -10,21 +10,23 @@ import { useIsomorphicLayoutEffect } from "@/hooks/use-isomorphic-layout-effect"
  * while maintaining a stable reference, preventing unnecessary re-renders.
  */
 export function useEventCallback<Args extends unknown[], R>(
-  fn: (...args: Args) => R
-): (...args: Args) => R;
+  fn: (...args: Args) => R,
+): (...args: Args) => R
 export function useEventCallback<Args extends unknown[], R>(
-  fn: ((...args: Args) => R) | undefined
-): ((...args: Args) => R) | undefined;
+  fn: ((...args: Args) => R) | undefined,
+): ((...args: Args) => R) | undefined
 export function useEventCallback<Args extends unknown[], R>(
-  fn: ((...args: Args) => R) | undefined
+  fn: ((...args: Args) => R) | undefined,
 ): ((...args: Args) => R) | undefined {
   const ref = useRef<typeof fn>(() => {
-    throw new Error("Cannot call an event handler while rendering.");
-  });
+    throw new Error("Cannot call an event handler while rendering.")
+  })
 
   useIsomorphicLayoutEffect(() => {
-    ref.current = fn;
-  }, [fn]);
+    ref.current = fn
+  }, [fn])
 
-  return useCallback((...args: Args) => ref.current?.(...args), [ref]) as (...args: Args) => R;
+  return useCallback((...args: Args) => ref.current?.(...args), [ref]) as (
+    ...args: Args
+  ) => R
 }

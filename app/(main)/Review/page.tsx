@@ -1,70 +1,70 @@
-"use client";
-import React, { useEffect, useState } from "react";
-import { database, databaseId, reviewCol } from "@/utils/appwrite";
-import { Query } from "appwrite";
-import ReviewCard from "@/components/ReviewCard";
-import { BeatLoader } from "react-spinners";
+"use client"
+import React, { useEffect, useState } from "react"
+import { database, databaseId, reviewCol } from "@/utils/appwrite"
+import { Query } from "appwrite"
+import ReviewCard from "@/components/ReviewCard"
+import { BeatLoader } from "react-spinners"
 
 interface Review {
-  user_id: string;
-  user_name: string;
-  game_name: string;
-  rating: number;
-  review: string;
+  user_id: string
+  user_name: string
+  game_name: string
+  rating: number
+  review: string
 }
 
 const ReviewPage = () => {
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [page, setPage] = useState<number>(1);
-  const [hasMore, setHasMore] = useState<boolean>(true);
+  const [reviews, setReviews] = useState<Review[]>([])
+  const [loading, setLoading] = useState<boolean>(true)
+  const [page, setPage] = useState<number>(1)
+  const [hasMore, setHasMore] = useState<boolean>(true)
 
-  const PAGE_SIZE = 20;
+  const PAGE_SIZE = 20
 
   const loadReviews = async (page: number) => {
-    setLoading(true);
+    setLoading(true)
     try {
-      const response = await database.listDocuments(
-        databaseId,
-        reviewCol,
-        [
-          Query.orderDesc("$createdAt"),
-          Query.limit(PAGE_SIZE),
-          Query.offset((page - 1) * PAGE_SIZE),
-        ]
-      );
+      const response = await database.listDocuments(databaseId, reviewCol, [
+        Query.orderDesc("$createdAt"),
+        Query.limit(PAGE_SIZE),
+        Query.offset((page - 1) * PAGE_SIZE),
+      ])
       const newReviews = response.documents.map((doc: any) => ({
         user_id: doc.user_id,
         user_name: doc.user_name,
         game_name: doc.game_name,
         rating: doc.rating,
         review: doc.review,
-      }));
+      }))
 
       // Prevent duplicates by checking if the review already exists in the state
       setReviews((prevReviews) => {
-        const existingReviewIds = new Set(prevReviews.map(review => review.user_id + review.game_name));
-        const filteredNewReviews = newReviews.filter(review => !existingReviewIds.has(review.user_id + review.game_name));
-        return [...prevReviews, ...filteredNewReviews];
-      });
+        const existingReviewIds = new Set(
+          prevReviews.map((review) => review.user_id + review.game_name),
+        )
+        const filteredNewReviews = newReviews.filter(
+          (review) => !existingReviewIds.has(review.user_id + review.game_name),
+        )
+        return [...prevReviews, ...filteredNewReviews]
+      })
 
-      setHasMore(newReviews.length === PAGE_SIZE);
+      setHasMore(newReviews.length === PAGE_SIZE)
     } catch (error) {
-      console.error("Error loading reviews:", error);
+      console.error("Error loading reviews:", error)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   useEffect(() => {
     // Reset reviews state when page changes
-    setReviews([]);
-    loadReviews(page);
-  }, [page]);
+    setReviews([])
+    loadReviews(page)
+  }, [page])
 
   const handleLoadMore = () => {
-    setPage((prevPage) => prevPage + 1);
-  };
+    setPage((prevPage) => prevPage + 1)
+  }
 
   return (
     <div className="space-y-4">
@@ -95,7 +95,7 @@ const ReviewPage = () => {
         )}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ReviewPage;
+export default ReviewPage

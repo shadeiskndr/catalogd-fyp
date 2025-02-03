@@ -1,21 +1,20 @@
-"use client";
+"use client"
 
-import React from "react";
-import Link from "next/link";
 import {
+  BookOpenIcon,
+  ChatBubbleLeftRightIcon,
+  CpuChipIcon,
   FireIcon,
   FolderIcon,
   GiftIcon,
-  SparklesIcon,
-  HomeIcon,
   HeartIcon,
+  HomeIcon,
   PencilIcon,
-  BookOpenIcon,
-  CpuChipIcon,
-  ChatBubbleLeftRightIcon,
-} from "@heroicons/react/24/solid";
-import { IoGameController } from "react-icons/io5";
-import { BsGithub, BsLinkedin, BsTwitter } from "react-icons/bs";
+  SparklesIcon,
+} from "@heroicons/react/24/solid"
+import Link from "next/link"
+import { BsGithub, BsLinkedin, BsTwitter } from "react-icons/bs"
+import { IoGameController } from "react-icons/io5"
 
 import {
   Sidebar,
@@ -26,8 +25,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
-  useSidebar,
-} from "@/components/ui/sidebar";
+} from "@/components/ui/sidebar"
 
 const menuItems = [
   { name: "Dashboard", path: "/dashboard", icon: HomeIcon },
@@ -40,14 +38,14 @@ const menuItems = [
   { name: "Reviews", path: "/Review", icon: BookOpenIcon },
   { name: "AI Recommender", path: "/AIRec", icon: CpuChipIcon },
   { name: "Chat Room", path: "/Chat", icon: ChatBubbleLeftRightIcon },
-];
+]
 
 function SidebarHeader_Content() {
   return (
     <div className="flex items-center gap-2 px-4 py-2">
       <h1 className="text-2xl font-bold text-gray-500">Catalogd</h1>
     </div>
-  );
+  )
 }
 
 function SidebarFooter_Content() {
@@ -86,7 +84,7 @@ function SidebarFooter_Content() {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 function SidebarContent_Menu() {
@@ -103,7 +101,7 @@ function SidebarContent_Menu() {
         </SidebarMenuItem>
       ))}
     </SidebarMenu>
-  );
+  )
 }
 
 export default function SidebarWrapper() {
@@ -121,5 +119,5 @@ export default function SidebarWrapper() {
         </SidebarFooter>
       </Sidebar>
     </SidebarProvider>
-  );
+  )
 }

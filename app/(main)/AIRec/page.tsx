@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react"
 
 const AIRecommender = () => {
   return (
@@ -14,7 +14,7 @@ const AIRecommender = () => {
         ></iframe>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default AIRecommender;
+export default AIRecommender

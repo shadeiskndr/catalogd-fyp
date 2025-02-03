@@ -1,52 +1,52 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-"use client";
-import Grid from "@/components/Grid";
-import { Game } from "@/gameTypes";
-import { gameList } from "@/rawg";
-import React, { useEffect, useState } from "react";
-import { BeatLoader } from "react-spinners";
+"use client"
+import Grid from "@/components/Grid"
+import { Game } from "@/gameTypes"
+import { gameList } from "@/rawg"
+import React, { useEffect, useState } from "react"
+import { BeatLoader } from "react-spinners"
 //new releases page
 interface loadGamesOptions {
-  pageNo: number;
+  pageNo: number
 }
 
 const NewR = () => {
-  const [games, setGames] = useState<Game[] | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [pageNo, setPageNo] = useState<number>(1);
-  const [hasNextPage, setHasNextPage] = useState(true);
+  const [games, setGames] = useState<Game[] | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [pageNo, setPageNo] = useState<number>(1)
+  const [hasNextPage, setHasNextPage] = useState(true)
 
   const loadGames = async ({ pageNo }: loadGamesOptions) => {
-    setLoading(true);
+    setLoading(true)
 
     const response = await gameList({
       pageIndex: 1,
       page: pageNo,
       ordering: "-released",
       pageSize: 20,
-    });
-    let { results } = response;
-    return results || [];
-  };
+    })
+    let { results } = response
+    return results || []
+  }
 
   const handleFetchNextPage = async () => {
-    setPageNo(pageNo + 1);
-  };
+    setPageNo(pageNo + 1)
+  }
 
   useEffect(() => {
-    (async () => {
+    ;(async () => {
       try {
-        const newGames = await loadGames({ pageNo });
-        setGames(games ? [...games, ...newGames] : newGames || []);
-        setLoading(false);
+        const newGames = await loadGames({ pageNo })
+        setGames(games ? [...games, ...newGames] : newGames || [])
+        setLoading(false)
         if (newGames?.length === 0) {
-          setHasNextPage(false);
+          setHasNextPage(false)
         }
       } catch (error) {
-        console.error("Error loading games:", error);
+        console.error("Error loading games:", error)
       }
-    })();
-  }, [pageNo]);
+    })()
+  }, [pageNo])
 
   return (
     <div className="space-y-4">
@@ -63,11 +63,7 @@ const NewR = () => {
                     duration-300 ease-in-out font-semibold text-gray-100"
                     onClick={handleFetchNextPage}
                   >
-                    {loading ? (
-                      <span>Loading...</span>
-                    ) : (
-                      <span>Load More</span>
-                    )}
+                    {loading ? <span>Loading...</span> : <span>Load More</span>}
                   </button>
                 </div>
               )}
@@ -82,7 +78,7 @@ const NewR = () => {
         )}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default NewR;
+export default NewR

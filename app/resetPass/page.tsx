@@ -1,62 +1,62 @@
-"use client";
-import logo from "../../public/imgs/nekored.webp";
+"use client"
+import logo from "../../public/imgs/nekored.webp"
 
-import { account } from "@/utils/appwrite";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import React, { FormEvent, useState } from "react";
-import { toast } from "react-hot-toast";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { account } from "@/utils/appwrite"
+import Image from "next/image"
+import { useRouter } from "next/navigation"
+import React, { FormEvent, useState } from "react"
+import { toast } from "react-hot-toast"
+import { FaEye, FaEyeSlash } from "react-icons/fa"
 
 const ResetPass = () => {
-  const [showPassword, setShowPassword] = useState(false);
-  const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false)
+  const router = useRouter()
   const [password, setPassword] = useState({
     newPassword: "",
     repeatedPassword: "",
-  });
+  })
 
   const changePassword = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+    e.preventDefault()
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const userId = urlParams.get("userId");
-    const secret = urlParams.get("secret");
+    const urlParams = new URLSearchParams(window.location.search)
+    const userId = urlParams.get("userId")
+    const secret = urlParams.get("secret")
 
     if (password.newPassword !== password.repeatedPassword) {
-      toast.error("Passwords do not match!");
+      toast.error("Passwords do not match!")
     } else if (password.newPassword.length < 8) {
-      toast.error("Password must be at least 8 characters long!");
+      toast.error("Password must be at least 8 characters long!")
     } else {
       try {
         await account.updateRecovery(
           userId!,
           secret!,
           password.newPassword,
-          password.repeatedPassword
-        );
-        router.push("/");
-        toast.success("Password reset successfully!");
+          password.repeatedPassword,
+        )
+        router.push("/")
+        toast.success("Password reset successfully!")
       } catch (error) {
-        console.error("Reset password error:", error);
-        toast.error("Error resetting password!");
+        console.error("Reset password error:", error)
+        toast.error("Error resetting password!")
       }
     }
-  };
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const name = e.target.name;
-    const value = e.target.value;
+    const name = e.target.name
+    const value = e.target.value
 
     setPassword({
       ...password,
       [name]: value,
-    });
-  };
+    })
+  }
 
   const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
+    setShowPassword(!showPassword)
+  }
 
   return (
     <div className="flex flex-col items-center justify-center h-screen space-y-6">
@@ -110,7 +110,7 @@ const ResetPass = () => {
         </form>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ResetPass;
+export default ResetPass

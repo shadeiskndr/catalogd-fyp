@@ -1,72 +1,72 @@
-"use client";
-import { Game } from "@/gameTypes";
-import { Search } from "@/rawg/search";
-import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+"use client"
+import { Game } from "@/gameTypes"
+import { Search } from "@/rawg/search"
+import { MagnifyingGlassIcon } from "@heroicons/react/24/outline"
 
-import React, { ChangeEvent, useEffect, useRef, useState } from "react";
-import placeholderImg from "../public/imgs/imgPlaceholder.jpg";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
+import React, { ChangeEvent, useEffect, useRef, useState } from "react"
+import placeholderImg from "../public/imgs/imgPlaceholder.jpg"
+import Image from "next/image"
+import { useRouter } from "next/navigation"
 
 const SeachBar = () => {
-  const [searchTerm, setSearchTerm] = useState<string>("");
-  const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
-  const [searchedGames, setSearchedGames] = useState<Game[] | null>(null);
-  const router = useRouter();
-  const searchRef = useRef<HTMLDivElement | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string>("")
+  const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false)
+  const [searchedGames, setSearchedGames] = useState<Game[] | null>(null)
+  const router = useRouter()
+  const searchRef = useRef<HTMLDivElement | null>(null)
 
   //function to search games
   useEffect(() => {
-    let searchTimeout: NodeJS.Timeout | null = null;
+    let searchTimeout: NodeJS.Timeout | null = null
 
     const getSearchedGame = async (searchTerm: string) => {
-      const response = await Search({ term: searchTerm });
-      let { results } = response;
-      return results;
-    };
+      const response = await Search({ term: searchTerm })
+      let { results } = response
+      return results
+    }
 
     const delayedSearch = async (searchTerm: string) => {
       try {
-        setSearchedGames(await getSearchedGame(searchTerm));
+        setSearchedGames(await getSearchedGame(searchTerm))
       } catch (error) {
-        console.error("Error loading games:", error);
+        console.error("Error loading games:", error)
       }
-    };
+    }
 
     const handleSearch = (searchTerm: string) => {
       if (searchTimeout) {
-        clearTimeout(searchTimeout);
+        clearTimeout(searchTimeout)
       }
 
       // Only trigger the delayed search if the search term is valid
       if (searchTerm.trim() !== "" && searchTerm.length > 2) {
         searchTimeout = setTimeout(() => {
-          delayedSearch(searchTerm);
-          searchTimeout = null;
-        }, 300); // Adjust the delay duration as needed (e.g., 500ms)
+          delayedSearch(searchTerm)
+          searchTimeout = null
+        }, 300) // Adjust the delay duration as needed (e.g., 500ms)
       }
-    };
+    }
 
     // Define a separate function to handle the search term change
     const handleSearchTermChange = (newSearchTerm: string) => {
-      handleSearch(newSearchTerm);
-    };
+      handleSearch(newSearchTerm)
+    }
 
     // Call the handleSearchTermChange function when the search term changes
-    handleSearchTermChange(searchTerm);
+    handleSearchTermChange(searchTerm)
 
     return () => {
       if (searchTimeout) {
-        clearTimeout(searchTimeout);
+        clearTimeout(searchTimeout)
       }
-    };
-  }, [searchTerm]);
+    }
+  }, [searchTerm])
 
   const keyboardCloseHandler = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Escape") {
-      setSearchTerm("");
+      setSearchTerm("")
     }
-  };
+  }
   //Handling outside clicks
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
@@ -74,16 +74,16 @@ const SeachBar = () => {
         searchRef.current &&
         !searchRef.current.contains(event.target as Node)
       ) {
-        setIsSearchOpen(false);
+        setIsSearchOpen(false)
       }
-    };
+    }
 
-    document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("mousedown", handleOutsideClick)
 
     return () => {
-      document.removeEventListener("mousedown", handleOutsideClick);
-    };
-  }, []);
+      document.removeEventListener("mousedown", handleOutsideClick)
+    }
+  }, [])
 
   return (
     <div className="w-52 md:min-w-min relative z-50" ref={searchRef}>
@@ -106,7 +106,7 @@ const SeachBar = () => {
           value={searchTerm}
           onKeyDown={keyboardCloseHandler}
           onChange={(e: ChangeEvent<HTMLInputElement>) => {
-            setSearchTerm(e.target.value);
+            setSearchTerm(e.target.value)
           }}
           type="text"
           placeholder="Search.."
@@ -125,8 +125,8 @@ const SeachBar = () => {
                 <div
                   key={game.slug}
                   onClick={() => {
-                    router.push(`/game/${game.slug}`);
-                    setIsSearchOpen(false);
+                    router.push(`/game/${game.slug}`)
+                    setIsSearchOpen(false)
                   }}
                   className="flex items-center space-x-4 hover:bg-slate-900/60
                 transition duration-300 cursor-pointer p-4"
@@ -154,7 +154,7 @@ const SeachBar = () => {
         </>
       ) : null}
     </div>
-  );
-};
+  )
+}
 
-export default SeachBar;
+export default SeachBar
