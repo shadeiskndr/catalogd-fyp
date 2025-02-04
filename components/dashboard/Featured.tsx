@@ -4,8 +4,7 @@ import { BeatLoader } from "react-spinners"
 import type { Game } from "@/gameTypes"
 import { gameList } from "@/rawg"
 import CarouselCard from "./CarouselCard"
-
-// To do later, when doing ui/ux. use framer motion to animate the carousel
+import { BentoGrid } from "@/components/ui/magicui/bento-grid"
 
 const getSpotlightItems = (items: unknown[], length: number) => {
   const randomItems: unknown[] = []
@@ -42,29 +41,17 @@ const Featured = () => {
   }, [])
 
   return (
-    <div className="">
+    <div>
       <h1 className="text-xl md:text-3xl font-bold">Featured</h1>
       {games ? (
         games.length ? (
-          <div className="flex justify-center my-4">
-            <div
-              className="grid grid-cols-1 md:grid-cols-2
-           gap-4 place-items-center"
-            >
-              <div className="flex items-center">
-                <CarouselCard game={games[0]} />
+          <BentoGrid className="py-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 auto-rows-max">
+            {games.map((game) => (
+              <div key={game.id} className="flex items-center justify-center">
+                <CarouselCard game={game} />
               </div>
-
-              <div
-                className="flex md:flex-col gap-2 md:gap-4
-            md:max-w-[384px]"
-              >
-                {games.slice(1).map((game) => (
-                  <CarouselCard key={game.id} game={game} />
-                ))}
-              </div>
-            </div>
-          </div>
+            ))}
+          </BentoGrid>
         ) : (
           <p>No games found</p>
         )

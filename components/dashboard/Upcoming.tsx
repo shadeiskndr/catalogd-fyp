@@ -1,9 +1,11 @@
 "use client"
-import React, { useEffect, useState } from "react"
-import Carousel from "./Carousel"
-import { Game } from "@/gameTypes"
-import { gameList } from "@/rawg"
+import { useEffect, useState } from "react"
 import { BeatLoader } from "react-spinners"
+import { Marquee } from "@/components/ui/magicui/marquee"
+import type { Game } from "@/gameTypes"
+import { gameList } from "@/rawg"
+import CarouselCard from "./CarouselCard"
+
 //for getting upcoming games
 const Upcoming = () => {
   const [games, setGames] = useState<Game[] | null>(null)
@@ -18,10 +20,7 @@ const Upcoming = () => {
         page: 1,
         ordering: "-released",
       })
-      let { results } = response
-
-      //  results = results.filter((game) => game.ratings_count > 10);
-      //results.forEach((game) => (game.price = getPrice(game)));
+      const { results } = response
       return results
     }
     //setting games to the results of loadGames
@@ -36,15 +35,21 @@ const Upcoming = () => {
   }, []) //fixed request loop due to games dependency
 
   return (
-    <div className="">
-      <h1 className="text-gray-100 text-xl md:text-3xl font-bold">
-        New and Upcoming
-      </h1>
+    <div>
+      <h1 className="text-xl md:text-3xl font-bold">New and Upcoming</h1>
       {games ? (
         games.length ? (
-          <Carousel games={games} />
+          <div className="w-screen -mx-[calc((100vw-100%)/2)] overflow-hidden">
+            <Marquee className="py-8" pauseOnHover repeat={2}>
+              {games.map((game) => (
+                <div key={game.id}>
+                  <CarouselCard game={game} />
+                </div>
+              ))}
+            </Marquee>
+          </div>
         ) : (
-          <p className="text-gray-100">No games found</p>
+          <p>No games found</p>
         )
       ) : (
         <div className="flex justify-center items-center">

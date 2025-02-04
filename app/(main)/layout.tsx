@@ -5,21 +5,10 @@ import "@/app/globals.css"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { AppSidebar } from "@/components/layout/app-sidebar"
-import { ColorThemeToggle } from "@/components/layout/color-theme-toggle"
-import { ThemeToggle } from "@/components/layout/theme-toggle"
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import { Separator } from "@/components/ui/separator"
+import { AppTopbar } from "@/components/layout/app-topbar"
 import {
   SidebarInset,
   SidebarProvider,
-  SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { GameAddedProvider } from "@/utils/GameAddedContext"
 
@@ -53,36 +42,17 @@ export default function MainLayout({
     <>
       {loggedIn && (
         <GameAddedProvider>
-          <SidebarProvider>
-            <AppSidebar />
-            <SidebarInset>
-              <header className="flex h-16 shrink-0 items-center justify-between gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 border">
-                <div className="flex items-center gap-2 px-4 border">
-                  <SidebarTrigger className="-ml-1" />
-                  <Separator
-                    orientation="vertical"
-                    className="mr-2 data-[orientation=vertical]:h-4"
-                  />
-                  <Breadcrumb>
-                    <BreadcrumbList>
-                      <BreadcrumbItem className="hidden md:block">
-                        <BreadcrumbLink href="/">Home</BreadcrumbLink>
-                      </BreadcrumbItem>
-                      <BreadcrumbSeparator className="hidden md:block" />
-                      <BreadcrumbItem>
-                        <BreadcrumbPage>Dashboard</BreadcrumbPage>
-                      </BreadcrumbItem>
-                    </BreadcrumbList>
-                  </Breadcrumb>
-                  <ColorThemeToggle />
-                  <ThemeToggle />
+          <div className="h-screen flex flex-col overflow-hidden">
+            <SidebarProvider className="flex flex-1 min-h-0 overflow-hidden">
+              <AppSidebar />
+              <SidebarInset className="flex flex-col flex-1">
+                <AppTopbar />
+                <div className="flex flex-1 flex-col gap-4 p-4 pt-0 min-h-0 overflow-y-auto overflow-x-hidden">
+                  <div>{children}</div>
                 </div>
-              </header>
-              <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-                <div>{children}</div>
-              </div>
-            </SidebarInset>
-          </SidebarProvider>
+              </SidebarInset>
+            </SidebarProvider>
+          </div>
         </GameAddedProvider>
       )}
     </>

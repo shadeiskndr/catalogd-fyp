@@ -1,5 +1,4 @@
-import { Game } from "@/gameTypes"
-import React from "react"
+import type { Game } from "@/gameTypes"
 import GameCard from "./GameCard"
 
 interface Props {

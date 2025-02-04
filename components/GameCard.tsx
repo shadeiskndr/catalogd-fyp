@@ -1,7 +1,7 @@
-import { Game } from "@/gameTypes"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
-import React, { useEffect } from "react"
+import { Card, CardContent, CardFooter } from "@/components/ui/card"
+import type { Game } from "@/gameTypes"
 import AddButton from "./AddButton"
 
 type GameCardProps = {
@@ -9,75 +9,56 @@ type GameCardProps = {
 }
 
 const GameCard = ({ game }: GameCardProps) => {
-  const { slug, id, name, released, background_image, platforms, genres } = game
-
+  const { slug, id, name, released, background_image, genres } = game
   const releasedDate = new Date(released).toLocaleDateString()
   const genreList = genres.map((genre) => genre.name).join(", ")
-  const platformList = platforms
-    .map((platform) => platform.platform.slug)
-    .join(", ")
   const router = useRouter()
 
+  const handleCardClick = () => {
+    router.push(`/game/${slug}`)
+  }
+
   return (
-    <div
-      className="block rounded-3xl h-max 
-      hover:scale-105 transition-all duration-300 ease-in-out
-      "
-      style={{
-        backgroundImage: `url(${background_image})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
+    <Card
+      className="overflow-hidden h-full transition-all duration-300 ease-in-out hover:shadow-lg hover:scale-105 border-0 cursor-pointer p-0"
+      onClick={handleCardClick}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          handleCardClick()
+        }
       }}
+      role="button"
+      tabIndex={0}
     >
-      <div
-        className="flex cursor-pointer"
-        onClick={() => {
-          router.push(`/game/${slug}`)
-        }}
-      >
+      <CardContent className="p-0">
         <Image
           src={
-            background_image
-              ? background_image
-              : "https://via.placeholder.com/800x400?text=Placeholder+Image"
+            background_image ||
+            "https://via.placeholder.com/800x400?text=Placeholder+Image"
           }
           alt={name}
           width={800}
           height={400}
+          className="w-full h-48 object-cover"
           placeholder="blur"
           blurDataURL={
             background_image ||
             "https://via.placeholder.com/800x400?text=Placeholder+Image"
           }
-          className="rounded-t-3xl"
         />
-      </div>
-      <div
-        className="px-4 py-2 rounded-b-3xl space-y-2
-       backdrop-blur-sm backdrop-brightness-50 "
-      >
-        <div className="flex justify-between">
-          <AddButton collection="mylib" gameId={id} gameName={name} />
-          <AddButton collection="wishlist" gameId={id} gameName={name} />
-        </div>
-
-        <div
-          className="space-y-1 flex justify-between cursor-pointer"
-          onClick={() => {
-            router.push(`/game/${slug}`)
-          }}
-        >
-          <div className="text-sm font-medium text-gray-200 space-y-1">
-            <h3 className="font-extrabold text-sm">{name}</h3>
-            <p className="">{releasedDate}</p>
-            <p className="text-xs">{genreList}</p>
+        <CardFooter className="flex flex-col gap-4 py-4 px-4 bg-linear-to-t from-primary/50 to-transparent">
+          <div className="flex justify-between w-full gap-2">
+            <AddButton collection="mylib" gameId={id} gameName={name} />
+            <AddButton collection="wishlist" gameId={id} gameName={name} />
           </div>
-          {/*         <div className="text-sm font-medium text-gray-300">
-            <p className="">{platformList}</p>
-        </div>  */}
-        </div>
-      </div>
-    </div>
+          <div className="space-y-1 w-full">
+            <h3 className="font-extrabold text-sm line-clamp-2">{name}</h3>
+            <p className="text-xs text-muted-foreground">{releasedDate}</p>
+            <p className="text-xs text-muted-foreground">{genreList}</p>
+          </div>
+        </CardFooter>
+      </CardContent>
+    </Card>
   )
 }
 

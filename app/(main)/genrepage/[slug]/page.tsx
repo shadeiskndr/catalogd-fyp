@@ -1,11 +1,11 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client"
-import Grid from "@/components/Grid"
-import { Game } from "@/gameTypes"
-import { genreGames } from "@/rawg/genreGames"
-import { GameDataType, genreList } from "@/rawg/genreList"
-import React, { useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { BeatLoader } from "react-spinners"
+import Grid from "@/components/Grid"
+import type { Game } from "@/gameTypes"
+import { genreGames } from "@/rawg/genreGames"
+import { type GameDataType, genreList } from "@/rawg/genreList"
 
 interface loadGamesOptions {
   pageNo: number
@@ -27,7 +27,7 @@ const GenrePage = ({ params: { slug } }: GenrePageProps) => {
   const loadGenre = async () => {
     setLoading(true)
     const response = await genreList()
-    let { results } = response
+    const { results } = response
     //filtering the results to get the genre with the slug
     const data = results.reduce(
       (acc: GameDataType | null, genre: GameDataType) => {
@@ -50,7 +50,7 @@ const GenrePage = ({ params: { slug } }: GenrePageProps) => {
       pageSize: 20,
       genreSlug: slug,
     })
-    let { results } = response
+    const { results } = response
     //results.forEach((game) => (game.price = getPrice(game)));
     return results || []
   }

@@ -66,6 +66,24 @@
   --tracking-wide: calc(var(--letter-spacing) + 0.025em);
   --tracking-wider: calc(var(--letter-spacing) + 0.05em);
   --tracking-widest: calc(var(--letter-spacing) + 0.1em);
+  --animate-marquee: marquee var(--duration) infinite linear;
+  --animate-marquee-vertical: marquee-vertical var(--duration) linear infinite;
+  @keyframes marquee {
+  from {
+    transform: translateX(0);
+    }
+  to {
+    transform: translateX(calc(-100% - var(--gap)));
+    }
+  }
+  @keyframes marquee-vertical {
+  from {
+    transform: translateY(0);
+    }
+  to {
+    transform: translateY(calc(-100% - var(--gap)));
+    }
+  }
 }
 
 @layer base {

@@ -12,20 +12,25 @@ import {
   PencilIcon,
   SparklesIcon,
 } from "@heroicons/react/24/solid"
-import Link from "next/link"
 import type * as React from "react"
-import { BsGithub, BsLinkedin, BsTwitter } from "react-icons/bs"
 import { IoGameController } from "react-icons/io5"
 import { NavMain } from "@/components/layout/nav-main"
 import { TeamSwitcher } from "@/components/layout/team-switcher"
-import { ThemeToggle } from "@/components/layout/theme-toggle"
+import { Button } from "@/components/ui/button"
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card"
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
+  useSidebar,
 } from "@/components/ui/sidebar"
+import SocialSelector from "@/components/ui/smoothui/social-selector"
 
 // This is sample data.
 const data = {
@@ -89,6 +94,36 @@ const data = {
   ],
 }
 
+function AppSidebarFooter() {
+  const { state } = useSidebar()
+  const isCollapsed = state === "collapsed"
+
+  if (isCollapsed) {
+    return (
+      <HoverCard>
+        <HoverCardTrigger asChild>
+          <Button variant="ghost" size="icon-sm" className="w-full">
+            <HeartIcon />
+          </Button>
+        </HoverCardTrigger>
+        <HoverCardContent className="w-auto">
+          <div className="flex justify-center items-center gap-2">
+            <SocialSelector handle="shadeiskndr" />
+          </div>
+        </HoverCardContent>
+      </HoverCard>
+    )
+  }
+
+  return (
+    <div className="space-y-4 border-t px-4 py-6">
+      <div className="flex justify-center items-center gap-2">
+        <SocialSelector handle="shadeiskndr" />
+      </div>
+    </div>
+  )
+}
+
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -107,41 +142,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>
-        <div className="space-y-4 border-t px-4 py-6">
-          <div className="text-center space-y-2">
-            <div className="text-indigo-500 text-xs flex flex-col items-center">
-              <h2>Built with</h2>
-              <span>
-                <HeartIcon className="w-2 h-2 text-red-500" />
-              </span>
-              <h2>by Shahathir Iskandar</h2>
-            </div>
-            <div className="flex justify-center space-x-4">
-              <ThemeToggle />
-              <Link
-                href="https://github.com/shadeiskndr"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <BsGithub className="w-5 h-5 text-gray-600 hover:text-gray-100 transition duration-300 hover:scale-105" />
-              </Link>
-              <Link
-                href="https://twitter.com/shadeiskndr"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <BsTwitter className="w-5 h-5 text-gray-600 hover:text-cyan-500 transition duration-300 hover:scale-105" />
-              </Link>
-              <Link
-                href="https://www.linkedin.com/in/shahathir-iskandar-b60869270/"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <BsLinkedin className="w-5 h-5 text-gray-600 hover:text-blue-500 transition duration-300 hover:scale-105" />
-              </Link>
-            </div>
-          </div>
-        </div>
+        <AppSidebarFooter />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

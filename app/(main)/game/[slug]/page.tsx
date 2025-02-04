@@ -1,19 +1,17 @@
 "use client"
+import { PencilIcon } from "@heroicons/react/24/solid"
+import { Query } from "appwrite"
+import Image from "next/image"
+import Link from "next/link"
+import { useEffect, useState } from "react"
+import { BeatLoader } from "react-spinners"
 import Banner from "@/components/game/Banner"
 import Info from "@/components/game/Info"
 import ReviewCardSlug from "@/components/ReviewCardSlug"
-import { Game } from "@/gameTypes"
+import type { Game } from "@/gameTypes"
 import { gameDetails, gameScreenshots } from "@/rawg"
-import { Screenshot } from "@/rawg/gameScreenshots"
+import type { Screenshot } from "@/rawg/gameScreenshots"
 import { database, databaseId, reviewCol } from "@/utils/appwrite"
-import Image from "next/image"
-import React, { useEffect, useState } from "react"
-import { BeatLoader } from "react-spinners"
-import { Query } from "appwrite"
-import { PencilIcon } from "@heroicons/react/24/solid"
-import Link from "next/link"
-
-//game page
 
 type GamePageProps = {
   params: {

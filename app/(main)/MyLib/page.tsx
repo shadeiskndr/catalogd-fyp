@@ -1,13 +1,13 @@
 "use client"
-import Grid from "@/components/Grid"
-import { Game } from "@/gameTypes"
-import { gameDetails } from "@/rawg"
-import { GameAddedContext } from "@/utils/GameAddedContext"
-
-import { database, databaseId, mylibCol, userID } from "@/utils/appwrite"
 import { Query } from "appwrite"
-import React, { useContext, useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { BeatLoader } from "react-spinners"
+import Grid from "@/components/Grid"
+import { Button } from "@/components/ui/button"
+import type { Game } from "@/gameTypes"
+import { gameDetails } from "@/rawg"
+import { database, databaseId, mylibCol, userID } from "@/utils/appwrite"
+import { GameAddedContext } from "@/utils/GameAddedContext"
 
 const MyLib = () => {
   const [games, setGames] = useState<Game[]>([])
@@ -53,44 +53,32 @@ const MyLib = () => {
   }, [page, gameAdded])
 
   const loadMoreGames = () => {
+    setLoading(true)
     setPage((prevPage) => prevPage + 1)
   }
 
   const loadPreviousGames = () => {
+    setLoading(true)
     setPage((prevPage) => Math.max(prevPage - 1, 1))
   }
 
   return (
     <div className="space-y-4">
-      <h1 className="text-gray-300 font-extrabold text-3xl">My Library</h1>
+      <h1 className="font-extrabold text-3xl">My Library</h1>
       {games.length ? (
         <>
           <Grid games={games} />
-          <div className="flex justify-center mt-4 space-x-4">
-            {page > 1 && (
-              <button
-                onClick={loadPreviousGames}
-                className="bg-red-600 p-2 px-4 rounded hover:scale-105 transition-transform
-                    duration-300 ease-in-out font-semibold text-gray-100"
-                disabled={loading}
-              >
-                {loading ? "Loading..." : "Previous Page"}
-              </button>
-            )}
-            {hasMore && (
-              <button
-                onClick={loadMoreGames}
-                className="bg-red-600 p-2 px-4 rounded hover:scale-105 transition-transform
-                    duration-300 ease-in-out font-semibold text-gray-100"
-                disabled={loading}
-              >
-                {loading ? "Loading..." : "Load More"}
-              </button>
-            )}
-          </div>
+          {!loading && (
+            <div className="flex justify-center mt-4 space-x-4">
+              {page > 1 && (
+                <Button onClick={loadPreviousGames}>Previous Page</Button>
+              )}
+              {hasMore && <Button onClick={loadMoreGames}>Load More</Button>}
+            </div>
+          )}
         </>
       ) : (
-        <div className="text-white mt-10">No games found.</div>
+        <div className="mt-10">No games found.</div>
       )}
       {loading && (
         <div className="flex justify-center items-center">

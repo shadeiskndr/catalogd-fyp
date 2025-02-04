@@ -1,17 +1,18 @@
 "use client" // Add this line at the top
 
-import React, { useState, useEffect } from "react"
+import { PaperAirplaneIcon, TrashIcon } from "@heroicons/react/24/solid"
+import { ID, Query } from "appwrite"
+import type React from "react"
+import { useEffect, useState } from "react"
+import { toast } from "react-hot-toast"
+import { BeatLoader } from "react-spinners"
 import {
   database,
   databaseId,
-  messagesCol,
   getSessionData,
+  messagesCol,
   userID,
 } from "@/utils/appwrite"
-import { TrashIcon, PaperAirplaneIcon } from "@heroicons/react/24/solid"
-import { ID, Query } from "appwrite"
-import { toast } from "react-hot-toast"
-import { BeatLoader } from "react-spinners"
 
 interface Message {
   id: string
