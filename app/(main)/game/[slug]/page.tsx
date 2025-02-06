@@ -3,6 +3,7 @@ import { PencilIcon } from "@heroicons/react/24/solid"
 import { Query } from "appwrite"
 import Image from "next/image"
 import Link from "next/link"
+import { useParams } from "next/navigation"
 import { useEffect, useState } from "react"
 import { BeatLoader } from "react-spinners"
 import Banner from "@/components/game/Banner"
@@ -13,12 +14,6 @@ import { gameDetails, gameScreenshots } from "@/rawg"
 import type { Screenshot } from "@/rawg/gameScreenshots"
 import { database, databaseId, reviewCol } from "@/utils/appwrite"
 
-type GamePageProps = {
-  params: {
-    slug: string
-  }
-}
-
 interface Review {
   user_id: string
   user_name: string
@@ -27,7 +22,9 @@ interface Review {
   review: string
 }
 
-const GamePage = ({ params: { slug } }: GamePageProps) => {
+const GamePage = () => {
+  const params = useParams()
+  const slug = params.slug as string
   const [game, setGame] = useState<Game | null>(null)
   const [loading, setLoading] = useState(true)
   const [screenshots, setScreenshots] = useState<Screenshot | null>(null)

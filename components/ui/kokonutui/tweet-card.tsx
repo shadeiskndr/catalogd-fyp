@@ -1,6 +1,7 @@
 import { VerifiedIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import Image from "next/image";
 
 /**
  * @author: @dorian_baffier
@@ -85,9 +86,11 @@ export default function TweetCard({
                     <div className="flex gap-3">
                         <div className="shrink-0">
                             <div className="h-10 w-10 rounded-full overflow-hidden">
-                                <img
+                                <Image
                                     src={authorImage}
                                     alt={authorName}
+                                    width={40}
+                                    height={40}
                                     className="h-full w-full object-cover"
                                 />
                             </div>
@@ -150,9 +153,11 @@ export default function TweetCard({
                             <div className="flex gap-3">
                                 <div className="shrink-0">
                                     <div className="h-10 w-10 rounded-full overflow-hidden">
-                                        <img
+                                        <Image
                                             src={reply.authorImage}
                                             alt={reply.authorName}
+                                            width={40}
+                                            height={40}
                                             className="h-full w-full object-cover"
                                         />
                                     </div>

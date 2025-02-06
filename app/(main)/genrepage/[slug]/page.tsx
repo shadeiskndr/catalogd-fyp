@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client"
+import { useParams } from "next/navigation"
 import { useEffect, useState } from "react"
 import { BeatLoader } from "react-spinners"
 import Grid from "@/components/Grid"
@@ -10,14 +11,10 @@ import { type GameDataType, genreList } from "@/rawg/genreList"
 interface loadGamesOptions {
   pageNo: number
 }
-//target page
-type GenrePageProps = {
-  params: {
-    slug: string
-  }
-}
 
-const GenrePage = ({ params: { slug } }: GenrePageProps) => {
+const GenrePage = () => {
+  const params = useParams()
+  const slug = params.slug as string
   const [games, setGames] = useState<Game[] | null>(null)
   const [genre, setGenre] = useState<GameDataType | null>(null)
   const [loading, setLoading] = useState(false)

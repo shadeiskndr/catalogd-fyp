@@ -1,17 +1,18 @@
 "use client"
 
 import {
-  BookOpenIcon,
-  ChatBubbleLeftRightIcon,
-  CpuChipIcon,
-  FireIcon,
-  FolderIcon,
-  GiftIcon,
-  HeartIcon,
-  HomeIcon,
-  PencilIcon,
-  SparklesIcon,
-} from "@heroicons/react/24/solid"
+  BookOpenText,
+  Bot,
+  Flame,
+  Folder,
+  Gamepad2,
+  Gift,
+  Heart,
+  Home,
+  MessageCircle,
+  Pencil,
+  Sparkles,
+} from "lucide-react"
 import type * as React from "react"
 import { IoGameController } from "react-icons/io5"
 import { NavMain } from "@/components/layout/nav-main"
@@ -43,53 +44,53 @@ const data = {
     {
       title: "Dashboard",
       url: "/dashboard",
-      icon: HomeIcon,
+      icon: Home,
       isActive: true,
     },
     {
       title: "My Library",
       url: "/MyLib",
-      icon: FolderIcon,
+      icon: Folder,
     },
     {
       title: "Wishlist",
       url: "/Wish",
-      icon: GiftIcon,
+      icon: Gift,
     },
     {
       title: "New Releases",
       url: "/New",
-      icon: SparklesIcon,
+      icon: Sparkles,
     },
     {
       title: "Most Popular",
       url: "/Pop",
-      icon: FireIcon,
+      icon: Flame,
     },
     {
       title: "Genres",
       url: "/genres",
-      icon: IoGameController,
+      icon: Gamepad2,
     },
     {
       title: "Write Review",
       url: "/Write",
-      icon: PencilIcon,
+      icon: Pencil,
     },
     {
       title: "Reviews",
       url: "/Review",
-      icon: BookOpenIcon,
+      icon: BookOpenText,
     },
     {
       title: "AI Recommender",
       url: "/AIRec",
-      icon: CpuChipIcon,
+      icon: Bot,
     },
     {
       title: "Chat Room",
       url: "/Chat",
-      icon: ChatBubbleLeftRightIcon,
+      icon: MessageCircle,
     },
   ],
 }
@@ -103,7 +104,7 @@ function AppSidebarFooter() {
       <HoverCard>
         <HoverCardTrigger asChild>
           <Button variant="ghost" size="icon-sm" className="w-full">
-            <HeartIcon />
+            <Heart />
           </Button>
         </HoverCardTrigger>
         <HoverCardContent className="w-auto">
@@ -132,7 +133,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           teams={[
             {
               name: "Catalogd",
-              logo: IoGameController,
+              logo: Gamepad2,
               plan: "Game Catalog",
             },
           ]}
