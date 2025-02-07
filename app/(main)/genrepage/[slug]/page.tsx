@@ -86,7 +86,7 @@ const GenrePage = () => {
   return (
     <div className="space-y-4">
       {genre ? (
-        <h1 className="text-gray-300 text-3xl font-bold">{genre?.name!}</h1>
+        <h1 className="text-3xl font-bold">{genre?.name!}</h1>
       ) : (
         <div>
           <BeatLoader color="#ffa600" size={20} loading={loading} />
@@ -110,7 +110,7 @@ const GenrePage = () => {
               )}
             </div>
           ) : (
-            <span className="text-gray-100 font-semibold">No games found.</span>
+            <span className="font-semibold">No games found.</span>
           )
         ) : (
           <div>

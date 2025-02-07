@@ -80,7 +80,7 @@ export function Providers({
 
     const isMobile = window.innerWidth < 768
     const origin = isMobile ? "bottom right" : "top right"
-    const position = isMobile ? "100% 100%" : "70% 0%"
+    const position = isMobile ? "100% 100%" : "100% 0%"
 
     const css = `
       @supports (view-transition-name: root) {

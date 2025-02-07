@@ -1,12 +1,13 @@
 "use client"
-import { Game } from "@/gameTypes"
-import { Search } from "@/rawg/search"
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline"
-
-import React, { ChangeEvent, useEffect, useRef, useState } from "react"
-import placeholderImg from "../public/imgs/imgPlaceholder.jpg"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
+
+import type React from "react"
+import { type ChangeEvent, useEffect, useRef, useState } from "react"
+import type { Game } from "@/gameTypes"
+import { Search } from "@/rawg/search"
+import placeholderImg from "../public/imgs/imgPlaceholder.jpg"
 
 const SeachBar = () => {
   const [searchTerm, setSearchTerm] = useState<string>("")
@@ -21,7 +22,7 @@ const SeachBar = () => {
 
     const getSearchedGame = async (searchTerm: string) => {
       const response = await Search({ term: searchTerm })
-      let { results } = response
+      const { results } = response
       return results
     }
 
@@ -140,8 +141,8 @@ const SeachBar = () => {
                     />
                   )}
                   <div className="flex flex-col space-y-2">
-                    <h1 className="text-gray-100 font-semibold">{game.name}</h1>
-                    <h2 className="text-gray-400 text-sm">{game.released}</h2>
+                    <h1 className="font-semibold">{game.name}</h1>
+                    <h2 className="text-sm">{game.released}</h2>
                   </div>
                 </div>
               ))}

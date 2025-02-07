@@ -1,5 +1,5 @@
-import React, { useState } from "react"
-import { FaStar, FaCommentDots } from "react-icons/fa"
+import { useState } from "react"
+import { FaStar } from "react-icons/fa"
 
 type ReviewCardProps = {
   userName: string

@@ -161,7 +161,7 @@ const WriteReview = () => {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-gray-300 text-3xl font-bold">Write Review</h1>
+      <h1 className="text-3xl font-bold">Write Review</h1>
       <div className="w-full max-w-2xl bg-gray-800 p-6 rounded-lg shadow-lg mx-auto mt-10">
         <h1 className="text-2xl font-bold mb-4 text-center text-white">
           Review and Rate a Game
@@ -172,7 +172,7 @@ const WriteReview = () => {
             value={searchTerm}
             onChange={handleSearchChange}
             placeholder="Search for a game..."
-            className="w-full p-2 bg-gray-700 text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-red-600"
+            className="w-full p-2 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-red-600"
           />
           {searchedGames.length > 0 && (
             <ul className="bg-gray-700 mt-2 rounded-md max-h-60 overflow-y-auto text-white">
@@ -234,7 +234,7 @@ const WriteReview = () => {
                 value={review}
                 onChange={handleReviewChange}
                 required
-                className="w-full p-2 bg-gray-600 text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-red-600"
+                className="w-full p-2 bg-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-red-600"
               />
             </div>
             <button

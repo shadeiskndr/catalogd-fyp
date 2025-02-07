@@ -1,4 +1,9 @@
 "use client"
+import { PlusCircleIcon } from "@heroicons/react/24/outline"
+import { HeartIcon, MinusCircleIcon } from "@heroicons/react/24/solid"
+import { ID, Query } from "appwrite"
+import { useContext, useEffect, useState } from "react"
+import { toast } from "react-hot-toast"
 import {
   database,
   databaseId,
@@ -6,14 +11,9 @@ import {
   userID,
   wishlistCol,
 } from "@/utils/appwrite"
-import { HeartIcon, MinusCircleIcon } from "@heroicons/react/24/solid"
-import { ID, Query } from "appwrite"
-import React, { useContext, useEffect, useState } from "react"
-import { toast } from "react-hot-toast"
-import { PlusCircleIcon } from "@heroicons/react/24/outline"
 import {
   GameAddedContext,
-  GameAddedContextType,
+  type GameAddedContextType,
 } from "@/utils/GameAddedContext"
 
 type AddButtonProps = {
@@ -23,7 +23,6 @@ type AddButtonProps = {
 }
 
 const AddButton = ({ collection, gameId, gameName }: AddButtonProps) => {
-  //checking if game is present in wishlist and mylib
   const [gamePresent, setGamePresent] = useState<boolean>(false)
   const { gameAdded, setGameAdded } =
     useContext<GameAddedContextType>(GameAddedContext)
@@ -37,7 +36,7 @@ const AddButton = ({ collection, gameId, gameName }: AddButtonProps) => {
           `${mylibCol}`,
           [Query.equal("user_id", userID), Query.equal("game_id", gameId)],
         )
-        searchPromise.then(function (response) {
+        searchPromise.then((response) => {
           if (response.documents.length === 0) {
             setGamePresent(false)
           } else {
@@ -52,7 +51,7 @@ const AddButton = ({ collection, gameId, gameName }: AddButtonProps) => {
           `${wishlistCol}`,
           [Query.equal("user_id", userID), Query.equal("game_id", gameId)],
         )
-        searchPromise.then(function (response) {
+        searchPromise.then((response) => {
           if (response.documents.length === 0) {
             setGamePresent(false)
           } else {
@@ -80,12 +79,12 @@ const AddButton = ({ collection, gameId, gameName }: AddButtonProps) => {
         },
       )
       createPromise.then(
-        function (response) {
+        (response) => {
           toast.success("Added to Library!")
           setGamePresent(true)
           setGameAdded(true)
         },
-        function (error) {
+        (error) => {
           console.log(error)
         },
       )
@@ -101,12 +100,12 @@ const AddButton = ({ collection, gameId, gameName }: AddButtonProps) => {
         },
       )
       createPromise.then(
-        function (response) {
+        (response) => {
           toast.success("Added to Wishlist!")
           setGamePresent(true)
           setGameAdded(true)
         },
-        function (error) {
+        (error) => {
           console.log(error)
         },
       )
@@ -121,11 +120,11 @@ const AddButton = ({ collection, gameId, gameName }: AddButtonProps) => {
         `${documentId}`,
       )
       deletePromise.then(
-        function (response) {
+        (response) => {
           toast.success("Removed from Library!")
           setGameAdded(false)
         },
-        function (error) {
+        (error) => {
           console.log(error)
         },
       )
@@ -136,11 +135,11 @@ const AddButton = ({ collection, gameId, gameName }: AddButtonProps) => {
         `${documentId}`,
       )
       deletePromise.then(
-        function (response) {
+        (response) => {
           toast.success("Removed from Wishlist!")
           setGameAdded(false)
         },
-        function (error) {
+        (error) => {
           console.log(error)
         },
       )
@@ -175,7 +174,7 @@ const AddButton = ({ collection, gameId, gameName }: AddButtonProps) => {
           />
         ) : (
           <div
-            className="flex text-gray-400 space-x-2 font-semibold justify-between
+            className="flex space-x-2 font-semibold justify-between
           hover:text-red-500 transition-colors duration-300 ease-in-out"
             aria-label="Add to Wishlist"
           >

@@ -50,7 +50,7 @@ const NewR = () => {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-gray-300 text-3xl font-bold">New and Upcoming</h1>
+      <h1 className="text-3xl font-bold">New and Upcoming</h1>
       <div className="flex flex-col justify-center items-center">
         {games ? (
           games?.length > 9 ? (
@@ -69,7 +69,7 @@ const NewR = () => {
               )}
             </div>
           ) : (
-            <span className="text-gray-100 font-semibold">No games found.</span>
+            <span className="font-semibold">No games found.</span>
           )
         ) : (
           <div>

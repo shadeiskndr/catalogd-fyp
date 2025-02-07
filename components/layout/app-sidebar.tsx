@@ -14,7 +14,6 @@ import {
   Sparkles,
 } from "lucide-react"
 import type * as React from "react"
-import { IoGameController } from "react-icons/io5"
 import { NavMain } from "@/components/layout/nav-main"
 import { TeamSwitcher } from "@/components/layout/team-switcher"
 import { Button } from "@/components/ui/button"

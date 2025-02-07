@@ -61,7 +61,7 @@ const Wish = () => {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-gray-300 font-extrabold text-3xl">Wishlist</h1>
+      <h1 className="font-extrabold text-3xl">Wishlist</h1>
       {games.length ? (
         <>
           <Grid games={games} />

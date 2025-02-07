@@ -103,12 +103,12 @@ const GamePage = () => {
           {/* Reviews Section */}
           <div className="p-6 bg-indigo-100/10 my-6">
             <div className="flex justify-between items-center mb-4">
-              <h1 className="text-lg md:text-xl lg:text-2xl text-gray-200 font-semibold">
+              <h1 className="text-lg md:text-xl lg:text-2xl font-semibold">
                 Reviews
               </h1>
               <Link
                 href="/Write"
-                className="flex items-center text-sm text-gray-200 hover:underline"
+                className="flex items-center text-sm hover:underline"
               >
                 <PencilIcon className="h-5 w-5 mr-1" />
                 Add a Review

@@ -1,5 +1,4 @@
 import Image from "next/image"
-import React from "react"
 import AddButton from "../AddButton"
 
 type BannerProps = {
@@ -29,23 +28,20 @@ const Banner = ({
             alt="gameImg"
             fill
           />
-          <div
-            className="absolute inset-0 bg-gradient-to-r
-                    from-black to-transparent"
-          />
+          <div className="absolute inset-0 bg-linear-to-r from-black to-transparent" />
         </div>
         <div className="flex justify-between">
           <div className="relative max-w-7xl px-8 pt-24 pb-8 md:pt-32 lg:pt-40">
-            <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
+            <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl">
               {gameName}
             </h1>
-            <p className="mt-6 text-xl text-indigo-100 max-w-3xl">
+            <p className="mt-6 text-xl max-w-3xl">
               {gameGenres.map((genre) => genre.name).join(", ")}
             </p>
-            <h2 className="mt-1 text-xl text-indigo-100 max-w-3xl">
+            <h2 className="mt-1 text-xl max-w-3xl">
               Metacritic Rating: {gameRating}
             </h2>
-            <h2 className="mt-1 text-md text-indigo-100 max-w-3xl">
+            <h2 className="mt-1 text-md max-w-3xl">
               Release Date: {new Date(gameReleaseDate).toLocaleDateString()}
             </h2>
           </div>

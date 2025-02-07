@@ -68,7 +68,7 @@ const ReviewPage = () => {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-gray-300 text-3xl font-bold">Recent Reviews</h1>
+      <h1 className="text-3xl font-bold">Recent Reviews</h1>
       <div className="flex flex-col justify-center items-center">
         {loading && <BeatLoader color="#ffa600" size={20} loading={true} />}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 auto-rows-auto grid-auto-flow-dense">

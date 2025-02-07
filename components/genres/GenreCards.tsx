@@ -30,7 +30,7 @@ const GenreCards = ({ name, image, listSlug }: GenreCardsProps) => {
         className="bg-gray-900 bg-opacity-70 w-full h-full hover:bg-opacity-40
       transition-all duration-300 rounded-full flex items-center justify-center"
       >
-        <h1 className="text-gray-100 text-xl font-bold">{name}</h1>
+        <h1 className="text-xl font-bold">{name}</h1>
       </div>
     </div>
   )

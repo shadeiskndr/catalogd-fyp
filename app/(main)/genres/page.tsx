@@ -25,7 +25,7 @@ const Genre = () => {
   }, [])
   return (
     <div className="relative space-y-8">
-      <h1 className="text-gray-300 text-3xl font-bold">Genres</h1>
+      <h1 className="text-3xl font-bold">Genres</h1>
       {genre ? (
         <div
           className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4

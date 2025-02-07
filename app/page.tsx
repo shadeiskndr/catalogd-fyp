@@ -1,10 +1,9 @@
 "use client"
-import Hero from "@/components/landing/Hero"
-import { getSessionData } from "@/utils/appwrite"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { BeatLoader } from "react-spinners"
-import BackgroundLanding from "@/components/BackgroundLanding" // Import the BackgroundLanding component
+import Login from "@/components/landing/login"
+import { getSessionData } from "@/utils/appwrite"
 
 function Landing() {
   const [loggedIn, setLoggedIn] = useState(false)
@@ -36,18 +35,7 @@ function Landing() {
     )
   }
 
-  return (
-    <main>
-      {!loggedIn && (
-        <div className="relative">
-          <BackgroundLanding />
-          <section className="p-5 lg:p-16">
-            <Hero />
-          </section>
-        </div>
-      )}
-    </main>
-  )
+  return <main>{!loggedIn && <Login />}</main>
 }
 
 export default Landing

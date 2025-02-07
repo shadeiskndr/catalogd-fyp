@@ -1,5 +1,5 @@
 import Link from "next/link"
-import React from "react"
+import type React from "react"
 
 type SideButtonProps = {
   name: string
@@ -18,7 +18,7 @@ const SideButton = ({ name, children, path }: SideButtonProps) => {
         >
           {children}
           <h2
-            className="text-gray-400 hover:text-gray-200
+            className="hover:text-gray-200
           transition-colors duration-300"
           >
             {name}

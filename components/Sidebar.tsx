@@ -65,21 +65,21 @@ function SidebarFooter_Content() {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <BsGithub className="w-5 h-5 text-gray-600 hover:text-gray-100 transition duration-300 hover:scale-105" />
+            <BsGithub className="w-5 h-5 hover:transition duration-300 hover:scale-105" />
           </Link>
           <Link
             href="https://twitter.com/shadeiskndr"
             target="_blank"
             rel="noopener noreferrer"
           >
-            <BsTwitter className="w-5 h-5 text-gray-600 hover:text-cyan-500 transition duration-300 hover:scale-105" />
+            <BsTwitter className="w-5 h-5 hover:text-cyan-500 transition duration-300 hover:scale-105" />
           </Link>
           <Link
             href="https://www.linkedin.com/in/shahathir-iskandar-b60869270/"
             target="_blank"
             rel="noopener noreferrer"
           >
-            <BsLinkedin className="w-5 h-5 text-gray-600 hover:text-blue-500 transition duration-300 hover:scale-105" />
+            <BsLinkedin className="w-5 h-5 hover:text-blue-500 transition duration-300 hover:scale-105" />
           </Link>
         </div>
       </div>

@@ -135,7 +135,7 @@ const ChatRoom = () => {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-gray-300 text-3xl font-bold">Chat Room</h1>
+      <h1 className="text-3xl font-bold">Chat Room</h1>
       <div className="w-full bg-gray-800 p-6 rounded-lg shadow-lg mx-auto mt-10 max-w-screen-lg">
         <h1 className="text-2xl font-bold mb-4 text-center text-white">
           Real-time Public Chat Room
@@ -174,9 +174,9 @@ const ChatRoom = () => {
                 <div
                   className={`p-2 rounded-lg max-w-md ${message.user_id === userID ? "bg-red-900 text-white" : "bg-purple-900 text-white"}`}
                 >
-                  <p className="text-gray-300 text-left">{message.message}</p>
+                  <p className="text-left">{message.message}</p>
                 </div>
-                <p className="text-gray-500 text-sm">
+                <p className="text-sm">
                   {new Date(message.created_at).toLocaleString()}
                 </p>
               </div>
@@ -191,7 +191,7 @@ const ChatRoom = () => {
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             placeholder="Write your message..."
-            className="w-full p-2 bg-gray-600 text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-red-600"
+            className="w-full p-2 bg-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-red-600"
             rows={1}
             maxLength={300} // Limit to 350 characters
           />
