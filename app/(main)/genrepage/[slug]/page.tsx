@@ -1,121 +1,71 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 "use client"
 import { useParams } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { BeatLoader } from "react-spinners"
 import Grid from "@/components/Grid"
-import type { Game } from "@/gameTypes"
-import { genreGames } from "@/rawg/genreGames"
-import { type GameDataType, genreList } from "@/rawg/genreList"
-
-interface loadGamesOptions {
-  pageNo: number
-}
+import { useGenreGames, useGenreList } from "@/hooks/use-games-extended"
 
 const GenrePage = () => {
   const params = useParams()
   const slug = params.slug as string
-  const [games, setGames] = useState<Game[] | null>(null)
-  const [genre, setGenre] = useState<GameDataType | null>(null)
-  const [loading, setLoading] = useState(false)
   const [pageNo, setPageNo] = useState<number>(1)
-  const [hasNextPage, setHasNextPage] = useState(true)
-  //for genre name
-  const loadGenre = async () => {
-    setLoading(true)
-    const response = await genreList()
-    const { results } = response
-    //filtering the results to get the genre with the slug
-    const data = results.reduce(
-      (acc: GameDataType | null, genre: GameDataType) => {
-        if (genre.slug === slug) {
-          acc = genre
-        }
-        return acc
-      },
-      null,
-    )
-    return data
-  }
-  //for loading of games
-  const loadGames = async ({ pageNo }: loadGamesOptions) => {
-    setLoading(true)
 
-    const response = await genreGames({
-      page: pageNo,
-      ordering: "popularity",
-      pageSize: 20,
-      genreSlug: slug,
-    })
-    const { results } = response
-    //results.forEach((game) => (game.price = getPrice(game)));
-    return results || []
-  }
+  // Fetch genre list and find the matching genre
+  const { data: genreListData } = useGenreList()
+  const genre = genreListData?.results.find((g) => g.slug === slug)
+
+  // Fetch games for this genre with pagination
+  const {
+    data,
+    isLoading: loading,
+    isFetching,
+  } = useGenreGames(slug, pageNo, 20, "popularity")
+
+  const games = data?.results || []
+  const hasNextPage = games.length >= 20
+
   //setting the page number to the next page
   const handleFetchNextPage = async () => {
     setPageNo(pageNo + 1)
   }
-  //for loading of games belonging to the genre
-  useEffect(() => {
-    ;(async () => {
-      try {
-        const newGames = await loadGames({ pageNo })
-        setGames(games ? [...games, ...newGames] : newGames || [])
-        setLoading(false)
-        if (newGames?.length === 0) {
-          setHasNextPage(false)
-        }
-      } catch (error) {
-        console.error("Error loading games:", error)
-      }
-    })()
-  }, [pageNo])
-  //for loading of genre name
-  useEffect(() => {
-    ;(async () => {
-      try {
-        const newGenre = await loadGenre()
-        setGenre(newGenre)
-        setLoading(false)
-      } catch (error) {
-        console.error("Error loading genres:", error)
-      }
-    })()
-  }, [])
 
   return (
     <div className="space-y-4">
       {genre ? (
-        <h1 className="text-3xl font-bold">{genre?.name!}</h1>
+        <h1 className="text-3xl font-bold">{genre.name}</h1>
       ) : (
         <div>
-          <BeatLoader color="#ffa600" size={20} loading={loading} />
+          <BeatLoader color="#ffa600" size={20} loading={true} />
         </div>
       )}
       <div className="flex flex-col justify-center items-center">
-        {games ? (
-          games?.length > 19 ? (
-            <div className="pb-4">
-              <Grid games={games} />
-              {hasNextPage && (
-                <div className="flex flex-col my-4 justify-center items-center">
-                  <button
-                    className="bg-red-600 p-2 px-4 rounded hover:scale-105 transition-transform
-                    duration-300 ease-in-out font-semibold text-gray-100"
-                    onClick={handleFetchNextPage}
-                  >
-                    {loading ? <span>Loading...</span> : <span>Load More</span>}
-                  </button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <span className="font-semibold">No games found.</span>
-          )
-        ) : (
+        {loading && pageNo === 1 ? (
           <div>
-            <BeatLoader color="#ffa600" size={20} loading={loading} />
+            <BeatLoader color="#ffa600" size={20} loading={true} />
           </div>
+        ) : games.length > 0 ? (
+          <div className="pb-4">
+            <Grid games={games} />
+            {hasNextPage && (
+              <div className="flex flex-col my-4 justify-center items-center">
+                <button
+                  type="button"
+                  className="bg-red-600 p-2 px-4 rounded hover:scale-105 transition-transform
+                  duration-300 ease-in-out font-semibold text-gray-100"
+                  onClick={handleFetchNextPage}
+                  disabled={isFetching}
+                >
+                  {isFetching ? (
+                    <span>Loading...</span>
+                  ) : (
+                    <span>Load More</span>
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <span className="font-semibold">No games found.</span>
         )}
       </div>
     </div>

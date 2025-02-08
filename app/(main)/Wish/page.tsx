@@ -1,55 +1,27 @@
 "use client"
-import Grid from "@/components/Grid"
-import { Game } from "@/gameTypes"
-import { gameDetails } from "@/rawg"
-import { GameAddedContext } from "@/utils/GameAddedContext"
-import { database, databaseId, userID, wishlistCol } from "@/utils/appwrite"
-import { Query } from "appwrite"
-import React, { useContext, useEffect, useState } from "react"
+
+import { useEffect, useState } from "react"
 import { BeatLoader } from "react-spinners"
+import Grid from "@/components/Grid"
+import { useUserWishlist } from "@/hooks/use-games"
+import { useGameStore } from "@/lib/stores/game-store"
+import { databaseId, userID, wishlistCol } from "@/utils/appwrite"
 
 const Wish = () => {
-  const [games, setGames] = useState<Game[]>([])
-  const [loading, setLoading] = useState<boolean>(true)
   const [page, setPage] = useState<number>(1)
-  const [hasMore, setHasMore] = useState<boolean>(true)
-  const { gameAdded } = useContext(GameAddedContext)
+  const { gameAdded } = useGameStore()
+  const { data, isLoading, error } = useUserWishlist(page, {
+    databaseId,
+    wishlistCol,
+    userID,
+  })
 
-  const PAGE_SIZE = 25
+  const games = data?.games ?? []
+  const hasMore = data?.hasMore ?? false
 
-  // Function to load games
   useEffect(() => {
-    const getGameIds = async (page: number) => {
-      try {
-        const response = await database.listDocuments(
-          `${databaseId}`,
-          `${wishlistCol}`,
-          [
-            Query.equal("user_id", userID),
-            Query.limit(PAGE_SIZE),
-            Query.offset((page - 1) * PAGE_SIZE),
-          ],
-        )
-
-        const gameIds = response.documents.map((game) => game.game_id)
-        const uniqueGameIds = Array.from(new Set(gameIds)) // Ensure unique game IDs
-        const gameDetailsPromises = uniqueGameIds.map((gameId) =>
-          gameDetails({ id: gameId }),
-        )
-
-        const newGames = await Promise.all(gameDetailsPromises)
-        setGames(newGames) // Replace existing games with new ones
-        setHasMore(response.documents.length === PAGE_SIZE)
-        setLoading(false)
-      } catch (error) {
-        console.error("Error loading games:", error)
-        setLoading(false)
-      }
-    }
-
-    setLoading(true)
-    getGameIds(page)
-  }, [page, gameAdded])
+    setPage(1)
+  }, [gameAdded])
 
   const loadMoreGames = () => {
     setPage((prevPage) => prevPage + 1)
@@ -71,9 +43,9 @@ const Wish = () => {
                 onClick={loadPreviousGames}
                 className="bg-red-600 p-2 px-4 rounded hover:scale-105 transition-transform
                     duration-300 ease-in-out font-semibold text-gray-100"
-                disabled={loading}
+                disabled={isLoading}
               >
-                {loading ? "Loading..." : "Previous Page"}
+                {isLoading ? "Loading..." : "Previous Page"}
               </button>
             )}
             {hasMore && (
@@ -81,19 +53,24 @@ const Wish = () => {
                 onClick={loadMoreGames}
                 className="bg-red-600 p-2 px-4 rounded hover:scale-105 transition-transform
                     duration-300 ease-in-out font-semibold text-gray-100"
-                disabled={loading}
+                disabled={isLoading}
               >
-                {loading ? "Loading..." : "Load More"}
+                {isLoading ? "Loading..." : "Load More"}
               </button>
             )}
           </div>
         </>
-      ) : (
+      ) : !isLoading ? (
         <div className="text-white mt-10">No games found.</div>
-      )}
-      {loading && (
+      ) : null}
+      {isLoading && (
         <div className="flex justify-center items-center">
           <BeatLoader color="#ffa600" size={20} loading={true} />
+        </div>
+      )}
+      {error && (
+        <div className="mt-10 text-red-500">
+          Error loading games. Please try again.
         </div>
       )}
     </div>

@@ -1,6 +1,6 @@
 import Image from "next/image"
 import type { Game } from "@/gameTypes"
-import type { ScreenshotItem } from "@/rawg/gameScreenshots"
+import type { ScreenshotItem } from "@/lib/rawg-client"
 import imgPlace from "../../public/imgs/imgPlaceholder.jpg"
 
 type InfoProps = {

@@ -1,19 +1,20 @@
 "use client"
-import React, { useState, ChangeEvent, useEffect, useRef } from "react"
-import { Search } from "@/rawg/search"
-import { Game } from "@/gameTypes"
+
+import { ID, Query } from "appwrite"
+import Image from "next/image"
+import { type ChangeEvent, useEffect, useRef, useState } from "react"
+import { toast } from "react-hot-toast"
+import { FaStar } from "react-icons/fa"
+import type { Game } from "@/gameTypes"
+import { useGameSearch } from "@/hooks/use-games-extended"
+import placeholderImg from "@/public/imgs/imgPlaceholder.jpg"
 import {
   database,
   databaseId,
-  reviewCol,
   getSessionData,
+  reviewCol,
   userID,
 } from "@/utils/appwrite"
-import { ID, Query } from "appwrite"
-import { toast } from "react-hot-toast"
-import Image from "next/image"
-import placeholderImg from "@/public/imgs/imgPlaceholder.jpg" // Adjust the path if necessary
-import { FaStar } from "react-icons/fa"
 
 type ReviewFormProps = {
   collection: string
@@ -26,13 +27,14 @@ type ReviewFormProps = {
 
 const WriteReview = () => {
   const [searchTerm, setSearchTerm] = useState<string>("")
-  const [searchedGames, setSearchedGames] = useState<Game[]>([])
   const [selectedGame, setSelectedGame] = useState<Game | null>(null)
-  const [rating, setRating] = useState<number>(5) // Default rating set to 5
+  const [rating, setRating] = useState<number>(5)
   const [review, setReview] = useState<string>("")
   const [userName, setUserName] = useState<string>("")
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
   const searchTimeout = useRef<NodeJS.Timeout | null>(null)
 
+  // Fetch user name on mount
   useEffect(() => {
     const fetchUserName = async () => {
       try {
@@ -48,24 +50,20 @@ const WriteReview = () => {
     fetchUserName()
   }, [])
 
-  useEffect(() => {
-    const fetchGames = async (term: string) => {
-      if (term) {
-        const response = await Search({ term })
-        setSearchedGames(response.results)
-      }
-    }
+  // Use React Query for game search
+  const { data: searchResults } = useGameSearch(searchTerm)
+  const searchedGames = searchResults?.results ?? []
 
+  // Clear old timeout and set new one
+  useEffect(() => {
     if (searchTimeout.current) {
       clearTimeout(searchTimeout.current)
     }
 
     if (searchTerm.trim() !== "" && searchTerm.length > 2) {
       searchTimeout.current = setTimeout(() => {
-        fetchGames(searchTerm)
-      }, 300) // Adjust the delay duration as needed (e.g., 300ms)
-    } else {
-      setSearchedGames([])
+        // React Query handles the search via useGameSearch hook
+      }, 300)
     }
 
     return () => {
@@ -82,7 +80,6 @@ const WriteReview = () => {
   const handleGameSelect = (game: Game) => {
     setSelectedGame(game)
     setSearchTerm("")
-    setSearchedGames([])
   }
 
   const handleRatingChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -101,6 +98,8 @@ const WriteReview = () => {
       return
     }
 
+    setIsSubmitting(true)
+
     try {
       // Check if the user has already written a review for the selected game
       const existingReviews = await database.listDocuments(
@@ -114,6 +113,7 @@ const WriteReview = () => {
 
       if (existingReviews.total > 0) {
         toast.error("You have already written a review for this game.")
+        setIsSubmitting(false)
         return
       }
 
@@ -126,7 +126,7 @@ const WriteReview = () => {
         userName: userName,
       }
 
-      const createPromise = database.createDocument(
+      await database.createDocument(
         `${databaseId}`,
         `${reviewData.collection}`,
         ID.unique(),
@@ -140,15 +140,15 @@ const WriteReview = () => {
         },
       )
 
-      const response = await createPromise
-      console.log("Review submitted successfully:", response)
       toast.success("Review submitted successfully!")
       setSelectedGame(null)
-      setRating(5) // Reset rating to default value
+      setRating(5)
       setReview("")
+      setIsSubmitting(false)
     } catch (error) {
       console.error("Error submitting review:", error)
       toast.error("Error submitting review.")
+      setIsSubmitting(false)
     }
   }
 
@@ -239,9 +239,10 @@ const WriteReview = () => {
             </div>
             <button
               type="submit"
-              className="w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition duration-200 ease-in-out"
+              disabled={isSubmitting}
+              className="w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition duration-200 ease-in-out disabled:opacity-50"
             >
-              Submit Review
+              {isSubmitting ? "Submitting..." : "Submit Review"}
             </button>
           </form>
         )}

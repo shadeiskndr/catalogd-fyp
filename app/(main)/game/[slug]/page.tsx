@@ -9,9 +9,7 @@ import { BeatLoader } from "react-spinners"
 import Banner from "@/components/game/Banner"
 import Info from "@/components/game/Info"
 import ReviewCardSlug from "@/components/ReviewCardSlug"
-import type { Game } from "@/gameTypes"
-import { gameDetails, gameScreenshots } from "@/rawg"
-import type { Screenshot } from "@/rawg/gameScreenshots"
+import { useGameDetails, useGameScreenshots } from "@/hooks/use-games-extended"
 import { database, databaseId, reviewCol } from "@/utils/appwrite"
 
 interface Review {
@@ -25,25 +23,10 @@ interface Review {
 const GamePage = () => {
   const params = useParams()
   const slug = params.slug as string
-  const [game, setGame] = useState<Game | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [screenshots, setScreenshots] = useState<Screenshot | null>(null)
+  const { data: game, isLoading: loading } = useGameDetails(slug)
+  const { data: screenshots } = useGameScreenshots(slug)
   const [reviews, setReviews] = useState<Review[]>([])
   const [loadingReviews, setLoadingReviews] = useState(true)
-
-  //function for getting game details
-  useEffect(() => {
-    const getGame = async () => {
-      try {
-        setGame(await gameDetails({ slug: slug }))
-        setScreenshots(await gameScreenshots({ slug: slug }))
-        setLoading(false)
-      } catch (error) {
-        console.error("Error loading game:", error)
-      }
-    }
-    getGame()
-  }, [slug])
 
   //function for getting reviews
   useEffect(() => {
@@ -78,7 +61,7 @@ const GamePage = () => {
   return (
     <div>
       <div className="absolute inset-0 -z-50 opacity-20 blur-sm">
-        <Image src={game?.background_image!} alt="bg" fill />
+        <Image src={game?.background_image || ""} alt="bg" fill />
       </div>
       {game ? (
         <div>
@@ -91,7 +74,7 @@ const GamePage = () => {
             gameId={game.id}
           />
           {screenshots?.results ? (
-            <Info game={game} screenshots={screenshots?.results!} />
+            <Info game={game} screenshots={screenshots.results} />
           ) : (
             <BeatLoader
               className="flex mx-auto my-2"

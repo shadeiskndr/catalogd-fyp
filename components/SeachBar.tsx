@@ -5,63 +5,18 @@ import { useRouter } from "next/navigation"
 
 import type React from "react"
 import { type ChangeEvent, useEffect, useRef, useState } from "react"
-import type { Game } from "@/gameTypes"
-import { Search } from "@/rawg/search"
+import { useGameSearch } from "@/hooks/use-games-extended"
 import placeholderImg from "../public/imgs/imgPlaceholder.jpg"
 
 const SeachBar = () => {
   const [searchTerm, setSearchTerm] = useState<string>("")
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false)
-  const [searchedGames, setSearchedGames] = useState<Game[] | null>(null)
   const router = useRouter()
   const searchRef = useRef<HTMLDivElement | null>(null)
 
-  //function to search games
-  useEffect(() => {
-    let searchTimeout: NodeJS.Timeout | null = null
-
-    const getSearchedGame = async (searchTerm: string) => {
-      const response = await Search({ term: searchTerm })
-      const { results } = response
-      return results
-    }
-
-    const delayedSearch = async (searchTerm: string) => {
-      try {
-        setSearchedGames(await getSearchedGame(searchTerm))
-      } catch (error) {
-        console.error("Error loading games:", error)
-      }
-    }
-
-    const handleSearch = (searchTerm: string) => {
-      if (searchTimeout) {
-        clearTimeout(searchTimeout)
-      }
-
-      // Only trigger the delayed search if the search term is valid
-      if (searchTerm.trim() !== "" && searchTerm.length > 2) {
-        searchTimeout = setTimeout(() => {
-          delayedSearch(searchTerm)
-          searchTimeout = null
-        }, 300) // Adjust the delay duration as needed (e.g., 500ms)
-      }
-    }
-
-    // Define a separate function to handle the search term change
-    const handleSearchTermChange = (newSearchTerm: string) => {
-      handleSearch(newSearchTerm)
-    }
-
-    // Call the handleSearchTermChange function when the search term changes
-    handleSearchTermChange(searchTerm)
-
-    return () => {
-      if (searchTimeout) {
-        clearTimeout(searchTimeout)
-      }
-    }
-  }, [searchTerm])
+  // Use React Query hook for search - it handles debouncing via enabled condition
+  const { data: searchData } = useGameSearch(searchTerm)
+  const searchedGames = searchData?.results || null
 
   const keyboardCloseHandler = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Escape") {

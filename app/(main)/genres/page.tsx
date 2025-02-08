@@ -1,49 +1,35 @@
 "use client"
 import GenreCards from "@/components/genres/GenreCards"
-
-import { GameDataType, genreList } from "@/rawg/genreList"
-import React, { useEffect, useState } from "react"
+import { useGenreList } from "@/hooks/use-games-extended"
 import { BeatLoader } from "react-spinners"
 
 const Genre = () => {
-  const [genre, setGenre] = useState<GameDataType[] | null>(null)
-  const loadGenre = async () => {
-    const response = await genreList()
-    let { results } = response
-    return results || []
-  }
+  const { data: genreData, isLoading } = useGenreList()
+  const genres = genreData?.results || []
 
-  useEffect(() => {
-    ;(async () => {
-      try {
-        const newGenre = await loadGenre()
-        setGenre(newGenre || [])
-      } catch (error) {
-        console.error("Error loading genres:", error)
-      }
-    })()
-  }, [])
   return (
     <div className="relative space-y-8">
       <h1 className="text-3xl font-bold">Genres</h1>
-      {genre ? (
+      {isLoading ? (
+        <div className="flex justify-center items-center">
+          <BeatLoader color="#ffa600" size={20} loading={true} />
+        </div>
+      ) : genres.length > 0 ? (
         <div
           className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4
           gap-2 md:gap-4 place-items-center"
         >
-          {genre?.map((genres) => (
+          {genres.map((genre) => (
             <GenreCards
-              key={genres?.id!}
-              name={genres?.name!}
-              image={genres?.image_background!}
-              listSlug={genres?.slug!}
+              key={genre.id}
+              name={genre.name}
+              image={genre.image_background}
+              listSlug={genre.slug}
             />
           ))}
         </div>
       ) : (
-        <div className="flex justify-center items-center">
-          <BeatLoader color="#ffa600" size={20} loading={true} />
-        </div>
+        <p>No genres found</p>
       )}
     </div>
   )

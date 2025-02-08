@@ -1,9 +1,10 @@
 "use client"
 import { PlusCircleIcon } from "@heroicons/react/24/outline"
 import { HeartIcon, MinusCircleIcon } from "@heroicons/react/24/solid"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { ID, Query } from "appwrite"
-import { useContext, useEffect, useState } from "react"
 import { toast } from "react-hot-toast"
+import { useGameStore } from "@/lib/stores/game-store"
 import {
   database,
   databaseId,
@@ -11,10 +12,6 @@ import {
   userID,
   wishlistCol,
 } from "@/utils/appwrite"
-import {
-  GameAddedContext,
-  type GameAddedContextType,
-} from "@/utils/GameAddedContext"
 
 type AddButtonProps = {
   collection: string
@@ -23,128 +20,77 @@ type AddButtonProps = {
 }
 
 const AddButton = ({ collection, gameId, gameName }: AddButtonProps) => {
-  const [gamePresent, setGamePresent] = useState<boolean>(false)
-  const { gameAdded, setGameAdded } =
-    useContext<GameAddedContextType>(GameAddedContext)
-  const [documentId, setDocumentId] = useState<string>("")
+  const { setGameAdded } = useGameStore()
+  const queryClient = useQueryClient()
 
-  useEffect(() => {
-    const checkGame = () => {
-      if (collection === "mylib") {
-        const searchPromise = database.listDocuments(
-          `${databaseId}`,
-          `${mylibCol}`,
-          [Query.equal("user_id", userID), Query.equal("game_id", gameId)],
-        )
-        searchPromise.then((response) => {
-          if (response.documents.length === 0) {
-            setGamePresent(false)
-          } else {
-            setGamePresent(true)
-            setGameAdded(true)
-            setDocumentId(response.documents[0].$id)
-          }
-        })
-      } else if (collection === "wishlist") {
-        const searchPromise = database.listDocuments(
-          `${databaseId}`,
-          `${wishlistCol}`,
-          [Query.equal("user_id", userID), Query.equal("game_id", gameId)],
-        )
-        searchPromise.then((response) => {
-          if (response.documents.length === 0) {
-            setGamePresent(false)
-          } else {
-            setGamePresent(true)
-            setGameAdded(true)
-            setDocumentId(response.documents[0].$id)
-          }
-        })
+  const collectionId = collection === "mylib" ? mylibCol : wishlistCol
+  const queryKey = ["gameStatus", collection, gameId]
+
+  // Check if game exists in collection
+  const { data: gameData } = useQuery({
+    queryKey,
+    queryFn: async () => {
+      const result = await database.listDocuments(databaseId, collectionId, [
+        Query.equal("user_id", userID),
+        Query.equal("game_id", gameId),
+      ])
+      return {
+        exists: result.documents.length > 0,
+        documentId: result.documents[0]?.$id || "",
       }
-    }
-    checkGame()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [collection, gameId, gameName, gameAdded])
+    },
+    enabled: !!gameId && !!userID,
+  })
 
-  const addToCollection = () => {
-    if (collection === "mylib") {
-      const createPromise = database.createDocument(
-        `${databaseId}`,
-        `${mylibCol}`,
-        ID.unique(),
-        {
-          user_id: userID,
-          game_id: gameId,
-          game_name: gameName,
-        },
-      )
-      createPromise.then(
-        (response) => {
-          toast.success("Added to Library!")
-          setGamePresent(true)
-          setGameAdded(true)
-        },
-        (error) => {
-          console.log(error)
-        },
-      )
-    } else if (collection === "wishlist") {
-      const createPromise = database.createDocument(
-        `${databaseId}`,
-        `${wishlistCol}`,
-        ID.unique(),
-        {
-          user_id: userID,
-          game_id: gameId,
-          game_name: gameName,
-        },
-      )
-      createPromise.then(
-        (response) => {
-          toast.success("Added to Wishlist!")
-          setGamePresent(true)
-          setGameAdded(true)
-        },
-        (error) => {
-          console.log(error)
-        },
-      )
-    }
-  }
+  const gamePresent = gameData?.exists ?? false
+  const documentId = gameData?.documentId ?? ""
 
-  const removeFromCollection = () => {
-    if (collection === "mylib") {
-      const deletePromise = database.deleteDocument(
-        `${databaseId}`,
-        `${mylibCol}`,
-        `${documentId}`,
-      )
-      deletePromise.then(
-        (response) => {
-          toast.success("Removed from Library!")
-          setGameAdded(false)
-        },
-        (error) => {
-          console.log(error)
-        },
-      )
-    } else if (collection === "wishlist") {
-      const deletePromise = database.deleteDocument(
-        `${databaseId}`,
-        `${wishlistCol}`,
-        `${documentId}`,
-      )
-      deletePromise.then(
-        (response) => {
-          toast.success("Removed from Wishlist!")
-          setGameAdded(false)
-        },
-        (error) => {
-          console.log(error)
-        },
-      )
-    }
-  }
+  // Add to collection mutation
+  const addMutation = useMutation({
+    mutationFn: async () => {
+      await database.createDocument(databaseId, collectionId, ID.unique(), {
+        user_id: userID,
+        game_id: gameId,
+        game_name: gameName,
+      })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey })
+      setGameAdded(true)
+      const message =
+        collection === "mylib" ? "Added to Library!" : "Added to Wishlist!"
+      toast.success(message)
+    },
+    onError: (error) => {
+      console.log(error)
+      toast.error("Failed to add game")
+    },
+  })
+
+  // Remove from collection mutation
+  const removeMutation = useMutation({
+    mutationFn: async () => {
+      await database.deleteDocument(databaseId, collectionId, documentId)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey })
+      setGameAdded(false)
+      const message =
+        collection === "mylib"
+          ? "Removed from Library!"
+          : "Removed from Wishlist!"
+      toast.success(message)
+    },
+    onError: (error) => {
+      console.log(error)
+      toast.error("Failed to remove game")
+    },
+  })
+
+  const addToCollection = () => addMutation.mutate()
+  const removeFromCollection = () => removeMutation.mutate()
+
+  const isLoading = addMutation.isPending || removeMutation.isPending
 
   return (
     <div>
@@ -154,6 +100,7 @@ const AddButton = ({ collection, gameId, gameName }: AddButtonProps) => {
             className="h-6 w-6 text-red-500 cursor-pointer
             hover:scale-110 transition-transform duration-300 ease-in-out"
             onClick={removeFromCollection}
+            aria-disabled={isLoading}
           />
         ) : (
           <div className="flex space-x-2 font-semibold justify-between">
@@ -162,6 +109,7 @@ const AddButton = ({ collection, gameId, gameName }: AddButtonProps) => {
               hover:scale-110
               transition-transform duration-300 ease-in-out"
               onClick={addToCollection}
+              aria-disabled={isLoading}
             />
           </div>
         )
@@ -171,6 +119,7 @@ const AddButton = ({ collection, gameId, gameName }: AddButtonProps) => {
             className="h-6 w-6 text-red-500  cursor-pointer
             hover:scale-110 transition-transform duration-300 ease-in-out"
             onClick={removeFromCollection}
+            aria-disabled={isLoading}
           />
         ) : (
           <div
@@ -182,6 +131,7 @@ const AddButton = ({ collection, gameId, gameName }: AddButtonProps) => {
               className="h-6 w-6 cursor-pointer hover:scale-110
               transition-transform duration-300 ease-in-out"
               onClick={addToCollection}
+              aria-disabled={isLoading}
             />
           </div>
         )

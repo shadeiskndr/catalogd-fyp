@@ -2,6 +2,7 @@ import "./globals.css"
 import { Toaster } from "react-hot-toast"
 import { Providers } from "@/lib/theme-provider"
 import { ColorThemeProvider } from "@/lib/color-provider"
+import { QueryProvider } from "@/lib/query-provider"
 
 export const metadata = {
   title: "Catalogd",
@@ -17,7 +18,9 @@ export default async function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body>
         <Providers>
-          <ColorThemeProvider>{children}</ColorThemeProvider>
+          <ColorThemeProvider>
+            <QueryProvider>{children}</QueryProvider>
+          </ColorThemeProvider>
         </Providers>
         <Toaster />
       </body>

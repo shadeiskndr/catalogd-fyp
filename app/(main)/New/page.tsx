@@ -1,80 +1,53 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 "use client"
 import Grid from "@/components/Grid"
-import { Game } from "@/gameTypes"
-import { gameList } from "@/rawg"
-import React, { useEffect, useState } from "react"
+import { useNewReleases } from "@/hooks/use-games"
+import { useState } from "react"
 import { BeatLoader } from "react-spinners"
-//new releases page
-interface loadGamesOptions {
-  pageNo: number
-}
 
 const NewR = () => {
-  const [games, setGames] = useState<Game[] | null>(null)
-  const [loading, setLoading] = useState(false)
   const [pageNo, setPageNo] = useState<number>(1)
-  const [hasNextPage, setHasNextPage] = useState(true)
+  const {
+    data: games,
+    isLoading: loading,
+    isFetching,
+  } = useNewReleases(pageNo, 20)
+  const hasNextPage = (games?.length || 0) >= 20
 
-  const loadGames = async ({ pageNo }: loadGamesOptions) => {
-    setLoading(true)
-
-    const response = await gameList({
-      pageIndex: 1,
-      page: pageNo,
-      ordering: "-released",
-      pageSize: 20,
-    })
-    let { results } = response
-    return results || []
-  }
-
-  const handleFetchNextPage = async () => {
+  const handleFetchNextPage = () => {
     setPageNo(pageNo + 1)
   }
-
-  useEffect(() => {
-    ;(async () => {
-      try {
-        const newGames = await loadGames({ pageNo })
-        setGames(games ? [...games, ...newGames] : newGames || [])
-        setLoading(false)
-        if (newGames?.length === 0) {
-          setHasNextPage(false)
-        }
-      } catch (error) {
-        console.error("Error loading games:", error)
-      }
-    })()
-  }, [pageNo])
 
   return (
     <div className="space-y-4">
       <h1 className="text-3xl font-bold">New and Upcoming</h1>
       <div className="flex flex-col justify-center items-center">
-        {games ? (
-          games?.length > 9 ? (
-            <div className="pb-4">
-              <Grid games={games} />
-              {hasNextPage && (
-                <div className="flex flex-col my-4 justify-center items-center">
-                  <button
-                    className="bg-red-600 p-2 px-4 rounded hover:scale-105 transition-transform
-                    duration-300 ease-in-out font-semibold text-gray-100"
-                    onClick={handleFetchNextPage}
-                  >
-                    {loading ? <span>Loading...</span> : <span>Load More</span>}
-                  </button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <span className="font-semibold">No games found.</span>
-          )
-        ) : (
+        {loading && pageNo === 1 ? (
           <div>
-            <BeatLoader color="#ffa600" size={20} loading={loading} />
+            <BeatLoader color="#ffa600" size={20} loading={true} />
           </div>
+        ) : games && games.length > 0 ? (
+          <div className="pb-4">
+            <Grid games={games} />
+            {hasNextPage && (
+              <div className="flex flex-col my-4 justify-center items-center">
+                <button
+                  type="button"
+                  className="bg-red-600 p-2 px-4 rounded hover:scale-105 transition-transform
+                  duration-300 ease-in-out font-semibold text-gray-100"
+                  onClick={handleFetchNextPage}
+                  disabled={isFetching}
+                >
+                  {isFetching ? (
+                    <span>Loading...</span>
+                  ) : (
+                    <span>Load More</span>
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <span className="font-semibold">No games found.</span>
         )}
       </div>
     </div>
