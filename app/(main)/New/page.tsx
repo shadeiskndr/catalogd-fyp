@@ -1,8 +1,9 @@
 "use client"
-import Grid from "@/components/Grid"
-import { useNewReleases } from "@/hooks/use-games"
 import { useState } from "react"
 import { BeatLoader } from "react-spinners"
+import Grid from "@/components/Grid"
+import LoadMore from "@/components/load-more"
+import { useNewReleases } from "@/hooks/use-games"
 
 const NewR = () => {
   const [pageNo, setPageNo] = useState<number>(1)
@@ -28,23 +29,13 @@ const NewR = () => {
         ) : games && games.length > 0 ? (
           <div className="pb-4">
             <Grid games={games} />
-            {hasNextPage && (
-              <div className="flex flex-col my-4 justify-center items-center">
-                <button
-                  type="button"
-                  className="bg-red-600 p-2 px-4 rounded hover:scale-105 transition-transform
-                  duration-300 ease-in-out font-semibold text-gray-100"
-                  onClick={handleFetchNextPage}
-                  disabled={isFetching}
-                >
-                  {isFetching ? (
-                    <span>Loading...</span>
-                  ) : (
-                    <span>Load More</span>
-                  )}
-                </button>
-              </div>
-            )}
+            <div className="flex flex-col my-4 justify-center items-center">
+              <LoadMore
+                hasMore={hasNextPage}
+                isLoading={isFetching}
+                onLoadMore={handleFetchNextPage}
+              />
+            </div>
           </div>
         ) : (
           <span className="font-semibold">No games found.</span>

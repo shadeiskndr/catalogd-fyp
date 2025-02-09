@@ -4,6 +4,12 @@ import { HeartIcon, MinusCircleIcon } from "@heroicons/react/24/solid"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { ID, Query } from "appwrite"
 import { toast } from "react-hot-toast"
+import { Button } from "@/components/ui/button"
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip"
 import { useGameStore } from "@/lib/stores/game-store"
 import {
   database,
@@ -96,44 +102,68 @@ const AddButton = ({ collection, gameId, gameName }: AddButtonProps) => {
     <div>
       {collection === "mylib" ? (
         gamePresent ? (
-          <MinusCircleIcon
-            className="h-6 w-6 text-red-500 cursor-pointer
-            hover:scale-110 transition-transform duration-300 ease-in-out"
-            onClick={removeFromCollection}
-            aria-disabled={isLoading}
-          />
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="icon-sm"
+                variant="ghost"
+                onClick={removeFromCollection}
+                disabled={isLoading}
+                className="text-red-500 hover:text-red-600"
+              >
+                <MinusCircleIcon className="size-5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Remove from Library</TooltipContent>
+          </Tooltip>
         ) : (
-          <div className="flex space-x-2 font-semibold justify-between">
-            <PlusCircleIcon
-              className="h-6 w-6 text-green-500 cursor-pointer
-              hover:scale-110
-              transition-transform duration-300 ease-in-out"
-              onClick={addToCollection}
-              aria-disabled={isLoading}
-            />
-          </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="icon-sm"
+                variant="ghost"
+                onClick={addToCollection}
+                disabled={isLoading}
+                className="text-green-500 hover:text-green-600"
+              >
+                <PlusCircleIcon className="size-5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Add to Library</TooltipContent>
+          </Tooltip>
         )
       ) : collection === "wishlist" ? (
         gamePresent ? (
-          <HeartIcon
-            className="h-6 w-6 text-red-500  cursor-pointer
-            hover:scale-110 transition-transform duration-300 ease-in-out"
-            onClick={removeFromCollection}
-            aria-disabled={isLoading}
-          />
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="icon-sm"
+                variant="ghost"
+                onClick={removeFromCollection}
+                disabled={isLoading}
+                className="text-red-500 hover:text-red-600"
+              >
+                <HeartIcon className="size-5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Remove from Wishlist</TooltipContent>
+          </Tooltip>
         ) : (
-          <div
-            className="flex space-x-2 font-semibold justify-between
-          hover:text-red-500 transition-colors duration-300 ease-in-out"
-            aria-label="Add to Wishlist"
-          >
-            <HeartIcon
-              className="h-6 w-6 cursor-pointer hover:scale-110
-              transition-transform duration-300 ease-in-out"
-              onClick={addToCollection}
-              aria-disabled={isLoading}
-            />
-          </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="icon-sm"
+                variant="ghost"
+                onClick={addToCollection}
+                disabled={isLoading}
+                className="text-gray-400 hover:text-red-500"
+                aria-label="Add to Wishlist"
+              >
+                <HeartIcon className="size-5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Add to Wishlist</TooltipContent>
+          </Tooltip>
         )
       ) : null}
     </div>

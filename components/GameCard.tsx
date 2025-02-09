@@ -46,15 +46,27 @@ const GameCard = ({ game }: GameCardProps) => {
             "https://via.placeholder.com/800x400?text=Placeholder+Image"
           }
         />
-        <CardFooter className="flex flex-col gap-4 py-4 px-4 bg-linear-to-t from-primary/50 to-transparent">
-          <div className="flex justify-between w-full gap-2">
-            <AddButton collection="mylib" gameId={id} gameName={name} />
-            <AddButton collection="wishlist" gameId={id} gameName={name} />
-          </div>
-          <div className="space-y-1 w-full">
+        <CardFooter className="flex flex-row justify-between items-start gap-4 py-4 px-4 bg-linear-to-t from-primary/50 to-transparent">
+          <div className="space-y-1 flex-1 min-w-0">
             <h3 className="font-extrabold text-sm line-clamp-2">{name}</h3>
             <p className="text-xs text-muted-foreground">{releasedDate}</p>
             <p className="text-xs text-muted-foreground">{genreList}</p>
+          </div>
+          <div className="flex flex-col gap-2">
+            <button
+              type="button"
+              onClick={(e) => e.stopPropagation()}
+              className="hover:opacity-80 transition-opacity"
+            >
+              <AddButton collection="mylib" gameId={id} gameName={name} />
+            </button>
+            <button
+              type="button"
+              onClick={(e) => e.stopPropagation()}
+              className="hover:opacity-80 transition-opacity"
+            >
+              <AddButton collection="wishlist" gameId={id} gameName={name} />
+            </button>
           </div>
         </CardFooter>
       </CardContent>
