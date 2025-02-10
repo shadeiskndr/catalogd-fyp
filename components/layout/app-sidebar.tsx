@@ -14,8 +14,8 @@ import {
   Sparkles,
 } from "lucide-react"
 import type * as React from "react"
+import { NavHeader } from "@/components/layout/nav-header"
 import { NavMain } from "@/components/layout/nav-main"
-import { TeamSwitcher } from "@/components/layout/team-switcher"
 import { Button } from "@/components/ui/button"
 import {
   HoverCard,
@@ -26,7 +26,6 @@ import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarHeader,
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar"
@@ -125,19 +124,12 @@ function AppSidebarFooter() {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { state } = useSidebar()
+  const isCollapsed = state === "collapsed"
+
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader>
-        <TeamSwitcher
-          teams={[
-            {
-              name: "Catalogd",
-              logo: Gamepad2,
-              plan: "Game Catalog",
-            },
-          ]}
-        />
-      </SidebarHeader>
+      <NavHeader items={data.navMain} isCollapsed={isCollapsed} />
       <SidebarContent>
         <NavMain items={data.navMain} />
       </SidebarContent>

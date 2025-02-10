@@ -19,28 +19,26 @@ const Mpop = () => {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 py-4 px-2">
       <h1 className="text-3xl font-bold">Most Popular</h1>
-      <div className="flex flex-col justify-center items-center">
-        {loading && pageNo === 1 ? (
-          <div>
-            <BeatLoader color="#ffa600" size={20} loading={true} />
+      {loading && pageNo === 1 ? (
+        <div>
+          <BeatLoader color="#ffa600" size={20} loading={true} />
+        </div>
+      ) : games && games.length > 0 ? (
+        <div className="pb-4">
+          <Grid games={games} />
+          <div className="flex flex-col my-4 justify-center items-center">
+            <LoadMore
+              hasMore={hasNextPage}
+              isLoading={isFetching}
+              onLoadMore={handleFetchNextPage}
+            />
           </div>
-        ) : games && games.length > 0 ? (
-          <div className="pb-4">
-            <Grid games={games} />
-            <div className="flex flex-col my-4 justify-center items-center">
-              <LoadMore
-                hasMore={hasNextPage}
-                isLoading={isFetching}
-                onLoadMore={handleFetchNextPage}
-              />
-            </div>
-          </div>
-        ) : (
-          <span className="font-semibold">No games found.</span>
-        )}
-      </div>
+        </div>
+      ) : (
+        <span className="font-semibold">No games found.</span>
+      )}
     </div>
   )
 }

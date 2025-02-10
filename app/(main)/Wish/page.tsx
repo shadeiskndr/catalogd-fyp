@@ -33,7 +33,7 @@ const Wish = () => {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 py-4 px-2">
       <h1 className="font-extrabold text-3xl">Wishlist</h1>
       {games.length ? (
         <>

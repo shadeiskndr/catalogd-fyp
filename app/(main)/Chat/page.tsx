@@ -1,92 +1,60 @@
-"use client" // Add this line at the top
+"use client"
 
-import { PaperAirplaneIcon, TrashIcon } from "@heroicons/react/24/solid"
-import { ID, Query } from "appwrite"
+import { TrashIcon } from "@heroicons/react/24/solid"
+import { useQueryClient } from "@tanstack/react-query"
+import { ID } from "appwrite"
 import type React from "react"
 import { useEffect, useState } from "react"
 import { toast } from "react-hot-toast"
 import { BeatLoader } from "react-spinners"
+import { Button } from "@/components/ui/button"
 import {
-  database,
-  databaseId,
-  getSessionData,
-  messagesCol,
-  userID,
-} from "@/utils/appwrite"
-
-interface Message {
-  id: string
-  user_id: string
-  user_name: string
-  message: string
-  created_at: string
-}
+  Conversation,
+  ConversationContent,
+  ConversationScrollButton,
+} from "@/components/ui/shadcn-io/conversation"
+import { Message, MessageContent } from "@/components/ui/shadcn-io/message"
+import {
+  PromptInput,
+  PromptInputSubmit,
+  PromptInputTextarea,
+  PromptInputToolbar,
+} from "@/components/ui/shadcn-io/prompt-input"
+import { type ChatMessage, useMessages } from "@/hooks/use-messages"
+import { useSession } from "@/hooks/use-session"
+import { database, databaseId, messagesCol } from "@/utils/appwrite"
 
 const ChatRoom = () => {
-  const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState<string>("")
-  const [userName, setUserName] = useState<string>("")
-  const [loading, setLoading] = useState<boolean>(true)
-  const [currentUserId, setCurrentUserId] = useState<string>("")
+  const queryClient = useQueryClient()
 
+  const { data: session } = useSession()
+  const { data: messages = [], isLoading, refetch } = useMessages()
+
+  const currentUserId = session?.$id ?? ""
+  const userName = session?.name ?? ""
+
+  // Handle visibility changes to control polling
   useEffect(() => {
-    const fetchUserName = async () => {
-      try {
-        const sessionData = await getSessionData()
-        if (sessionData && sessionData.name) {
-          setUserName(sessionData.name)
-          setCurrentUserId(sessionData.$id) // Set the current user ID
-        }
-      } catch (error) {
-        console.error("Error fetching user name:", error)
-      }
-    }
-
-    fetchUserName()
-  }, [])
-
-  const fetchMessages = async () => {
-    setLoading(true)
-    try {
-      const response = await database.listDocuments(databaseId, messagesCol, [
-        Query.orderDesc("$createdAt"),
-      ])
-      const fetchedMessages = response.documents.map((doc: any) => ({
-        id: doc.$id,
-        user_id: doc.user_id,
-        user_name: doc.user_name,
-        message: doc.message,
-        created_at: doc.$createdAt,
-      }))
-      setMessages(fetchedMessages)
-    } catch (error) {
-      console.error("Error fetching messages:", error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchMessages()
-
-    const intervalId = setInterval(fetchMessages, 15000) // Fetch messages every 15 seconds
-
     const handleVisibilityChange = () => {
       if (document.hidden) {
-        clearInterval(intervalId)
+        // Pause polling
+        queryClient.setQueryData(
+          ["messages", "list"],
+          queryClient.getQueryData(["messages", "list"]),
+        )
       } else {
-        fetchMessages()
-        setInterval(fetchMessages, 15000) // Resume fetching messages every 15 seconds
+        // Resume polling
+        refetch()
       }
     }
 
     document.addEventListener("visibilitychange", handleVisibilityChange)
 
     return () => {
-      clearInterval(intervalId)
       document.removeEventListener("visibilitychange", handleVisibilityChange)
     }
-  }, [])
+  }, [queryClient, refetch])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -98,7 +66,7 @@ const ChatRoom = () => {
 
     try {
       const messageData = {
-        user_id: userID,
+        user_id: currentUserId,
         user_name: userName,
         message: newMessage,
       }
@@ -110,10 +78,15 @@ const ChatRoom = () => {
         messageData,
       )
 
-      setMessages([
-        { ...messageData, id: response.$id, created_at: response.$createdAt },
-        ...messages,
-      ])
+      // Optimistically update cache
+      queryClient.setQueryData(
+        ["messages", "list"],
+        (old: ChatMessage[] = []) => [
+          ...old,
+          { ...messageData, id: response.$id, created_at: response.$createdAt },
+        ],
+      )
+
       setNewMessage("")
       toast.success("Message sent successfully!")
     } catch (error) {
@@ -125,7 +98,14 @@ const ChatRoom = () => {
   const handleDelete = async (messageId: string) => {
     try {
       await database.deleteDocument(databaseId, messagesCol, messageId)
-      setMessages(messages.filter((message) => message.id !== messageId))
+
+      // Optimistically update cache
+      queryClient.setQueryData(
+        ["messages", "list"],
+        (old: ChatMessage[] = []) =>
+          old.filter((message) => message.id !== messageId),
+      )
+
       toast.success("Message deleted successfully!")
     } catch (error) {
       console.error("Error deleting message:", error)
@@ -134,75 +114,74 @@ const ChatRoom = () => {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pt-4 px-2">
       <h1 className="text-3xl font-bold">Chat Room</h1>
-      <div className="w-full bg-gray-800 p-6 rounded-lg shadow-lg mx-auto mt-10 max-w-screen-lg">
-        <h1 className="text-2xl font-bold mb-4 text-center text-white">
-          Real-time Public Chat Room
-        </h1>
-        <div className="flex flex-col-reverse space-y-4 mb-4 h-[45rem] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent">
-          {/*loading component*/}
-          {loading && (
-            <div className="flex justify-center items-center">
-              <BeatLoader color="#ffa600" size={10} loading={true} />
-            </div>
-          )}
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`bg-transparent p-4 rounded-md flex justify-between items-center ${
-                message.user_id == currentUserId ? "ml-auto" : "mr-auto"
-              }`}
-            >
-              {/*trash button*/}
-              {message.user_id === currentUserId && (
-                <button
-                  onClick={() => handleDelete(message.id)}
-                  className="text-red-500 hover:text-red-700 mr-2"
-                >
-                  <TrashIcon className="h-5 w-5" />
-                </button>
-              )}
-
-              {/*message div name, body, date*/}
-              <div
-                className={`${message.user_id == currentUserId ? "text-right" : ""}`}
-              >
-                <h2 className="text-lg font-semibold text-white">
-                  {message.user_name}
-                </h2>
-                <div
-                  className={`p-2 rounded-lg max-w-md ${message.user_id === userID ? "bg-red-900 text-white" : "bg-purple-900 text-white"}`}
-                >
-                  <p className="text-left">{message.message}</p>
-                </div>
-                <p className="text-sm">
-                  {new Date(message.created_at).toLocaleString()}
-                </p>
+      <div className="w-full rounded-lg shadow-lg mx-auto max-w-5xl border flex flex-col h-230">
+        <Conversation className="flex-1">
+          <ConversationContent>
+            {isLoading && messages.length === 0 ? (
+              <div className="flex justify-center items-center h-full">
+                <BeatLoader />
               </div>
-            </div>
-          ))}
+            ) : messages.length === 0 ? (
+              <div className="flex justify-center items-center h-full">
+                No messages yet. Start a conversation!
+              </div>
+            ) : (
+              messages.map((message) => (
+                <Message
+                  key={message.id}
+                  from={
+                    message.user_id === currentUserId ? "user" : "assistant"
+                  }
+                  className="group"
+                >
+                  <div className="flex flex-col gap-1">
+                    <MessageContent>
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1">
+                          <p className="text-xs font-semibold mb-1">
+                            {message.user_name}
+                          </p>
+                          <p className="wrap-break-word">{message.message}</p>
+                        </div>
+                        {message.user_id === currentUserId && (
+                          <Button
+                            onClick={() => handleDelete(message.id)}
+                            variant="ghost"
+                            size="icon-sm"
+                            className="opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <TrashIcon className="size-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </MessageContent>
+                    <p className="text-xs px-4">
+                      {new Date(message.created_at).toLocaleString()}
+                    </p>
+                  </div>
+                </Message>
+              ))
+            )}
+          </ConversationContent>
+          <ConversationScrollButton />
+        </Conversation>
+
+        <div className="border-t p-4">
+          <PromptInput onSubmit={handleSubmit}>
+            <PromptInputTextarea
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              placeholder="Write your message..."
+              maxLength={300}
+            />
+            <PromptInputToolbar>
+              <div></div>
+              <PromptInputSubmit title="Send Message" />
+            </PromptInputToolbar>
+          </PromptInput>
         </div>
-        <form
-          onSubmit={handleSubmit}
-          className="bg-gray-700 p-4 rounded-md flex items-center space-x-4"
-        >
-          <textarea
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Write your message..."
-            className="w-full p-2 bg-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-red-600"
-            rows={1}
-            maxLength={300} // Limit to 350 characters
-          />
-          <button
-            type="submit"
-            title="Send Message"
-            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition duration-200 ease-in-out flex items-center justify-center"
-          >
-            <PaperAirplaneIcon className="h-5 w-5" />
-          </button>
-        </form>
       </div>
     </div>
   )

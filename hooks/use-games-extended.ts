@@ -34,6 +34,22 @@ export const queryKeys = {
   },
 }
 
+// Hook for getting game slug by name
+export function useGameByName(gameName: string) {
+  return useQuery({
+    queryKey: queryKeys.games.search(gameName),
+    queryFn: async () => {
+      const response = await rawgFetch(
+        `games?search=${gameName}&search_exact=true`,
+      )
+      const data = (await response.json()) as ResponseSchema<Game>
+      return data.results[0]?.slug || null
+    },
+    enabled: gameName.length > 0,
+    staleTime: 30 * 60 * 1000, // 30 minutes
+  })
+}
+
 // Hook for game details page
 export function useGameDetails(slug: string) {
   return useQuery({

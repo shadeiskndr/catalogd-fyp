@@ -2,6 +2,7 @@ import Image from "next/image"
 import type { Game } from "@/gameTypes"
 import type { ScreenshotItem } from "@/lib/rawg-client"
 import imgPlace from "../../public/imgs/imgPlaceholder.jpg"
+import { Badge } from "@/components/ui/badge"
 
 type InfoProps = {
   game: Game
@@ -25,39 +26,39 @@ const Info = ({ game, screenshots }: InfoProps) => {
         </article>
 
         {/*Details*/}
-        <div className=" p-6 space-y-4 lg:max-w-md backdrop-blur-sm">
+        <div className="p-6 space-y-4 lg:max-w-md backdrop-blur-sm">
           <div>
-            <h1 className="text-md md:text-lg lg:text-xl font-semibold">
+            <h1 className="text-md md:text-lg lg:text-xl font-semibold p-1">
               Platforms
             </h1>
-            <ul className="flex flex-wrap">
+            <ul className="flex flex-wrap gap-2">
               {platforms?.map((platform, index) => (
-                <li key={index} className="px-2 py-1 rounded-md mr-2 mt-2">
-                  {platform.platform.name}
+                <li key={index}>
+                  <Badge variant="secondary">{platform.platform.name}</Badge>
                 </li>
               ))}
             </ul>
           </div>
           <div>
-            <h1 className="text-md md:text-lg lg:text-xl font-semibold">
+            <h1 className="text-md md:text-lg lg:text-xl font-semibold p-1">
               Developers
             </h1>
-            <ul className="flex flex-wrap">
+            <ul className="flex flex-wrap gap-2">
               {developers?.map((developer, index) => (
-                <li key={index} className="px-2 py-1 rounded-md mr-2 mt-2">
-                  {developer.name}
+                <li key={index}>
+                  <Badge variant="secondary">{developer.name}</Badge>
                 </li>
               ))}
             </ul>
           </div>
           <div>
-            <h1 className="text-md md:text-lg lg:text-xl font-semibold">
+            <h1 className="text-md md:text-lg lg:text-xl font-semibold p-1">
               Publishers
             </h1>
-            <ul className="flex flex-wrap">
+            <ul className="flex flex-wrap gap-2">
               {publishers?.map((publisher, index) => (
-                <li key={index} className="px-2 py-1 rounded-md mr-2 mt-2">
-                  {publisher.name}
+                <li key={index}>
+                  <Badge variant="secondary">{publisher.name}</Badge>
                 </li>
               ))}
             </ul>

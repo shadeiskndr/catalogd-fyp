@@ -1,11 +1,37 @@
 "use client"
 
 import { ID, Query } from "appwrite"
+import { Loader2, Search } from "lucide-react"
 import Image from "next/image"
-import { type ChangeEvent, useEffect, useRef, useState } from "react"
+import { type ChangeEvent, useEffect, useState } from "react"
 import { toast } from "react-hot-toast"
 import { FaStar } from "react-icons/fa"
+import { Button } from "@/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command"
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+  InputGroupTextarea,
+} from "@/components/ui/input-group"
+import { Label } from "@/components/ui/label"
+import { Slider } from "@/components/ui/slider"
 import type { Game } from "@/gameTypes"
+import { useDebounceCallback } from "@/hooks/use-debounce-callback"
 import { useGameSearch } from "@/hooks/use-games-extended"
 import placeholderImg from "@/public/imgs/imgPlaceholder.jpg"
 import {
@@ -26,13 +52,14 @@ type ReviewFormProps = {
 }
 
 const WriteReview = () => {
+  const [open, setOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState<string>("")
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState<string>("")
   const [selectedGame, setSelectedGame] = useState<Game | null>(null)
   const [rating, setRating] = useState<number>(5)
   const [review, setReview] = useState<string>("")
   const [userName, setUserName] = useState<string>("")
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
-  const searchTimeout = useRef<NodeJS.Timeout | null>(null)
 
   // Fetch user name on mount
   useEffect(() => {
@@ -50,40 +77,30 @@ const WriteReview = () => {
     fetchUserName()
   }, [])
 
+  // Debounce search term updates
+  const debouncedSetSearchTerm = useDebounceCallback(
+    (value: string) => setDebouncedSearchTerm(value),
+    300,
+  )
+
   // Use React Query for game search
-  const { data: searchResults } = useGameSearch(searchTerm)
+  const { data: searchResults, isLoading } = useGameSearch(debouncedSearchTerm)
   const searchedGames = searchResults?.results ?? []
 
-  // Clear old timeout and set new one
-  useEffect(() => {
-    if (searchTimeout.current) {
-      clearTimeout(searchTimeout.current)
-    }
-
-    if (searchTerm.trim() !== "" && searchTerm.length > 2) {
-      searchTimeout.current = setTimeout(() => {
-        // React Query handles the search via useGameSearch hook
-      }, 300)
-    }
-
-    return () => {
-      if (searchTimeout.current) {
-        clearTimeout(searchTimeout.current)
-      }
-    }
-  }, [searchTerm])
-
   const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value)
+    const value = e.target.value
+    setSearchTerm(value)
+    debouncedSetSearchTerm(value)
   }
 
   const handleGameSelect = (game: Game) => {
     setSelectedGame(game)
     setSearchTerm("")
+    setOpen(false)
   }
 
-  const handleRatingChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setRating(Number(e.target.value))
+  const handleRatingChange = (value: number[]) => {
+    setRating(value[0])
   }
 
   const handleReviewChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -160,90 +177,149 @@ const WriteReview = () => {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 py-4 px-2">
       <h1 className="text-3xl font-bold">Write Review</h1>
-      <div className="w-full max-w-2xl bg-gray-800 p-6 rounded-lg shadow-lg mx-auto mt-10">
-        <h1 className="text-2xl font-bold mb-4 text-center text-white">
+      <div className="w-full max-w-2xl  p-6 rounded-lg shadow-lg mx-auto mt-10 border">
+        <h1 className="text-2xl font-bold mb-4 text-center">
           Review and Rate a Game
         </h1>
         <div className="mb-4">
-          <input
-            type="text"
+          <InputGroup onClick={() => setOpen(true)} className="cursor-pointer">
+            <InputGroupAddon align="inline-start">
+              <Search className="h-4 w-4" />
+            </InputGroupAddon>
+            <InputGroupInput
+              placeholder="Search for a game..."
+              value={selectedGame ? selectedGame.name : ""}
+              readOnly
+              className="cursor-pointer"
+            />
+          </InputGroup>
+        </div>
+
+        <CommandDialog
+          open={open}
+          onOpenChange={(newOpen) => {
+            setOpen(newOpen)
+            if (!newOpen) setSearchTerm("")
+          }}
+        >
+          <CommandInput
+            placeholder="Search games..."
             value={searchTerm}
-            onChange={handleSearchChange}
-            placeholder="Search for a game..."
-            className="w-full p-2 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-red-600"
+            onInput={(e) => {
+              const value = e.currentTarget.value
+              setSearchTerm(value)
+              debouncedSetSearchTerm(value)
+            }}
           />
-          {searchedGames.length > 0 && (
-            <ul className="bg-gray-700 mt-2 rounded-md max-h-60 overflow-y-auto text-white">
-              {searchedGames.map((game) => (
-                <li
-                  key={game.id}
-                  onClick={() => handleGameSelect(game)}
-                  className="p-2 cursor-pointer hover:bg-gray-600 flex items-center space-x-4"
-                >
+          <CommandList>
+            {debouncedSearchTerm.length > 2 && isLoading ? (
+              <div className="flex flex-col items-center justify-center py-8 text-sm text-muted-foreground">
+                <Loader2 className="mb-2 size-4 animate-spin" />
+                <span>Searching...</span>
+              </div>
+            ) : debouncedSearchTerm.length <= 2 ? (
+              <CommandEmpty>Type at least 3 characters to search.</CommandEmpty>
+            ) : (
+              <CommandEmpty>No games found.</CommandEmpty>
+            )}
+
+            {debouncedSearchTerm.length > 2 && (
+              <CommandGroup heading="Games">
+                {searchedGames && searchedGames.length > 0 ? (
+                  searchedGames.map((game) => (
+                    <CommandItem
+                      className="py-2"
+                      key={game.id}
+                      value={game.slug}
+                      onSelect={() => handleGameSelect(game)}
+                    >
+                      {game.background_image && (
+                        <Image
+                          src={game.background_image || placeholderImg}
+                          alt={game.name}
+                          width={32}
+                          height={32}
+                          className="mr-2 size-8 rounded"
+                        />
+                      )}
+                      <div className="flex flex-col">
+                        <span>{game.name}</span>
+                        {game.released && (
+                          <span className="text-xs opacity-50">
+                            {game.released}
+                          </span>
+                        )}
+                      </div>
+                    </CommandItem>
+                  ))
+                ) : (
+                  <div className="px-2 py-6 text-center text-sm text-muted-foreground">
+                    No games found
+                  </div>
+                )}
+              </CommandGroup>
+            )}
+          </CommandList>
+        </CommandDialog>
+        {selectedGame && (
+          <form onSubmit={handleSubmit}>
+            <Card className="mt-6">
+              <CardHeader>
+                <div className="flex justify-center">
                   <Image
-                    src={game.background_image || placeholderImg}
-                    alt="game cover"
-                    width={50}
-                    height={50}
+                    src={selectedGame.background_image || placeholderImg}
+                    alt={selectedGame.name}
+                    width={200}
+                    height={100}
                     className="rounded"
                   />
-                  <span>{game.name}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-        {selectedGame && (
-          <form onSubmit={handleSubmit} className="bg-gray-700 p-4 rounded-md">
-            <div className="flex justify-center mb-4">
-              <Image
-                src={selectedGame.background_image || placeholderImg}
-                alt={selectedGame.name}
-                width={200}
-                height={100}
-                className="rounded"
-              />
-            </div>
-            <h2 className="text-xl font-semibold mb-2 text-center text-white">
-              {selectedGame.name}
-            </h2>
-            <div className="mb-4">
-              <label className="block mb-1 text-white">Rating:</label>
-              <input
-                type="range"
-                value={rating}
-                onChange={handleRatingChange}
-                min="1"
-                max="10"
-                step="1"
-                required
-                className="w-full"
-              />
-              <div className="flex justify-center items-center mt-2 text-2xl">
-                <span className={`mr-2 ${getRatingColor(rating)}`}>
-                  {rating}
-                </span>
-                <FaStar className={`ml-1 ${getRatingColor(rating)}`} />
-              </div>
-            </div>
-            <div className="mb-4">
-              <label className="block mb-1 text-white">Review:</label>
-              <textarea
-                value={review}
-                onChange={handleReviewChange}
-                required
-                className="w-full p-2 bg-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-red-600"
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition duration-200 ease-in-out disabled:opacity-50"
-            >
-              {isSubmitting ? "Submitting..." : "Submit Review"}
-            </button>
+                </div>
+                <CardTitle className="text-center text-2xl mt-4">
+                  {selectedGame.name}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-3">
+                  <Label>Rating</Label>
+                  <div className="space-y-3">
+                    <Slider
+                      value={[rating]}
+                      onValueChange={handleRatingChange}
+                      min={1}
+                      max={10}
+                      step={1}
+                      className="w-full"
+                    />
+                    <div className="flex justify-center items-center text-2xl gap-2">
+                      <span className={getRatingColor(rating)}>{rating}</span>
+                      <FaStar className={getRatingColor(rating)} />
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Review</Label>
+                  <InputGroup>
+                    <InputGroupTextarea
+                      placeholder="Share your thoughts about this game..."
+                      value={review}
+                      onChange={handleReviewChange}
+                      required
+                    />
+                  </InputGroup>
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full"
+                >
+                  {isSubmitting ? "Submitting..." : "Submit Review"}
+                </Button>
+              </CardFooter>
+            </Card>
           </form>
         )}
       </div>

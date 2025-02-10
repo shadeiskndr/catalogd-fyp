@@ -1,6 +1,6 @@
 const AIRecommender = () => {
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 py-4 px-2">
       <h1 className="text-3xl font-bold">AI Recommender</h1>
       <div className="iframe-container">
         <iframe

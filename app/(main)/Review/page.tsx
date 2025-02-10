@@ -1,98 +1,42 @@
 "use client"
-import React, { useEffect, useState } from "react"
-import { database, databaseId, reviewCol } from "@/utils/appwrite"
-import { Query } from "appwrite"
-import ReviewCard from "@/components/ReviewCard"
 import { BeatLoader } from "react-spinners"
-
-interface Review {
-  user_id: string
-  user_name: string
-  game_name: string
-  rating: number
-  review: string
-}
+import ReviewCard from "@/components/ReviewCard"
+import LoadMore from "@/components/load-more"
+import { BlurFade } from "@/components/ui/magicui/blur-fade"
+import { useReviews } from "@/hooks/use-reviews"
 
 const ReviewPage = () => {
-  const [reviews, setReviews] = useState<Review[]>([])
-  const [loading, setLoading] = useState<boolean>(true)
-  const [page, setPage] = useState<number>(1)
-  const [hasMore, setHasMore] = useState<boolean>(true)
+  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    useReviews()
 
-  const PAGE_SIZE = 20
-
-  const loadReviews = async (page: number) => {
-    setLoading(true)
-    try {
-      const response = await database.listDocuments(databaseId, reviewCol, [
-        Query.orderDesc("$createdAt"),
-        Query.limit(PAGE_SIZE),
-        Query.offset((page - 1) * PAGE_SIZE),
-      ])
-      const newReviews = response.documents.map((doc: any) => ({
-        user_id: doc.user_id,
-        user_name: doc.user_name,
-        game_name: doc.game_name,
-        rating: doc.rating,
-        review: doc.review,
-      }))
-
-      // Prevent duplicates by checking if the review already exists in the state
-      setReviews((prevReviews) => {
-        const existingReviewIds = new Set(
-          prevReviews.map((review) => review.user_id + review.game_name),
-        )
-        const filteredNewReviews = newReviews.filter(
-          (review) => !existingReviewIds.has(review.user_id + review.game_name),
-        )
-        return [...prevReviews, ...filteredNewReviews]
-      })
-
-      setHasMore(newReviews.length === PAGE_SIZE)
-    } catch (error) {
-      console.error("Error loading reviews:", error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    // Reset reviews state when page changes
-    setReviews([])
-    loadReviews(page)
-  }, [page])
-
-  const handleLoadMore = () => {
-    setPage((prevPage) => prevPage + 1)
-  }
+  const reviews = data?.pages.flatMap((page) => page.reviews) ?? []
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 py-4 px-2">
       <h1 className="text-3xl font-bold">Recent Reviews</h1>
-      <div className="flex flex-col justify-center items-center">
-        {loading && <BeatLoader color="#ffa600" size={20} loading={true} />}
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 auto-rows-auto grid-auto-flow-dense">
+      <div className="max-w-2xl mx-auto flex flex-col justify-center items-center">
+        {isLoading && <BeatLoader color="#ffa600" size={20} />}
+        <div className="grid grid-cols-1 gap-6 auto-rows-auto grid-auto-flow-dense">
           {reviews.map((review, index) => (
-            <div key={index} className="break-inside-avoid">
+            <BlurFade
+              key={`${review.user_id}-${review.game_name}-${index}`}
+              delay={0.1 * index}
+              className="break-inside-avoid"
+            >
               <ReviewCard
                 userName={review.user_name}
                 gameName={review.game_name}
                 rating={review.rating}
                 reviewText={review.review}
               />
-            </div>
+            </BlurFade>
           ))}
         </div>
-        {hasMore && (
-          <div className="flex flex-col my-4 justify-center items-center">
-            <button
-              className="bg-red-500 p-2 px-4 rounded hover:scale-105 transition-transform duration-300 ease-in-out font-semibold text-gray-100"
-              onClick={handleLoadMore}
-            >
-              Load More
-            </button>
-          </div>
-        )}
+        <LoadMore
+          hasMore={hasNextPage}
+          isLoading={isFetchingNextPage}
+          onLoadMore={() => fetchNextPage()}
+        />
       </div>
     </div>
   )

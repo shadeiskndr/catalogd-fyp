@@ -79,8 +79,8 @@ export function Providers({
     style.id = newStyleId
 
     const isMobile = window.innerWidth < 768
-    const origin = isMobile ? "bottom right" : "top right"
-    const position = isMobile ? "100% 100%" : "100% 0%"
+    const origin = isMobile ? "top right" : "top right"
+    const position = isMobile ? "100% 0%" : "100% 0%"
 
     const css = `
       @supports (view-transition-name: root) {

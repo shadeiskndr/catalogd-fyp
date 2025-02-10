@@ -19,6 +19,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+import { LightRays } from "@/components/ui/magicui/light-rays"
 import { account } from "@/utils/appwrite"
 
 export default function Login07() {
@@ -138,12 +139,19 @@ export default function Login07() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="absolute top-4 right-4 flex items-center gap-2">
+    <div className="flex items-center justify-center min-h-screen relative overflow-hidden">
+      <LightRays
+        className="pointer-events-none"
+        color="rgba(160, 210, 255, 0.15)"
+        blur={40}
+        speed={14}
+        length="80vh"
+      />
+      <div className="absolute top-4 right-4 flex items-center gap-2 z-20">
         <ThemeToggle />
         <ColorThemeToggle />
       </div>
-      <div className="mx-auto w-full max-w-xs space-y-6">
+      <div className="mx-auto w-full max-w-xs space-y-6 relative z-10">
         <div className="space-y-2 text-center">
           <Logo className="mx-auto h-16 w-16" />
           <h1 className="text-3xl font-semibold">
@@ -192,7 +200,7 @@ export default function Login07() {
                     id="name"
                     name="name"
                     className="peer ps-9"
-                    placeholder="Shahathir Iskandar"
+                    placeholder="Your name"
                     type="text"
                     value={signupDetails.name}
                     onChange={handleInputChange}
@@ -212,7 +220,7 @@ export default function Login07() {
                   id="email"
                   name="email"
                   className="peer ps-9"
-                  placeholder="shahathir.iskandar@catalogd.com"
+                  placeholder="Enter your email"
                   type="email"
                   value={isSignup ? signupDetails.email : userDetails.email}
                   onChange={handleInputChange}

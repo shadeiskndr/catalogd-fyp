@@ -2,6 +2,11 @@
 import { LogOut } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { account } from "@/utils/appwrite"
 
 export function LogoutButton() {
@@ -17,14 +22,20 @@ export function LogoutButton() {
   }
 
   return (
-    <Button
-      variant="ghost"
-      size="icon-sm"
-      onClick={handleLogout}
-      aria-label="Logout"
-      title="Logout"
-    >
-      <LogOut className="size-4" />
-    </Button>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          onClick={handleLogout}
+          aria-label="Logout"
+        >
+          <LogOut className="size-4" />
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>
+        <p>Logout</p>
+      </TooltipContent>
+    </Tooltip>
   )
 }

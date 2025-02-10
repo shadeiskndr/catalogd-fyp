@@ -1,67 +1,33 @@
 "use client"
 import { PencilIcon } from "@heroicons/react/24/solid"
-import { Query } from "appwrite"
 import Image from "next/image"
 import Link from "next/link"
 import { useParams } from "next/navigation"
-import { useEffect, useState } from "react"
 import { BeatLoader } from "react-spinners"
 import Banner from "@/components/game/Banner"
 import Info from "@/components/game/Info"
 import ReviewCardSlug from "@/components/ReviewCardSlug"
 import { useGameDetails, useGameScreenshots } from "@/hooks/use-games-extended"
-import { database, databaseId, reviewCol } from "@/utils/appwrite"
-
-interface Review {
-  user_id: string
-  user_name: string
-  game_name: string
-  rating: number
-  review: string
-}
+import { useReviews } from "@/hooks/use-reviews"
 
 const GamePage = () => {
   const params = useParams()
   const slug = params.slug as string
   const { data: game, isLoading: loading } = useGameDetails(slug)
   const { data: screenshots } = useGameScreenshots(slug)
-  const [reviews, setReviews] = useState<Review[]>([])
-  const [loadingReviews, setLoadingReviews] = useState(true)
+  const { data: reviewData, isLoading: loadingReviews } = useReviews(game?.name)
 
-  //function for getting reviews
-  useEffect(() => {
-    const loadReviews = async () => {
-      if (!game?.name) return // Ensure game name is defined
-
-      setLoadingReviews(true)
-      try {
-        const response = await database.listDocuments(databaseId, reviewCol, [
-          Query.equal("game_name", game.name),
-        ])
-        const newReviews = response.documents.map((doc: any) => ({
-          user_id: doc.user_id,
-          user_name: doc.user_name,
-          game_name: doc.game_name,
-          rating: doc.rating,
-          review: doc.review,
-        }))
-        setReviews(newReviews)
-      } catch (error) {
-        console.error("Error loading reviews:", error)
-      } finally {
-        setLoadingReviews(false)
-      }
-    }
-
-    if (game) {
-      loadReviews()
-    }
-  }, [game])
+  const reviews = reviewData?.pages.flatMap((page) => page.reviews) || []
 
   return (
     <div>
-      <div className="absolute inset-0 -z-50 opacity-20 blur-sm">
-        <Image src={game?.background_image || ""} alt="bg" fill />
+      <div className="fixed inset-0 opacity-20 blur-sm pointer-events-none z-0">
+        <Image
+          src={game?.background_image || ""}
+          alt="bg"
+          fill
+          className="object-cover"
+        />
       </div>
       {game ? (
         <div>
@@ -110,7 +76,7 @@ const GamePage = () => {
                   <ReviewCardSlug
                     key={index}
                     userName={review.user_name}
-                    //gameName={review.game_name}
+                    gameName={review.game_name}
                     rating={review.rating}
                     reviewText={review.review}
                   />
