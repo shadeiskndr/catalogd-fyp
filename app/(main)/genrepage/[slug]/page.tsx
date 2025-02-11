@@ -18,20 +18,25 @@ const GenrePage = () => {
   // Fetch games for this genre with pagination
   const {
     data,
-    isLoading: loading,
+    isLoading,
     isFetching,
+    error,
   } = useGenreGames(slug, pageNo, 20, "popularity")
 
-  const games = data?.results || []
-  const hasNextPage = games.length >= 20
+  const loading = isLoading || isFetching
+  const games = data?.games ?? []
+  const hasMore = data?.hasMore ?? false
 
-  //setting the page number to the next page
-  const handleFetchNextPage = async () => {
+  const handleFetchNextPage = () => {
     setPageNo(pageNo + 1)
   }
 
+  const handleFetchPreviousPage = () => {
+    setPageNo((prevPage) => Math.max(prevPage - 1, 1))
+  }
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 py-4 px-2">
       {genre ? (
         <h1 className="text-3xl font-bold">{genre.name}</h1>
       ) : (
@@ -39,26 +44,30 @@ const GenrePage = () => {
           <BeatLoader color="#ffa600" size={20} loading={true} />
         </div>
       )}
-      <div className="flex flex-col justify-center items-center">
-        {loading && pageNo === 1 ? (
-          <div>
-            <BeatLoader color="#ffa600" size={20} loading={true} />
-          </div>
-        ) : games.length > 0 ? (
-          <div className="pb-4">
-            <Grid games={games} />
-            <div className="flex flex-col my-4 justify-center items-center">
-              <LoadMore
-                hasMore={hasNextPage}
-                isLoading={isFetching}
-                onLoadMore={handleFetchNextPage}
-              />
-            </div>
-          </div>
-        ) : (
-          <span className="font-semibold">No games found.</span>
-        )}
-      </div>
+      {games && games.length > 0 ? (
+        <>
+          <Grid games={games} />
+          <LoadMore
+            page={pageNo}
+            hasMore={hasMore}
+            isLoading={loading}
+            onLoadMore={handleFetchNextPage}
+            onLoadPrevious={handleFetchPreviousPage}
+          />
+        </>
+      ) : !loading ? (
+        <div className="mt-10">No games found.</div>
+      ) : null}
+      {loading && (
+        <div className="flex justify-center items-center">
+          <BeatLoader color="#ffa600" size={20} loading={true} />
+        </div>
+      )}
+      {error && (
+        <div className="mt-10 text-red-500">
+          Error loading games. Please try again.
+        </div>
+      )}
     </div>
   )
 }

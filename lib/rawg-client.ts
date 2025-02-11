@@ -5,16 +5,24 @@ const REQUEST_TIME_INTERVAL = 10000 // in milliseconds
 const RAWG_API_URL = "https://api.rawg.io/api/"
 const RAWG_API_KEY = process.env.RAWG_API_KEY
 
+// Console platform IDs to filter out explicit content
+const CONSOLE_PLATFORMS = "1,7,18,187,186,16,17,14" // PC, Switch, PS4, PS5, Xbox Series, Xbox 360, Xbox One, Mac
+
 let tokenBucket = MAX_REQUESTS_PER_TEN_SECONDS
 const requestBuffer: (() => Promise<Response>)[] = []
 
 /**
  * Rate-limited fetch wrapper for RAWG API
  * Uses token bucket algorithm to respect API rate limits
+ * Automatically filters results to console platforms only
  */
 export async function rawgFetch(endpoint: string): Promise<Response> {
   const handleRequest = async () => {
-    const url = `${RAWG_API_URL}${endpoint}${endpoint.includes("?") ? "&" : "?"}key=${RAWG_API_KEY}`
+    // Add platform filter to all game endpoints
+    const isGameEndpoint = endpoint.includes("games")
+    const separator = endpoint.includes("?") ? "&" : "?"
+    const platformFilter = isGameEndpoint ? `&platforms=${CONSOLE_PLATFORMS}` : ""
+    const url = `${RAWG_API_URL}${endpoint}${separator}key=${RAWG_API_KEY}${platformFilter}`
     const response = await fetch(url)
 
     if (!response.ok) {

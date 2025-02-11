@@ -44,13 +44,7 @@ const CarouselCard = ({ game }: CarouselCardProps) => {
             <h3 className="font-extrabold text-sm line-clamp-2">{name}</h3>
             <p className="text-xs text-muted-foreground">{releasedDate}</p>
           </div>
-          <button
-            type="button"
-            onClick={(e) => e.stopPropagation()}
-            className="hover:opacity-80 transition-opacity"
-          >
-            <AddButton collection="wishlist" gameId={id} gameName={name} />
-          </button>
+          <AddButton collection="wishlist" gameId={id} gameName={name} />
         </CardFooter>
       </CardContent>
     </Card>

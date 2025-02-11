@@ -116,7 +116,15 @@ export function useGenreGames(
       const response = await rawgFetch(
         `games?discover=true&page-size=${pageSize}&ordering=${ordering}&page=${page}&genres=${genreSlug}`,
       )
-      return response.json() as Promise<ResponseSchema<Game>>
+      const data = (await response.json()) as ResponseSchema<Game>
+      // Deduplicate games by id
+      const uniqueGames = Array.from(
+        new Map(data.results.map((game) => [game.id, game])).values(),
+      )
+      return {
+        games: uniqueGames,
+        hasMore: uniqueGames.length >= pageSize,
+      }
     },
     enabled: !!genreSlug,
     staleTime: 5 * 60 * 1000, // 5 minutes

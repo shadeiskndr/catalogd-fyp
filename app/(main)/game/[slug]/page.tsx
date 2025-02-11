@@ -21,14 +21,16 @@ const GamePage = () => {
 
   return (
     <div>
-      <div className="fixed inset-0 opacity-20 blur-sm pointer-events-none z-0">
-        <Image
-          src={game?.background_image || ""}
-          alt="bg"
-          fill
-          className="object-cover"
-        />
-      </div>
+      {game?.background_image && (
+        <div className="fixed inset-0 opacity-20 blur-sm pointer-events-none z-0">
+          <Image
+            src={game.background_image}
+            alt="bg"
+            fill
+            className="object-cover"
+          />
+        </div>
+      )}
       {game ? (
         <div>
           <Banner

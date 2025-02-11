@@ -87,7 +87,11 @@ export function useUpcomingGames() {
       const query = `games/${endpoint}&page-size=8&ordering=-released&page=1`
       const response = await rawgFetch(query)
       const data = (await response.json()) as ResponseSchema<Game>
-      return data.results
+      // Deduplicate games by id
+      const uniqueGames = Array.from(
+        new Map(data.results.map((game) => [game.id, game])).values(),
+      )
+      return uniqueGames
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
   })
@@ -102,7 +106,14 @@ export function useNewReleases(page: number = 1, pageSize: number = 20) {
       const query = `games/${endpoint}&page=${page}&ordering=-released&page-size=${pageSize}`
       const response = await rawgFetch(query)
       const data = (await response.json()) as ResponseSchema<Game>
-      return data.results
+      // Deduplicate games by id
+      const uniqueGames = Array.from(
+        new Map(data.results.map((game) => [game.id, game])).values(),
+      )
+      return {
+        games: uniqueGames,
+        hasMore: uniqueGames.length >= pageSize,
+      }
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     placeholderData: (previousData) => previousData,
@@ -118,7 +129,14 @@ export function usePopularGames(page: number = 1, pageSize: number = 40) {
       const query = `games/${endpoint}&page=${page}&page-size=${pageSize}&ordering=popularity`
       const response = await rawgFetch(query)
       const data = (await response.json()) as ResponseSchema<Game>
-      return data.results
+      // Deduplicate games by id
+      const uniqueGames = Array.from(
+        new Map(data.results.map((game) => [game.id, game])).values(),
+      )
+      return {
+        games: uniqueGames,
+        hasMore: uniqueGames.length >= pageSize,
+      }
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     placeholderData: (previousData) => previousData,

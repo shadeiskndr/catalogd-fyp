@@ -7,8 +7,8 @@ import { toast } from "react-hot-toast"
 import { Button } from "@/components/ui/button"
 import {
   Tooltip,
-  TooltipTrigger,
   TooltipContent,
+  TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { useGameStore } from "@/lib/stores/game-store"
 import {
@@ -93,8 +93,14 @@ const AddButton = ({ collection, gameId, gameName }: AddButtonProps) => {
     },
   })
 
-  const addToCollection = () => addMutation.mutate()
-  const removeFromCollection = () => removeMutation.mutate()
+  const addToCollection = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    addMutation.mutate()
+  }
+  const removeFromCollection = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    removeMutation.mutate()
+  }
 
   const isLoading = addMutation.isPending || removeMutation.isPending
 

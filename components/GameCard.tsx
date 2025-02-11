@@ -53,20 +53,8 @@ const GameCard = ({ game }: GameCardProps) => {
             <p className="text-xs text-muted-foreground">{genreList}</p>
           </div>
           <div className="flex flex-col gap-2">
-            <button
-              type="button"
-              onClick={(e) => e.stopPropagation()}
-              className="hover:opacity-80 transition-opacity"
-            >
-              <AddButton collection="mylib" gameId={id} gameName={name} />
-            </button>
-            <button
-              type="button"
-              onClick={(e) => e.stopPropagation()}
-              className="hover:opacity-80 transition-opacity"
-            >
-              <AddButton collection="wishlist" gameId={id} gameName={name} />
-            </button>
+            <AddButton collection="mylib" gameId={id} gameName={name} />
+            <AddButton collection="wishlist" gameId={id} gameName={name} />
           </div>
         </CardFooter>
       </CardContent>

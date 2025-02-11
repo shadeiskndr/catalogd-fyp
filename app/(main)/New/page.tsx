@@ -7,37 +7,46 @@ import { useNewReleases } from "@/hooks/use-games"
 
 const NewR = () => {
   const [pageNo, setPageNo] = useState<number>(1)
-  const {
-    data: games,
-    isLoading: loading,
-    isFetching,
-  } = useNewReleases(pageNo, 20)
-  const hasNextPage = (games?.length || 0) >= 20
+  const { data, isLoading, isFetching, error } = useNewReleases(pageNo, 10)
+
+  const loading = isLoading || isFetching
+  const games = data?.games ?? []
+  const hasMore = data?.hasMore ?? false
 
   const handleFetchNextPage = () => {
     setPageNo(pageNo + 1)
   }
 
+  const handleFetchPreviousPage = () => {
+    setPageNo((prevPage) => Math.max(prevPage - 1, 1))
+  }
+
   return (
     <div className="space-y-4 py-4 px-2">
       <h1 className="text-3xl font-bold">New and Upcoming</h1>
-      {loading && pageNo === 1 ? (
-        <div>
+      {games && games.length > 0 ? (
+        <>
+          <Grid games={games} />
+          <LoadMore
+            page={pageNo}
+            hasMore={hasMore}
+            isLoading={loading}
+            onLoadMore={handleFetchNextPage}
+            onLoadPrevious={handleFetchPreviousPage}
+          />
+        </>
+      ) : !loading ? (
+        <div className="mt-10">No games found.</div>
+      ) : null}
+      {loading && (
+        <div className="flex justify-center items-center">
           <BeatLoader color="#ffa600" size={20} loading={true} />
         </div>
-      ) : games && games.length > 0 ? (
-        <div className="pb-4">
-          <Grid games={games} />
-          <div className="flex flex-col my-4 justify-center items-center">
-            <LoadMore
-              hasMore={hasNextPage}
-              isLoading={isFetching}
-              onLoadMore={handleFetchNextPage}
-            />
-          </div>
+      )}
+      {error && (
+        <div className="mt-10 text-red-500">
+          Error loading games. Please try again.
         </div>
-      ) : (
-        <span className="font-semibold">No games found.</span>
       )}
     </div>
   )
