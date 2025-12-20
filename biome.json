@@ -1,4 +1,24 @@
 {
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "includes": [
+      "**",
+      "!.next",
+      "!node_modules",
+      "!dist",
+      "!build",
+      "!out",
+      "!coverage",
+      "!public",
+      "!docs",
+      "!convex/_generated",
+      "!**/*.md"
+    ]
+  },
   "formatter": {
     "enabled": true,
     "formatWithErrors": false,
@@ -28,7 +48,7 @@
   "css": {
     "parser": { "tailwindDirectives": true },
     "formatter": null,
-    "linter": null,
+    "linter": { "enabled": false },
     "assist": null
   },
   "html": {
@@ -36,5 +56,60 @@
       "indentScriptAndStyle": false,
       "selfCloseVoidElements": "always"
     }
-  }
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "suspicious": {
+        "noEmptyInterface": "off",
+        "noArrayIndexKey": "off"
+      },
+      "style": {
+        "noNonNullAssertion": "off"
+      },
+      "performance": {
+        "noImgElement": "off"
+      }
+    }
+  },
+  "overrides": [
+    {
+      "includes": [
+        "**/*.config.js",
+        "**/*.config.mjs",
+        "**/*.config.cjs",
+        "**/*.config.ts"
+      ],
+      "formatter": { "enabled": false }
+    },
+    {
+      "includes": ["components/ui/**", "hooks/**"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "useSemanticElements": "off",
+            "useFocusableInteractive": "off",
+            "useAriaPropsForRole": "off",
+            "useKeyWithClickEvents": "off",
+            "noRedundantRoles": "off",
+            "useButtonType": "off",
+            "noStaticElementInteractions": "off",
+            "noSvgWithoutTitle": "off"
+          },
+          "correctness": {
+            "useExhaustiveDependencies": "off",
+            "noUnusedFunctionParameters": "off"
+          },
+          "security": {
+            "noDangerouslySetInnerHtml": "off"
+          },
+          "suspicious": {
+            "noExplicitAny": "off",
+            "noDocumentCookie": "off"
+          }
+        }
+      }
+    }
+  ]
 }

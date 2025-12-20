@@ -39,10 +39,9 @@ export function useGameByName(gameName: string) {
   return useQuery({
     queryKey: queryKeys.games.search(gameName),
     queryFn: async () => {
-      const response = await rawgFetch(
+      const data = await rawgFetch<ResponseSchema<Game>>(
         `games?search=${gameName}&search_exact=true`,
       )
-      const data = (await response.json()) as ResponseSchema<Game>
       return data.results[0]?.slug || null
     },
     enabled: gameName.length > 0,
@@ -55,8 +54,7 @@ export function useGameDetails(slug: string) {
   return useQuery({
     queryKey: queryKeys.games.detail(slug),
     queryFn: async () => {
-      const response = await rawgFetch(`games/${slug}`)
-      return response.json() as Promise<Game>
+      return await rawgFetch<Game>(`games/${slug}`)
     },
     enabled: !!slug,
     staleTime: 10 * 60 * 1000, // 10 minutes - game details don't change often
@@ -68,8 +66,7 @@ export function useGameScreenshots(slug: string) {
   return useQuery({
     queryKey: queryKeys.games.screenshots(slug),
     queryFn: async () => {
-      const response = await rawgFetch(`games/${slug}/screenshots`)
-      return response.json() as Promise<Screenshot>
+      return await rawgFetch<Screenshot>(`games/${slug}/screenshots`)
     },
     enabled: !!slug,
     staleTime: 15 * 60 * 1000, // 15 minutes - screenshots are very static
@@ -81,10 +78,9 @@ export function useGameSearch(query: string) {
   return useQuery({
     queryKey: queryKeys.games.search(query),
     queryFn: async () => {
-      const response = await rawgFetch(
+      return await rawgFetch<ResponseSchema<Game>>(
         `games?search=${query}&ordering=-added&search_exact=true`,
       )
-      return response.json() as Promise<ResponseSchema<Game>>
     },
     enabled: query.length > 2, // Only search if query is > 2 chars
     staleTime: 2 * 60 * 1000, // 2 minutes
@@ -96,8 +92,7 @@ export function useGenreList() {
   return useQuery({
     queryKey: queryKeys.genres.lists(),
     queryFn: async () => {
-      const response = await rawgFetch("genres")
-      return response.json() as Promise<ResponseSchema<GameDataType>>
+      return await rawgFetch<ResponseSchema<GameDataType>>("genres")
     },
     staleTime: 30 * 60 * 1000, // 30 minutes - genres rarely change
   })
@@ -113,10 +108,9 @@ export function useGenreGames(
   return useQuery({
     queryKey: queryKeys.genres.games(genreSlug, page),
     queryFn: async () => {
-      const response = await rawgFetch(
+      const data = await rawgFetch<ResponseSchema<Game>>(
         `games?discover=true&page-size=${pageSize}&ordering=${ordering}&page=${page}&genres=${genreSlug}`,
       )
-      const data = (await response.json()) as ResponseSchema<Game>
       // Deduplicate games by id
       const uniqueGames = Array.from(
         new Map(data.results.map((game) => [game.id, game])).values(),
@@ -140,8 +134,7 @@ export function usePrefetchGame() {
     queryClient.prefetchQuery({
       queryKey: queryKeys.games.detail(slug),
       queryFn: async () => {
-        const response = await rawgFetch(`games/${slug}`)
-        return response.json() as Promise<Game>
+        return await rawgFetch<Game>(`games/${slug}`)
       },
       staleTime: 10 * 60 * 1000,
     })

@@ -1,9 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
-  env: {
-    RAWG_API_KEY: process.env.RAWG_API_KEY,
-  },
   images: {
     domains: [
       "cdn.discordapp.com",

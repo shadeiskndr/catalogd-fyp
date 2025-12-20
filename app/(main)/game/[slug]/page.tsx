@@ -8,16 +8,14 @@ import Banner from "@/components/game/Banner"
 import Info from "@/components/game/Info"
 import ReviewCardSlug from "@/components/ReviewCardSlug"
 import { useGameDetails, useGameScreenshots } from "@/hooks/use-games-extended"
-import { useReviews } from "@/hooks/use-reviews"
+import { useGameReviews } from "@/hooks/use-reviews"
 
 const GamePage = () => {
   const params = useParams()
   const slug = params.slug as string
   const { data: game, isLoading: loading } = useGameDetails(slug)
   const { data: screenshots } = useGameScreenshots(slug)
-  const { data: reviewData, isLoading: loadingReviews } = useReviews(game?.name)
-
-  const reviews = reviewData?.pages.flatMap((page) => page.reviews) || []
+  const { reviews, isLoading: loadingReviews } = useGameReviews(game?.name)
 
   return (
     <div>
@@ -77,8 +75,8 @@ const GamePage = () => {
                 {reviews.map((review, index) => (
                   <ReviewCardSlug
                     key={index}
-                    userName={review.user_name}
-                    gameName={review.game_name}
+                    userName={review.userName}
+                    gameName={review.gameName}
                     rating={review.rating}
                     reviewText={review.review}
                   />

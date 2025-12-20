@@ -1,10 +1,10 @@
 import Link from "next/link"
 import { useState } from "react"
 import { FaStar } from "react-icons/fa"
+import ReviewDetailDialog from "@/components/review-detail-dialog"
+import { Button } from "@/components/ui/button"
 import { useGameByName, useGameDetails } from "@/hooks/use-games-extended"
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import ReviewDetailDialog from "@/components/review-detail-dialog"
 
 type ReviewCardProps = {
   userName: string

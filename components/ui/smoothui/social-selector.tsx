@@ -1,8 +1,8 @@
 "use client"
 
+import { HeartIcon } from "@heroicons/react/24/solid"
 import { motion } from "motion/react"
 import { useState } from "react"
-import { HeartIcon } from "@heroicons/react/24/solid"
 import { BsGithub, BsLinkedin, BsTwitter } from "react-icons/bs"
 
 type XIconProps = React.SVGProps<SVGSVGElement> & {

@@ -1,66 +1,10 @@
-// RAWG API Client with rate limiting
-const MAX_REQUESTS_PER_TEN_SECONDS = 30
-const REQUEST_TIME_INTERVAL = 10000 // in milliseconds
+// RAWG API client. All requests go through the Convex `rawg.get` action,
+// which holds the API key and applies the console-platform filter.
+import { api } from "@/convex/_generated/api"
+import { convexClient } from "@/lib/convex-client-provider"
 
-const RAWG_API_URL = "https://api.rawg.io/api/"
-const RAWG_API_KEY = process.env.RAWG_API_KEY
-
-// Console platform IDs to filter out explicit content
-const CONSOLE_PLATFORMS = "1,7,18,187,186,16,17,14" // PC, Switch, PS4, PS5, Xbox Series, Xbox 360, Xbox One, Mac
-
-let tokenBucket = MAX_REQUESTS_PER_TEN_SECONDS
-const requestBuffer: (() => Promise<Response>)[] = []
-
-/**
- * Rate-limited fetch wrapper for RAWG API
- * Uses token bucket algorithm to respect API rate limits
- * Automatically filters results to console platforms only
- */
-export async function rawgFetch(endpoint: string): Promise<Response> {
-  const handleRequest = async () => {
-    // Add platform filter to all game endpoints
-    const isGameEndpoint = endpoint.includes("games")
-    const separator = endpoint.includes("?") ? "&" : "?"
-    const platformFilter = isGameEndpoint ? `&platforms=${CONSOLE_PLATFORMS}` : ""
-    const url = `${RAWG_API_URL}${endpoint}${separator}key=${RAWG_API_KEY}${platformFilter}`
-    const response = await fetch(url)
-
-    if (!response.ok) {
-      throw new Error(`RAWG API Error: ${response.statusText}`)
-    }
-
-    tokenBucket++
-    return response
-  }
-
-  // Token bucket algorithm to limit the number of requests to the API
-  if (tokenBucket > 0) {
-    tokenBucket--
-    return handleRequest()
-  } else {
-    return new Promise((resolve, reject) => {
-      // Add the request to the buffer
-      requestBuffer.push(handleRequest)
-
-      // Wait for the next time interval to process the requests
-      setTimeout(() => {
-        const requestsToProcess = Math.min(
-          requestBuffer.length,
-          MAX_REQUESTS_PER_TEN_SECONDS,
-        )
-        // Process the requests
-        const requests = requestBuffer.splice(0, requestsToProcess)
-        Promise.all(requests.map((request) => request()))
-          .then((responses) => {
-            resolve(responses[0])
-          })
-          .catch(reject)
-          .finally(() => {
-            tokenBucket = MAX_REQUESTS_PER_TEN_SECONDS - requestsToProcess
-          })
-      }, REQUEST_TIME_INTERVAL)
-    })
-  }
+export async function rawgFetch<T>(endpoint: string): Promise<T> {
+  return (await convexClient.action(api.rawg.get, { endpoint })) as T
 }
 
 // Type definitions

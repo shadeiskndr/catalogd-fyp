@@ -1,8 +1,8 @@
 import Image from "next/image"
+import { Badge } from "@/components/ui/badge"
 import type { Game } from "@/gameTypes"
 import type { ScreenshotItem } from "@/lib/rawg-client"
 import imgPlace from "../../public/imgs/imgPlaceholder.jpg"
-import { Badge } from "@/components/ui/badge"
 
 type InfoProps = {
   game: Game

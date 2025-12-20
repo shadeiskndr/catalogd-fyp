@@ -1,4 +1,6 @@
 import { type UseQueryOptions, useQuery } from "@tanstack/react-query"
+import { usePaginatedQuery } from "convex/react"
+import { api } from "@/convex/_generated/api"
 import type { Game } from "@/gameTypes"
 import { type ResponseSchema, rawgFetch } from "@/lib/rawg-client"
 
@@ -39,8 +41,7 @@ export function useGameList(
     queryFn: async () => {
       const endpoint = gameListEndpoints[params.pageIndex].path
       const query = `games/${endpoint}&page-size=${params.pageSize}&ordering=${params.ordering}&page=${params.page}`
-      const response = await rawgFetch(query)
-      return response.json() as Promise<ResponseSchema<Game>>
+      return await rawgFetch<ResponseSchema<Game>>(query)
     },
     ...options,
   })
@@ -55,8 +56,7 @@ export function useFeaturedGames() {
     queryFn: async () => {
       const endpoint = gameListEndpoints[0].path
       const query = `games/${endpoint}&page-size=30&page=${pageNo}`
-      const response = await rawgFetch(query)
-      const data = (await response.json()) as ResponseSchema<Game>
+      const data = await rawgFetch<ResponseSchema<Game>>(query)
 
       const filteredResults = data.results.filter(
         (game) => game.metacritic > 40,
@@ -85,8 +85,7 @@ export function useUpcomingGames() {
     queryFn: async () => {
       const endpoint = gameListEndpoints[1].path
       const query = `games/${endpoint}&page-size=8&ordering=-released&page=1`
-      const response = await rawgFetch(query)
-      const data = (await response.json()) as ResponseSchema<Game>
+      const data = await rawgFetch<ResponseSchema<Game>>(query)
       // Deduplicate games by id
       const uniqueGames = Array.from(
         new Map(data.results.map((game) => [game.id, game])).values(),
@@ -104,8 +103,7 @@ export function useNewReleases(page: number = 1, pageSize: number = 20) {
     queryFn: async () => {
       const endpoint = gameListEndpoints[1].path
       const query = `games/${endpoint}&page=${page}&ordering=-released&page-size=${pageSize}`
-      const response = await rawgFetch(query)
-      const data = (await response.json()) as ResponseSchema<Game>
+      const data = await rawgFetch<ResponseSchema<Game>>(query)
       // Deduplicate games by id
       const uniqueGames = Array.from(
         new Map(data.results.map((game) => [game.id, game])).values(),
@@ -127,8 +125,7 @@ export function usePopularGames(page: number = 1, pageSize: number = 40) {
     queryFn: async () => {
       const endpoint = gameListEndpoints[0].path
       const query = `games/${endpoint}&page=${page}&page-size=${pageSize}&ordering=popularity`
-      const response = await rawgFetch(query)
-      const data = (await response.json()) as ResponseSchema<Game>
+      const data = await rawgFetch<ResponseSchema<Game>>(query)
       // Deduplicate games by id
       const uniqueGames = Array.from(
         new Map(data.results.map((game) => [game.id, game])).values(),
@@ -143,84 +140,42 @@ export function usePopularGames(page: number = 1, pageSize: number = 40) {
   })
 }
 
-// Hook for fetching user's library from Appwrite
-export function useUserLibrary(
-  page: number,
-  {
-    databaseId,
-    mylibCol,
-    userID,
-  }: { databaseId: string; mylibCol: string; userID: string },
-) {
-  const { Query } = require("appwrite")
-  const { database } = require("@/utils/appwrite")
+// Hook for fetching the user's library or wishlist: game IDs come from
+// Convex (reactive, paginated), game details are hydrated from RAWG.
+export function useUserGameList(list: "library" | "wishlist") {
+  const PAGE_SIZE = 25
+  const {
+    results: entries,
+    status,
+    loadMore,
+  } = usePaginatedQuery(
+    api.gameLists.page,
+    { list },
+    { initialNumItems: PAGE_SIZE },
+  )
 
-  return useQuery({
-    queryKey: ["userLibrary", page],
+  const gameIds = Array.from(new Set(entries.map((entry) => entry.gameId)))
+
+  const detailsQuery = useQuery({
+    queryKey: [list, "games", gameIds],
     queryFn: async () => {
-      const PAGE_SIZE = 25
-      const response = await database.listDocuments(
-        `${databaseId}`,
-        `${mylibCol}`,
-        [
-          Query.equal("user_id", userID),
-          Query.limit(PAGE_SIZE),
-          Query.offset((page - 1) * PAGE_SIZE),
-        ],
+      const gameDetailsPromises = gameIds.map((gameId) =>
+        rawgFetch<Game>(`games/${gameId}`),
       )
-
-      const gameIds = response.documents.map((game: { game_id: number }) => game.game_id)
-      const uniqueGameIds = Array.from(new Set(gameIds)) as number[]
-      const gameDetailsPromises = uniqueGameIds.map((gameId: number) =>
-        rawgFetch(`games/${gameId}`).then((res) => res.json() as Promise<Game>),
-      )
-
-      const games = await Promise.all(gameDetailsPromises)
-      return {
-        games,
-        hasMore: response.documents.length === PAGE_SIZE,
-      }
+      return Promise.all(gameDetailsPromises)
     },
+    enabled: gameIds.length > 0,
+    placeholderData: (previousData) => previousData,
   })
-}
 
-// Hook for fetching user's wishlist from Appwrite
-export function useUserWishlist(
-  page: number,
-  {
-    databaseId,
-    wishlistCol,
-    userID,
-  }: { databaseId: string; wishlistCol: string; userID: string },
-) {
-  const { Query } = require("appwrite")
-  const { database } = require("@/utils/appwrite")
-
-  return useQuery({
-    queryKey: ["userWishlist", page],
-    queryFn: async () => {
-      const PAGE_SIZE = 25
-      const response = await database.listDocuments(
-        `${databaseId}`,
-        `${wishlistCol}`,
-        [
-          Query.equal("user_id", userID),
-          Query.limit(PAGE_SIZE),
-          Query.offset((page - 1) * PAGE_SIZE),
-        ],
-      )
-
-      const gameIds = response.documents.map((game: { game_id: number }) => game.game_id)
-      const uniqueGameIds = Array.from(new Set(gameIds)) as number[]
-      const gameDetailsPromises = uniqueGameIds.map((gameId: number) =>
-        rawgFetch(`games/${gameId}`).then((res) => res.json() as Promise<Game>),
-      )
-
-      const games = await Promise.all(gameDetailsPromises)
-      return {
-        games,
-        hasMore: response.documents.length === PAGE_SIZE,
-      }
-    },
-  })
+  return {
+    games: gameIds.length > 0 ? (detailsQuery.data ?? []) : [],
+    isLoading:
+      status === "LoadingFirstPage" ||
+      (gameIds.length > 0 && detailsQuery.isLoading),
+    isLoadingMore: status === "LoadingMore" || detailsQuery.isFetching,
+    hasMore: status === "CanLoadMore",
+    loadMore: () => loadMore(PAGE_SIZE),
+    error: detailsQuery.error,
+  }
 }

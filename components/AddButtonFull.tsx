@@ -1,18 +1,14 @@
 "use client"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { ID, Query } from "appwrite"
-import { toast } from "react-hot-toast"
-import { PlusCircleIcon, HeartIcon as HeartIconOutline } from "@heroicons/react/24/outline"
-import { HeartIcon, MinusCircleIcon } from "@heroicons/react/24/solid"
-import { Button } from "@/components/ui/button"
-import { useGameStore } from "@/lib/stores/game-store"
 import {
-  database,
-  databaseId,
-  mylibCol,
-  userID,
-  wishlistCol,
-} from "@/utils/appwrite"
+  HeartIcon as HeartIconOutline,
+  PlusCircleIcon,
+} from "@heroicons/react/24/outline"
+import { HeartIcon, MinusCircleIcon } from "@heroicons/react/24/solid"
+import { useMutation, useQuery } from "convex/react"
+import { useState } from "react"
+import { toast } from "react-hot-toast"
+import { Button } from "@/components/ui/button"
+import { api } from "@/convex/_generated/api"
 
 type AddButtonFullProps = {
   collection: string
@@ -25,77 +21,45 @@ const AddButtonFull = ({
   gameId,
   gameName,
 }: AddButtonFullProps) => {
-  const { setGameAdded } = useGameStore()
-  const queryClient = useQueryClient()
+  const list = collection === "mylib" ? "library" : "wishlist"
+  const [isPending, setIsPending] = useState(false)
 
-  const collectionId = collection === "mylib" ? mylibCol : wishlistCol
-  const queryKey = ["gameStatus", collection, gameId]
+  const gamePresent = useQuery(api.gameLists.status, { list, gameId }) ?? false
 
-  // Check if game exists in collection
-  const { data: gameData } = useQuery({
-    queryKey,
-    queryFn: async () => {
-      const result = await database.listDocuments(databaseId, collectionId, [
-        Query.equal("user_id", userID),
-        Query.equal("game_id", gameId),
-      ])
-      return {
-        exists: result.documents.length > 0,
-        documentId: result.documents[0]?.$id || "",
-      }
-    },
-    enabled: !!gameId && !!userID,
-  })
+  const addToList = useMutation(api.gameLists.add)
+  const removeFromList = useMutation(api.gameLists.remove)
 
-  const gamePresent = gameData?.exists ?? false
-  const documentId = gameData?.documentId ?? ""
-
-  // Add to collection mutation
-  const addMutation = useMutation({
-    mutationFn: async () => {
-      await database.createDocument(databaseId, collectionId, ID.unique(), {
-        user_id: userID,
-        game_id: gameId,
-        game_name: gameName,
-      })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey })
-      setGameAdded(true)
+  const addToCollection = async () => {
+    setIsPending(true)
+    try {
+      await addToList({ list, gameId, gameName })
       const message =
         collection === "mylib" ? "Added to Library!" : "Added to Wishlist!"
       toast.success(message)
-    },
-    onError: (error) => {
+    } catch (error) {
       console.log(error)
       toast.error("Failed to add game")
-    },
-  })
+    } finally {
+      setIsPending(false)
+    }
+  }
 
-  // Remove from collection mutation
-  const removeMutation = useMutation({
-    mutationFn: async () => {
-      await database.deleteDocument(databaseId, collectionId, documentId)
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey })
-      setGameAdded(false)
+  const removeFromCollection = async () => {
+    setIsPending(true)
+    try {
+      await removeFromList({ list, gameId })
       const message =
         collection === "mylib"
           ? "Removed from Library!"
           : "Removed from Wishlist!"
       toast.success(message)
-    },
-    onError: (error) => {
+    } catch (error) {
       console.log(error)
       toast.error("Failed to remove game")
-    },
-  })
-
-  const addToCollection = () => addMutation.mutate()
-  const removeFromCollection = () => removeMutation.mutate()
-
-  const isLoading = addMutation.isPending || removeMutation.isPending
+    } finally {
+      setIsPending(false)
+    }
+  }
 
   const getButtonConfig = () => {
     if (collection === "mylib") {
@@ -130,10 +94,10 @@ const AddButtonFull = ({
     <Button
       variant={config.variant}
       onClick={gamePresent ? removeFromCollection : addToCollection}
-      disabled={isLoading}
+      disabled={isPending}
     >
       {config.icon}
-      {isLoading ? "Loading..." : config.label}
+      {isPending ? "Loading..." : config.label}
     </Button>
   )
 }

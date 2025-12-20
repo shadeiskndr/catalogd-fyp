@@ -140,7 +140,6 @@ export function useLocalStorage<T>(
     window.dispatchEvent(new StorageEvent("local-storage", { key }))
   })
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <leave it>
   useEffect(() => {
     setStoredValue(readValue())
   }, [key])

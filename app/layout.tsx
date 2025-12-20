@@ -1,8 +1,10 @@
 import "./globals.css"
+import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server"
 import { Toaster } from "react-hot-toast"
-import { Providers } from "@/lib/theme-provider"
 import { ColorThemeProvider } from "@/lib/color-provider"
+import { ConvexClientProvider } from "@/lib/convex-client-provider"
 import { QueryProvider } from "@/lib/query-provider"
+import { Providers } from "@/lib/theme-provider"
 
 export const metadata = {
   title: "Catalogd",
@@ -15,15 +17,19 @@ export default async function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body>
-        <Providers>
-          <ColorThemeProvider>
-            <QueryProvider>{children}</QueryProvider>
-          </ColorThemeProvider>
-        </Providers>
-        <Toaster />
-      </body>
-    </html>
+    <ConvexAuthNextjsServerProvider>
+      <html lang="en" suppressHydrationWarning>
+        <body>
+          <ConvexClientProvider>
+            <Providers>
+              <ColorThemeProvider>
+                <QueryProvider>{children}</QueryProvider>
+              </ColorThemeProvider>
+            </Providers>
+          </ConvexClientProvider>
+          <Toaster />
+        </body>
+      </html>
+    </ConvexAuthNextjsServerProvider>
   )
 }

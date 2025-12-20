@@ -1,8 +1,8 @@
 "use client"
 import { PlusCircleIcon } from "@heroicons/react/24/outline"
 import { HeartIcon, MinusCircleIcon } from "@heroicons/react/24/solid"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { ID, Query } from "appwrite"
+import { useMutation, useQuery } from "convex/react"
+import { useState } from "react"
 import { toast } from "react-hot-toast"
 import { Button } from "@/components/ui/button"
 import {
@@ -10,14 +10,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { useGameStore } from "@/lib/stores/game-store"
-import {
-  database,
-  databaseId,
-  mylibCol,
-  userID,
-  wishlistCol,
-} from "@/utils/appwrite"
+import { api } from "@/convex/_generated/api"
 
 type AddButtonProps = {
   collection: string
@@ -26,83 +19,47 @@ type AddButtonProps = {
 }
 
 const AddButton = ({ collection, gameId, gameName }: AddButtonProps) => {
-  const { setGameAdded } = useGameStore()
-  const queryClient = useQueryClient()
+  const list = collection === "mylib" ? "library" : "wishlist"
+  const [isPending, setIsPending] = useState(false)
 
-  const collectionId = collection === "mylib" ? mylibCol : wishlistCol
-  const queryKey = ["gameStatus", collection, gameId]
+  const gamePresent = useQuery(api.gameLists.status, { list, gameId }) ?? false
 
-  // Check if game exists in collection
-  const { data: gameData } = useQuery({
-    queryKey,
-    queryFn: async () => {
-      const result = await database.listDocuments(databaseId, collectionId, [
-        Query.equal("user_id", userID),
-        Query.equal("game_id", gameId),
-      ])
-      return {
-        exists: result.documents.length > 0,
-        documentId: result.documents[0]?.$id || "",
-      }
-    },
-    enabled: !!gameId && !!userID,
-  })
+  const addToList = useMutation(api.gameLists.add)
+  const removeFromList = useMutation(api.gameLists.remove)
 
-  const gamePresent = gameData?.exists ?? false
-  const documentId = gameData?.documentId ?? ""
-
-  // Add to collection mutation
-  const addMutation = useMutation({
-    mutationFn: async () => {
-      await database.createDocument(databaseId, collectionId, ID.unique(), {
-        user_id: userID,
-        game_id: gameId,
-        game_name: gameName,
-      })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey })
-      setGameAdded(true)
+  const addToCollection = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setIsPending(true)
+    try {
+      await addToList({ list, gameId, gameName })
       const message =
         collection === "mylib" ? "Added to Library!" : "Added to Wishlist!"
       toast.success(message)
-    },
-    onError: (error) => {
+    } catch (error) {
       console.log(error)
       toast.error("Failed to add game")
-    },
-  })
+    } finally {
+      setIsPending(false)
+    }
+  }
 
-  // Remove from collection mutation
-  const removeMutation = useMutation({
-    mutationFn: async () => {
-      await database.deleteDocument(databaseId, collectionId, documentId)
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey })
-      setGameAdded(false)
+  const removeFromCollection = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setIsPending(true)
+    try {
+      await removeFromList({ list, gameId })
       const message =
         collection === "mylib"
           ? "Removed from Library!"
           : "Removed from Wishlist!"
       toast.success(message)
-    },
-    onError: (error) => {
+    } catch (error) {
       console.log(error)
       toast.error("Failed to remove game")
-    },
-  })
-
-  const addToCollection = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    addMutation.mutate()
+    } finally {
+      setIsPending(false)
+    }
   }
-  const removeFromCollection = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    removeMutation.mutate()
-  }
-
-  const isLoading = addMutation.isPending || removeMutation.isPending
 
   return (
     <div>
@@ -114,7 +71,7 @@ const AddButton = ({ collection, gameId, gameName }: AddButtonProps) => {
                 size="icon-sm"
                 variant="ghost"
                 onClick={removeFromCollection}
-                disabled={isLoading}
+                disabled={isPending}
                 className="text-red-500 hover:text-red-600"
               >
                 <MinusCircleIcon className="size-5" />
@@ -129,7 +86,7 @@ const AddButton = ({ collection, gameId, gameName }: AddButtonProps) => {
                 size="icon-sm"
                 variant="ghost"
                 onClick={addToCollection}
-                disabled={isLoading}
+                disabled={isPending}
                 className="text-green-500 hover:text-green-600"
               >
                 <PlusCircleIcon className="size-5" />
@@ -146,7 +103,7 @@ const AddButton = ({ collection, gameId, gameName }: AddButtonProps) => {
                 size="icon-sm"
                 variant="ghost"
                 onClick={removeFromCollection}
-                disabled={isLoading}
+                disabled={isPending}
                 className="text-red-500 hover:text-red-600"
               >
                 <HeartIcon className="size-5" />
@@ -161,7 +118,7 @@ const AddButton = ({ collection, gameId, gameName }: AddButtonProps) => {
                 size="icon-sm"
                 variant="ghost"
                 onClick={addToCollection}
-                disabled={isLoading}
+                disabled={isPending}
                 className="text-gray-400 hover:text-red-500"
                 aria-label="Add to Wishlist"
               >

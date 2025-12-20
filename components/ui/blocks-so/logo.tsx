@@ -1,4 +1,4 @@
-import { type JSX, type SVGProps } from "react"
+import type { JSX, SVGProps } from "react"
 
 const Logo = (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
   <svg

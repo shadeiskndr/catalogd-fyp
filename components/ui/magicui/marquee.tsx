@@ -1,4 +1,4 @@
-import { ComponentPropsWithoutRef } from "react"
+import type { ComponentPropsWithoutRef } from "react"
 
 import { cn } from "@/lib/utils"
 
@@ -58,7 +58,6 @@ export function Marquee({
         .fill(0)
         .map((_, i) => (
           <div
-            // biome-ignore lint/suspicious/noArrayIndexKey: <leave it>
             key={i}
             className={cn("flex shrink-0 justify-around [gap:var(--gap)]", {
               "animate-marquee flex-row": !vertical,

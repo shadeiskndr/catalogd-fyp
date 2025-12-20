@@ -1,4 +1,5 @@
 "use client"
+import { useAuthActions } from "@convex-dev/auth/react"
 import { LogOut } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -7,14 +8,14 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { account } from "@/utils/appwrite"
 
 export function LogoutButton() {
+  const { signOut } = useAuthActions()
   const router = useRouter()
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     try {
-      account.deleteSession("current")
+      await signOut()
       router.push("/")
     } catch (error) {
       console.error("Logout error:", error)

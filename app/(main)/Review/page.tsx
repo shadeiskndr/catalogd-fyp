@@ -1,15 +1,12 @@
 "use client"
 import { BeatLoader } from "react-spinners"
-import ReviewCard from "@/components/ReviewCard"
 import LoadMore from "@/components/load-more"
+import ReviewCard from "@/components/ReviewCard"
 import { BlurFade } from "@/components/ui/magicui/blur-fade"
 import { useReviews } from "@/hooks/use-reviews"
 
 const ReviewPage = () => {
-  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    useReviews()
-
-  const reviews = data?.pages.flatMap((page) => page.reviews) ?? []
+  const { reviews, isLoading, isLoadingMore, hasMore, loadMore } = useReviews()
 
   return (
     <div className="space-y-4 py-4 px-2">
@@ -19,13 +16,13 @@ const ReviewPage = () => {
         <div className="grid grid-cols-1 gap-6 auto-rows-auto grid-auto-flow-dense">
           {reviews.map((review, index) => (
             <BlurFade
-              key={`${review.user_id}-${review.game_name}-${index}`}
+              key={`${review.userId}-${review.gameName}-${index}`}
               delay={0.1 * index}
               className="break-inside-avoid"
             >
               <ReviewCard
-                userName={review.user_name}
-                gameName={review.game_name}
+                userName={review.userName}
+                gameName={review.gameName}
                 rating={review.rating}
                 reviewText={review.review}
               />
@@ -33,9 +30,9 @@ const ReviewPage = () => {
           ))}
         </div>
         <LoadMore
-          hasMore={hasNextPage}
-          isLoading={isFetchingNextPage}
-          onLoadMore={() => fetchNextPage()}
+          hasMore={hasMore}
+          isLoading={isLoadingMore}
+          onLoadMore={loadMore}
         />
       </div>
     </div>

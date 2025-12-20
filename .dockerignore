@@ -1,7 +1,46 @@
+# Build output
+.next
+out
+dist
+build
+
+# Dependencies (installed inside the image)
+node_modules
+
+# Version control
+.git
+.gitignore
+.github
+
+# Editor / OS / tool caches
+.vscode
+.cursor
+.idea
+.DS_Store
+
+# Dev-only tooling
+.husky
+.claude
+.agents
+skills-lock.json
+
+# Vendored Convex Auth docs site — not part of the app
+docs
+
+# Environment files (provide via orchestrator, not the image)
+.env*
+
+# Logs
+*.log
+npm-debug.log*
+
+# Tests / coverage
+coverage
+.nyc_output
+
+# Markdown / READMEs
+*.md
+
+# Don't copy the Docker build context itself
 Dockerfile
 .dockerignore
-node_modules
-npm-debug.log
-README.md
-.next
-.git

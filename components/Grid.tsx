@@ -1,5 +1,5 @@
-import type { Game } from "@/gameTypes"
 import { BlurFade } from "@/components/ui/magicui/blur-fade"
+import type { Game } from "@/gameTypes"
 import GameCard from "./GameCard"
 
 interface Props {

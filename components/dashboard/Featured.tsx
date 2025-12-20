@@ -1,8 +1,8 @@
 "use client"
 import { BeatLoader } from "react-spinners"
+import { BentoGrid } from "@/components/ui/magicui/bento-grid"
 import { useFeaturedGames } from "@/hooks/use-games"
 import CarouselCard from "./CarouselCard"
-import { BentoGrid } from "@/components/ui/magicui/bento-grid"
 
 const Featured = () => {
   const { data: games, isLoading, isError, error } = useFeaturedGames()

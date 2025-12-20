@@ -1,9 +1,10 @@
 "use client"
 
-import { ID, Query } from "appwrite"
+import { useMutation } from "convex/react"
+import { ConvexError } from "convex/values"
 import { Loader2, Search } from "lucide-react"
 import Image from "next/image"
-import { type ChangeEvent, useEffect, useState } from "react"
+import { type ChangeEvent, useState } from "react"
 import { toast } from "react-hot-toast"
 import { FaStar } from "react-icons/fa"
 import { Button } from "@/components/ui/button"
@@ -30,26 +31,11 @@ import {
 } from "@/components/ui/input-group"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
+import { api } from "@/convex/_generated/api"
 import type { Game } from "@/gameTypes"
 import { useDebounceCallback } from "@/hooks/use-debounce-callback"
 import { useGameSearch } from "@/hooks/use-games-extended"
 import placeholderImg from "@/public/imgs/imgPlaceholder.jpg"
-import {
-  database,
-  databaseId,
-  getSessionData,
-  reviewCol,
-  userID,
-} from "@/utils/appwrite"
-
-type ReviewFormProps = {
-  collection: string
-  gameId: number
-  gameName: string
-  gameReview: string
-  gameRating: number
-  userName: string
-}
 
 const WriteReview = () => {
   const [open, setOpen] = useState(false)
@@ -58,24 +44,9 @@ const WriteReview = () => {
   const [selectedGame, setSelectedGame] = useState<Game | null>(null)
   const [rating, setRating] = useState<number>(5)
   const [review, setReview] = useState<string>("")
-  const [userName, setUserName] = useState<string>("")
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
 
-  // Fetch user name on mount
-  useEffect(() => {
-    const fetchUserName = async () => {
-      try {
-        const sessionData = await getSessionData()
-        if (sessionData && sessionData.name) {
-          setUserName(sessionData.name)
-        }
-      } catch (error) {
-        console.error("Error fetching user name:", error)
-      }
-    }
-
-    fetchUserName()
-  }, [])
+  const createReview = useMutation(api.reviews.create)
 
   // Debounce search term updates
   const debouncedSetSearchTerm = useDebounceCallback(
@@ -86,12 +57,6 @@ const WriteReview = () => {
   // Use React Query for game search
   const { data: searchResults, isLoading } = useGameSearch(debouncedSearchTerm)
   const searchedGames = searchResults?.results ?? []
-
-  const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setSearchTerm(value)
-    debouncedSetSearchTerm(value)
-  }
 
   const handleGameSelect = (game: Game) => {
     setSelectedGame(game)
@@ -118,53 +83,25 @@ const WriteReview = () => {
     setIsSubmitting(true)
 
     try {
-      // Check if the user has already written a review for the selected game
-      const existingReviews = await database.listDocuments(
-        databaseId,
-        reviewCol,
-        [
-          Query.equal("user_id", userID),
-          Query.equal("game_id", selectedGame.id),
-        ],
-      )
-
-      if (existingReviews.total > 0) {
-        toast.error("You have already written a review for this game.")
-        setIsSubmitting(false)
-        return
-      }
-
-      const reviewData: ReviewFormProps = {
-        collection: reviewCol,
+      await createReview({
         gameId: selectedGame.id,
         gameName: selectedGame.name,
-        gameReview: review,
-        gameRating: rating,
-        userName: userName,
-      }
-
-      await database.createDocument(
-        `${databaseId}`,
-        `${reviewData.collection}`,
-        ID.unique(),
-        {
-          user_id: userID,
-          game_id: reviewData.gameId,
-          game_name: reviewData.gameName,
-          review: reviewData.gameReview,
-          rating: reviewData.gameRating,
-          user_name: reviewData.userName,
-        },
-      )
+        rating,
+        review,
+      })
 
       toast.success("Review submitted successfully!")
       setSelectedGame(null)
       setRating(5)
       setReview("")
-      setIsSubmitting(false)
     } catch (error) {
       console.error("Error submitting review:", error)
-      toast.error("Error submitting review.")
+      if (error instanceof ConvexError && typeof error.data === "string") {
+        toast.error(error.data)
+      } else {
+        toast.error("Error submitting review.")
+      }
+    } finally {
       setIsSubmitting(false)
     }
   }

@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/breadcrumb"
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
-import { useSession } from "@/hooks/use-session"
+import { useCurrentUser } from "@/hooks/use-current-user"
 
 // Navigation items that match app-sidebar.tsx
 const NAV_ITEMS = [
@@ -30,7 +30,7 @@ const NAV_ITEMS = [
 
 export function AppTopbar() {
   const pathname = usePathname()
-  const { data: sessionData } = useSession()
+  const { user } = useCurrentUser()
 
   const currentPage =
     NAV_ITEMS.find((item) =>
@@ -54,8 +54,8 @@ export function AppTopbar() {
         </Breadcrumb>
       </div>
       <div className="flex items-center gap-4 px-4">
-        {sessionData?.name && (
-          <span className="text-sm mr-2">Welcome, {sessionData.name}!</span>
+        {user?.name && (
+          <span className="text-sm mr-2">Welcome, {user.name}!</span>
         )}
         <Separator
           orientation="vertical"

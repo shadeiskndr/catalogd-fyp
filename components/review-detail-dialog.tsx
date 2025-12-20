@@ -35,11 +35,15 @@ const ReviewDetailDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex max-h-[min(600px,80vh)] flex-col gap-0 p-0 sm:max-w-md">
         <DialogHeader className="contents space-y-0 text-left">
-          <DialogTitle className="border-b px-6 py-4 text-xl">{gameName}</DialogTitle>
+          <DialogTitle className="border-b px-6 py-4 text-xl">
+            {gameName}
+          </DialogTitle>
           <ScrollArea className="flex max-h-full flex-col overflow-hidden">
             <div className="px-6 py-4">
               <div className="flex items-center gap-2 mb-4">
-                <span className={`text-md font-semibold ${getRatingColor(rating)}`}>
+                <span
+                  className={`text-md font-semibold ${getRatingColor(rating)}`}
+                >
                   {rating}
                 </span>
                 <FaStar className={`${getRatingColor(rating)} size-3`} />

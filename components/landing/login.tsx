@@ -1,6 +1,7 @@
 "use client"
 
-import { ID } from "appwrite"
+import { useAuthActions } from "@convex-dev/auth/react"
+import { ConvexError } from "convex/values"
 import { ArrowRight, Eye, EyeOff, Lock, Mail } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { type FormEvent, useState } from "react"
@@ -10,22 +11,15 @@ import { ColorThemeToggle } from "@/components/layout/color-theme-toggle"
 import { ThemeToggle } from "@/components/layout/theme-toggle"
 import { Logo } from "@/components/ui/blocks-so/logo"
 import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
 import { LightRays } from "@/components/ui/magicui/light-rays"
-import { account } from "@/utils/appwrite"
+import { Separator } from "@/components/ui/separator"
 
 export default function Login07() {
+  const { signIn } = useAuthActions()
   const [isVisible, setIsVisible] = useState<boolean>(false)
   const [isSignup, setIsSignup] = useState(false)
-  const [isPasswordReset, setIsPasswordReset] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
@@ -43,16 +37,11 @@ export default function Login07() {
 
   const toggleVisibility = () => setIsVisible((prevState) => !prevState)
 
-  const oAuthLogin = () => {
-    try {
-      account.createOAuth2Session(
-        "discord",
-        "https://catalogd-fyp.vercel.app/dashboard",
-      )
-    } catch (error) {
+  const oAuthLogin = (provider: "discord" | "google") => {
+    signIn(provider, { redirectTo: "/dashboard" }).catch((error) => {
       console.error("OAuth login error:", error)
-      toast.error("Failed to initiate Discord login")
-    }
+      toast.error("Failed to initiate OAuth login")
+    })
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -88,51 +77,34 @@ export default function Login07() {
           return
         }
 
-        await account.create(
-          ID.unique(),
-          signupDetails.email,
-          signupDetails.password,
-          signupDetails.name,
-        )
+        await signIn("password", {
+          email: signupDetails.email,
+          password: signupDetails.password,
+          name: signupDetails.name,
+          flow: "signUp",
+        })
 
         toast.success("Account created successfully!")
-
-        await account.createEmailSession(
-          signupDetails.email,
-          signupDetails.password,
-        )
-
-        toast.success("Logged in via email!")
-        router.push("/dashboard")
       } else {
-        await account.createEmailSession(
-          userDetails.email,
-          userDetails.password,
-        )
+        await signIn("password", {
+          email: userDetails.email,
+          password: userDetails.password,
+          flow: "signIn",
+        })
         toast.success("Logged in via email!")
-        router.push("/dashboard")
       }
-    } catch (error: any) {
-      toast.error(error?.message || "Authentication failed")
+      router.push("/dashboard")
+    } catch (error: unknown) {
       console.error("Auth error:", error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const forgotPassword = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setIsLoading(true)
-
-    try {
-      await account.createRecovery(
-        userDetails.email,
-        "https://catalogd-fyp.vercel.app/resetPass",
-      )
-      toast.success("Please check your email for password reset instructions.")
-      setIsPasswordReset(false)
-    } catch (error: any) {
-      toast.error(error?.message || "Failed to send reset email")
+      if (error instanceof ConvexError && typeof error.data === "string") {
+        toast.error(error.data)
+      } else {
+        toast.error(
+          isSignup
+            ? "Could not create account. The email may already be in use."
+            : "Invalid email or password.",
+        )
+      }
     } finally {
       setIsLoading(false)
     }
@@ -165,7 +137,12 @@ export default function Login07() {
         </div>
 
         <div className="space-y-5">
-          <Button variant="outline" className="w-full justify-center gap-2">
+          <Button
+            variant="outline"
+            className="w-full justify-center gap-2"
+            onClick={() => oAuthLogin("google")}
+            type="button"
+          >
             <BsGoogle className="h-4 w-4" />
             {isSignup ? "Sign up with Google" : "Sign in with Google"}
           </Button>
@@ -173,7 +150,7 @@ export default function Login07() {
           <Button
             variant="outline"
             className="w-full justify-center gap-2"
-            onClick={oAuthLogin}
+            onClick={() => oAuthLogin("discord")}
             type="button"
           >
             <BsDiscord className="h-4 w-4" />
@@ -188,10 +165,7 @@ export default function Login07() {
             <Separator className="flex-1" />
           </div>
 
-          <form
-            onSubmit={isSignup ? loginUser : loginUser}
-            className="space-y-6"
-          >
+          <form onSubmit={loginUser} className="space-y-6">
             {isSignup && (
               <div>
                 <Label htmlFor="name">Full Name</Label>
@@ -233,18 +207,7 @@ export default function Login07() {
             </div>
 
             <div>
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
-                {!isSignup && (
-                  <button
-                    type="button"
-                    onClick={() => setIsPasswordReset(true)}
-                    className="text-sm text-primary hover:underline"
-                  >
-                    Forgot Password?
-                  </button>
-                )}
-              </div>
+              <Label htmlFor="password">Password</Label>
               <div className="relative mt-2.5">
                 <Input
                   id="password"
@@ -337,41 +300,6 @@ export default function Login07() {
           </div>
         </div>
       </div>
-
-      <Dialog open={isPasswordReset} onOpenChange={setIsPasswordReset}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Reset Password</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={forgotPassword} className="space-y-4">
-            <div>
-              <Label htmlFor="reset-email">Email</Label>
-              <Input
-                id="reset-email"
-                type="email"
-                placeholder="Enter your email"
-                value={userDetails.email}
-                onChange={handleInputChange}
-                name="email"
-                disabled={isLoading}
-                className="mt-2"
-              />
-            </div>
-            <Button className="w-full" type="submit" disabled={isLoading}>
-              {isLoading ? "Sending..." : "Send Reset Email"}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              onClick={() => setIsPasswordReset(false)}
-              disabled={isLoading}
-            >
-              Back to Login
-            </Button>
-          </form>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

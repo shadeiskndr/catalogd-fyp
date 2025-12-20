@@ -16,12 +16,12 @@ const GenrePage = () => {
   const genre = genreListData?.results.find((g) => g.slug === slug)
 
   // Fetch games for this genre with pagination
-  const {
-    data,
-    isLoading,
-    isFetching,
-    error,
-  } = useGenreGames(slug, pageNo, 20, "popularity")
+  const { data, isLoading, isFetching, error } = useGenreGames(
+    slug,
+    pageNo,
+    20,
+    "popularity",
+  )
 
   const loading = isLoading || isFetching
   const games = data?.games ?? []
