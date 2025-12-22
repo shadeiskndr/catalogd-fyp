@@ -1,30 +1,52 @@
-"use client"
+"use client";
 
-import { CheckIcon, Palette } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Check, Palette } from "lucide-react";
+import { useCallback } from "react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
-import { useColorTheme } from "@/lib/color-provider"
+} from "@/components/ui/dropdown-menu";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { COLOR_THEMES, type ColorTheme, useColorTheme } from "@/lib/color-context";
+
+function ColorThemeItem({
+  value,
+  label,
+  isActive,
+  onSelect,
+}: {
+  value: ColorTheme;
+  label: string;
+  isActive: boolean;
+  onSelect: (value: ColorTheme) => void;
+}) {
+  const handleSelect = useCallback(() => {
+    onSelect(value);
+  }, [onSelect, value]);
+
+  return (
+    <DropdownMenuItem onClick={handleSelect}>
+      {label}
+      <span className="ml-auto flex items-center">
+        {isActive ? <Check className="size-4" /> : null}
+      </span>
+    </DropdownMenuItem>
+  );
+}
 
 export function ColorThemeToggle() {
-  const { colorTheme, setColorThemeWithTransition } = useColorTheme()
+  const { colorTheme, setColorThemeWithTransition } = useColorTheme();
 
   return (
     <DropdownMenu>
       <Tooltip>
         <TooltipTrigger asChild>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon-sm">
-              <Palette className="h-[1.2rem] w-[1.2rem]" />
+            <Button variant="ghost" size="icon-sm" aria-label="Change color theme">
+              <Palette className="size-5" />
             </Button>
           </DropdownMenuTrigger>
         </TooltipTrigger>
@@ -33,27 +55,16 @@ export function ColorThemeToggle() {
         </TooltipContent>
       </Tooltip>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem
-          onClick={() => setColorThemeWithTransition("default")}
-        >
-          Default
-          <span className="ml-auto flex items-center">
-            {colorTheme === "default" && <CheckIcon className="size-4" />}
-          </span>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setColorThemeWithTransition("claude")}>
-          Claude
-          <span className="ml-auto flex items-center">
-            {colorTheme === "claude" && <CheckIcon className="size-4" />}
-          </span>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setColorThemeWithTransition("rose")}>
-          Rose
-          <span className="ml-auto flex items-center">
-            {colorTheme === "rose" && <CheckIcon className="size-4" />}
-          </span>
-        </DropdownMenuItem>
+        {COLOR_THEMES.map((theme) => (
+          <ColorThemeItem
+            key={theme.value}
+            value={theme.value}
+            label={theme.label}
+            isActive={colorTheme === theme.value}
+            onSelect={setColorThemeWithTransition}
+          />
+        ))}
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }

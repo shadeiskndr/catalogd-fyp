@@ -17,15 +17,14 @@ node_modules
 .cursor
 .idea
 .DS_Store
+*.tsbuildinfo
 
 # Dev-only tooling
 .husky
 .claude
 .agents
 skills-lock.json
-
-# Vendored Convex Auth docs site — not part of the app
-docs
+doctor.config.jsonc
 
 # Environment files (provide via orchestrator, not the image)
 .env*

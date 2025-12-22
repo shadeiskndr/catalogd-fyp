@@ -1,0 +1,30 @@
+// Port of @convex-dev/eslint-plugin `require-args-validator` (recommended: error).
+//
+// Every registered Convex function should declare an `args` validator. Without one
+// the function accepts any argument shape, so malformed client calls fail deep in
+// the handler instead of at the boundary.
+//
+// This file only covers the object-syntax form. The bare-function form is reported
+// by convex-no-old-registered-function-syntax.grit, which is the fix you'd apply
+// first anyway; converting to object syntax is what creates a place to put `args`.
+
+language js
+
+pattern convex_registrar() {
+  or {
+    `query`,
+    `mutation`,
+    `action`,
+    `internalQuery`,
+    `internalMutation`,
+    `internalAction`
+  }
+}
+
+// `some` tests only the object's own properties, so an unrelated `args:` key inside
+// the handler body cannot mask a missing validator.
+`export const $name = $reg({ $props })` where {
+  $reg <: convex_registrar(),
+  not $props <: some `args: $_`,
+  register_diagnostic(span=$reg, message="Convex function is missing an args validator. Add `args: {}` if it takes no arguments.", severity="error")
+}

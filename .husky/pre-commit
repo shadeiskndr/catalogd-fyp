@@ -1,0 +1,9 @@
+# Abort the commit if any check below fails.
+set -e
+
+# Format/lint staged files (Biome).
+bunx biome check --staged --no-errors-on-unmatched --reporter=summary
+
+# React-health gate on staged files (react-doctor). Blocks on errors only;
+# warnings are advisory. Skips network + dead-code in staged mode, so it's fast.
+bunx react-doctor --staged

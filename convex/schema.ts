@@ -1,6 +1,6 @@
-import { authTables } from "@convex-dev/auth/server"
-import { defineSchema, defineTable } from "convex/server"
-import { v } from "convex/values"
+import { authTables } from "@convex-dev/auth/server";
+import { defineSchema, defineTable } from "convex/server";
+import { v } from "convex/values";
 
 export default defineSchema({
   ...authTables,
@@ -31,8 +31,6 @@ export default defineSchema({
     userId: v.id("users"),
     body: v.string(),
   }),
-  // Server-side cache of RAWG API responses, keyed by endpoint string.
-  // Bodies are stored as JSON strings since RAWG shapes are arbitrary.
   rawgCache: defineTable({
     endpoint: v.string(),
     body: v.string(),
@@ -40,4 +38,4 @@ export default defineSchema({
   })
     .index("by_endpoint", ["endpoint"])
     .index("by_fetchedAt", ["fetchedAt"]),
-})
+});

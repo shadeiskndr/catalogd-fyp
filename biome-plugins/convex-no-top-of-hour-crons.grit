@@ -1,0 +1,40 @@
+// Port of @convex-dev/eslint-plugin `no-top-of-hour-crons` (recommended: warn).
+//
+// Minute 0 is the busiest point on the clock: inbound traffic and everyone else's
+// scheduled work land there too. Omitting `minuteUTC` lets Convex spread runs across
+// the hour; otherwise pick an off-peak minute.
+//
+// The cron-expression branch recognises a minute field that fires at 0 — a bare `0`,
+// a range or step anchored at 0 (`0-5`, `0/30`), or a comma list containing one. Like
+// the ESLint rule it leaves wildcard steps such as `*/15` alone, since the fix there
+// (a non-zero anchor like `7/15`) is obscure. Unlike the ESLint rule, which splits the
+// minute field and tests each part, this is a single regex, so a zero part buried in a
+// long comma list can slip through.
+
+language js
+
+pattern minute_utc_cron_method() {
+  or {
+    `hourly`,
+    `daily`,
+    `weekly`,
+    `monthly`
+  }
+}
+
+// `\b0` cannot match inside `10` or `30`, so only a real zero part matches.
+pattern fires_at_minute_zero() {
+  r"[\"'][^\s]*\b0+(?:[-/][^\s,]*)?(?:,[^\s]*)?\s+[^\s]+\s+[^\s]+\s+[^\s]+\s+[^\s]+[\"']"
+}
+
+or {
+  `$crons.$method($name, { $props }, $...)` where {
+    $method <: minute_utc_cron_method(),
+    $props <: some `minuteUTC: 0`,
+    register_diagnostic(span=$props, message="This cron runs at the exact top of the hour. Omit `minuteUTC` to let Convex spread runs across the hour, or pick an off-peak minute.", severity="warn")
+  },
+  `$crons.cron($name, $expr, $...)` where {
+    $expr <: fires_at_minute_zero(),
+    register_diagnostic(span=$expr, message="This cron runs at the exact top of the hour. Prefer `.hourly()`/`.daily()` without a minute, `.interval()`, or an off-peak minute.", severity="warn")
+  }
+}

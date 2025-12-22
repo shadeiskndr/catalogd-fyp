@@ -10,8 +10,8 @@
 
 import type * as auth from "../auth.js";
 import type * as crons from "../crons.js";
-import type * as gameLists from "../gameLists.js";
 import type * as http from "../http.js";
+import type * as lists from "../lists.js";
 import type * as messages from "../messages.js";
 import type * as rawg from "../rawg.js";
 import type * as reviews from "../reviews.js";
@@ -26,8 +26,8 @@ import type {
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   crons: typeof crons;
-  gameLists: typeof gameLists;
   http: typeof http;
+  lists: typeof lists;
   messages: typeof messages;
   rawg: typeof rawg;
   reviews: typeof reviews;

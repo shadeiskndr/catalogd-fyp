@@ -1,5 +1,5 @@
 ### 1. Install deps (cached unless package.json/bun.lock change) ###
-FROM oven/bun:1 AS deps
+FROM oven/bun:1.4.1 AS deps
 WORKDIR /app
 COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile --ignore-scripts
@@ -7,7 +7,7 @@ RUN bun install --frozen-lockfile --ignore-scripts
 RUN bun install sharp
 
 ### 2. Build: push Convex functions, then `next build` ###
-FROM oven/bun:1 AS builder
+FROM oven/bun:1.4.1 AS builder
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=deps /app/node_modules ./node_modules
@@ -28,7 +28,7 @@ RUN --mount=type=secret,id=convex_admin_key \
     bunx convex deploy --cmd 'bun run build'
 
 ### 3. Runner: minimal image, just the standalone server ###
-FROM oven/bun:1-slim AS runner
+FROM oven/bun:1.4.1-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production \
     PORT=3000 \

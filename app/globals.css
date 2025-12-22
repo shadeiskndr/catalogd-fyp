@@ -230,3 +230,28 @@ body {
 .break-inside-avoid {
   break-inside: avoid;
 }
+
+/* WCAG 2.3.3: honour the OS "reduce motion" preference. Motion is decorative
+   throughout the app (view transitions, marquee, blur-fade, light rays), so it
+   is safe to collapse every animation and transition to a single frame. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    /* biome-ignore lint/complexity/noImportantStyles: a reduced-motion override has to beat every component-level animation, including inline styles injected by the theme transitions. */
+    animation-duration: 0.01ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: same override, see above. */
+    animation-iteration-count: 1 !important;
+    /* biome-ignore lint/complexity/noImportantStyles: same override, see above. */
+    transition-duration: 0.01ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: same override, see above. */
+    scroll-behavior: auto !important;
+  }
+
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    /* biome-ignore lint/complexity/noImportantStyles: same override, see above. */
+    animation: none !important;
+  }
+}

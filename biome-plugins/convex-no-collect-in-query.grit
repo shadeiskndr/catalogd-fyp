@@ -1,0 +1,53 @@
+// Port of @convex-dev/eslint-plugin `no-collect-in-query`.
+//
+// Upstream leaves this rule off in its recommended config, so it is enabled here as a
+// warning rather than an error: `.collect()` is correct for a bounded result set and
+// only becomes a problem as a table grows. It reads every document the query selects
+// into memory, so a query that is fine on today's data starts failing against Convex's
+// read limits once the table is large enough. `.take(n)` bounds the read; `.paginate()`
+// bounds it and keeps the rest reachable.
+//
+// GritQL has no type information, so this is a port of the rule's documented no-type-info
+// fallback: walk a member-call chain back to a `.db.query()` root. That fallback only
+// recognises a syntactic chain, so a query stored in a variable first
+// (`const q = ctx.db.query(...); await q.collect()`) is not matched.
+//
+// Deviation from upstream: the chain root also accepts `ctx.db.system`, which the
+// upstream fallback omits (it only knows `privateSystem`). Upstream catches those
+// calls via type information instead; without types, omitting it would silently miss
+// a full scan of a system table such as `_storage`.
+
+language js
+
+pattern terminal_method() {
+  or {
+    `collect`,
+    `take`,
+    `first`,
+    `unique`,
+    `paginate`
+  }
+}
+
+// A chain still in query-builder position. Terminal methods return arrays or
+// documents, so a call after one of them is no longer a query.
+pattern db_query_chain() {
+  or {
+    `$base.query($...)` where {
+      $base <: or {
+        `$_.db`,
+        `db`,
+        `$_.db.privateSystem`,
+        `db.privateSystem`,
+        `$_.db.system`,
+        `db.system`
+      }
+    },
+    `$inner.$method($...)` where { $method <: not terminal_method(), $inner <: db_query_chain() }
+  }
+}
+
+`$recv.collect()` where {
+  $recv <: db_query_chain(),
+  register_diagnostic(span=$recv, message="`.collect()` reads every matching document and can exceed Convex's read limits as the table grows. Prefer `.take(n)` or `.paginate()` unless the result set is provably bounded.", severity="warn")
+}

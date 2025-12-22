@@ -1,0 +1,28 @@
+{
+  "$schema": "https://react.doctor/schema/config.json",
+  "ignore": {
+    "overrides": [
+      {
+        // Convex functions are runtime entry points invoked through the
+        // generated `api` object, never imported statically. The dead-code
+        // analyzer (deslop) can't see those call edges and reports every query,
+        // mutation and action as unused. They are all live.
+        "files": ["convex/**"],
+        "rules": ["deslop/unused-file", "deslop/unused-export"]
+      },
+      {
+        // Vendored component registry (shadcn / magicui / kokonutui / smoothui
+        // / shadcn-io / shadcn-studio / blocks.so), kept as a library on
+        // purpose: an unreferenced leaf here isn't dead code, it's a component
+        // we haven't reached for yet. The `hooks/**` companions
+        // (`use-mobile`, the usehooks-ts ports the vendored blocks import)
+        // inherit the same blind spot. Everything else in components/ui/** is
+        // held to the same lint gates as first-party code — intentional
+        // violations are inline `react-doctor-disable-next-line` comments in
+        // the file, not entries here.
+        "files": ["components/ui/**", "hooks/**"],
+        "rules": ["deslop/unused-file", "deslop/unused-export"]
+      }
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "biome.lsp.bin": "./node_modules/.bin/biome",
+  "json.schemaDownload.trustedDomains": {
+    "https://biomejs.dev/schemas/": true,
+    "https://react.doctor/schema/": true,
+    "https://ui.shadcn.com/schema.json": true
+  },
+  "tailwindCSS.lint.suggestCanonicalClasses": "ignore"
+}

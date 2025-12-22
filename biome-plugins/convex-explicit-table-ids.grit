@@ -1,0 +1,53 @@
+// Port of @convex-dev/eslint-plugin `explicit-table-ids` (recommended: error).
+//
+// `ctx.db.get(id)` is kept for backwards compatibility; `ctx.db.get("table", id)` is
+// the current form. Naming the table lets Convex reject an id belonging to a different
+// table instead of silently returning null, and it types the result without inference.
+//
+// The migrated shapes take the table name first:
+//   get(table, id)   delete(table, id)   patch(table, id, patch)   replace(table, id, doc)
+//
+// Grit binds a lone `$args` metavariable to the whole argument list rather than to one
+// argument, so arity can't be tested directly. Instead we test the rendered argument
+// text for a leading string literal, which is what "explicit table name" means here.
+// Grit regexes are anchored to the full node text, hence the trailing `[\s\S]*`
+// (`[\s\S]` rather than `.` so multi-line argument lists still match).
+
+language js
+
+// `db.system` reads the system tables (`_storage`, `_scheduled_functions`) and takes a
+// table name in the same position, so it needs the same treatment. Upstream's fallback
+// checks only for a `.db` receiver and misses these; it catches them via type
+// information instead.
+pattern db_receiver() {
+  or {
+    `$_.db`,
+    `$_.db.system`,
+    `db.system`
+  }
+}
+
+pattern names_a_table() { r"[\"'][\s\S]*" }
+
+or {
+  `$recv.get($args)` where {
+    $recv <: db_receiver(),
+    not $args <: names_a_table(),
+    register_diagnostic(span=$args, message="Pass the table name explicitly: `db.get('table', id)`.", severity="error")
+  },
+  `$recv.delete($args)` where {
+    $recv <: db_receiver(),
+    not $args <: names_a_table(),
+    register_diagnostic(span=$args, message="Pass the table name explicitly: `db.delete('table', id)`.", severity="error")
+  },
+  `$recv.patch($args)` where {
+    $recv <: db_receiver(),
+    not $args <: names_a_table(),
+    register_diagnostic(span=$args, message="Pass the table name explicitly: `db.patch('table', id, patch)`.", severity="error")
+  },
+  `$recv.replace($args)` where {
+    $recv <: db_receiver(),
+    not $args <: names_a_table(),
+    register_diagnostic(span=$args, message="Pass the table name explicitly: `db.replace('table', id, doc)`.", severity="error")
+  }
+}

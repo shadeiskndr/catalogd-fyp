@@ -1,0 +1,57 @@
+# AGENTS.md
+
+Guidance for coding agents working in this repository.
+
+`Catalogd` — a social cataloguing app for video games (final year project). Next.js 16 (App Router) + React 19, self-hosted Convex backend, Bun, Tailwind v4, Biome. Game data comes from the RAWG API, proxied through Convex.
+
+## Commands
+
+```bash
+bun run dev            # Next dev + `convex dev` together — use this, not dev:next alone
+bun run check          # biome check --write .  (lint + format + safe fixes) — the main gate
+bun run doctor         # react-doctor: React/Next health, perf, a11y, bundle, dead code
+bun run typecheck      # tsc --noEmit (TS 7 native; `next build` also type-checks)
+bun run build          # next build
+```
+
+**There is no test framework in this repo.** "Verified" means `bun run check`, `bun run typecheck`, `bun run doctor` (100/100), a successful `bun run build`, and — for anything touching data flow — clicking through the affected pages in a browser.
+
+`bunx convex dev` (or a deploy) must run after any change under `convex/`: the frontend calls the *deployed* functions, so a renamed module (`api.lists` vs `api.gameLists`) breaks at runtime until it is pushed, even though the build passes.
+
+## Conventions
+
+- **Source files carry no comments.** `bun run strip-comments:write` enforces this across tracked `.ts/.tsx/.js/.jsx`; it keeps only directives (`biome-ignore`, `react-doctor-disable-next-line`, `@ts-expect-error`, …), legal headers, and `TODO/FIXME/HACK/@deprecated`. Write self-explanatory code instead. Config files are the exception and *are* documented in prose.
+- **File names are kebab-case, everywhere, including route segments** (`app/(main)/new-releases/`, `components/review-card.tsx`). No `PascalCase.tsx`, no `camelCase.ts`. Components inside are still `PascalCase` identifiers; hooks are `useThing` in `hooks/use-thing.ts`.
+- **react-doctor scores 100 and `doctor.config.jsonc` only covers deslop's dead-code blind spots** (`unused-file` / `unused-export` over `convex/**` and the vendored registry). Every other intentional violation is an inline `react-doctor-disable-next-line react-doctor/<rule>` placed immediately above the *reported node* (the attribute or the call, not the enclosing statement), with the reason in a plain comment above it — don't add rule entries to the config.
+- **Convex lint rules live in `biome-plugins/*.grit`**, ported from `@convex-dev/eslint-plugin` and registered in `biome.json` under `overrides` for `convex/**`. Don't install the upstream package: Biome can't load ESLint plugins, and `typescript-eslint` rejects TypeScript 7. GritQL is syntax-only, has no autofix, and **plugin diagnostics cannot be suppressed** — `biome-ignore` does not apply to them, so the code has to satisfy the rule (see `convex/lists.ts`, which branches on the list literal so `db.delete` gets a string table name).
+- Biome: 100 cols, 2-space indent, double quotes, semicolons. `useSortedClasses` auto-sorts Tailwind classes in `className`/`clsx`/`cva`/`cn`/`twMerge`.
+- **The `react` and `next` lint domains are on at `"all"`, with no path-based overrides** — `components/ui/**` is held to the same gates as first-party code. Intentional violations are inline `biome-ignore` comments with a reason, never a new `overrides` entry. Three consequences worth knowing:
+  - a component file may not export non-components, so `cva` variants live in sibling `*-variants.ts` modules and contexts/hooks in `*-context.ts` (`button-variants.ts`, `sidebar-context.ts`, `form-context.ts`, `theme-context.ts`, `color-context.ts`);
+  - JSX props may not take inline functions — hoist to `useCallback`, or push the binding into a child component when it closes over a `.map` item (`GameCommandItem`, `ColorThemeItem`, `ChatMessageItem` exist for exactly this);
+  - `noLeakedRender` rejects `{value && <JSX/>}` unless the left side is provably boolean, so conditional JSX is written `{cond ? <JSX/> : null}`.
+- **Biome honours `biome-ignore` only on the immediately preceding line**, so it and a `react-doctor-disable-next-line` can't both sit above the same line. When they collide, put the `biome-ignore` above the JSX element and the `react-doctor-disable-next-line` above the offending attribute (see `components/ui/item.tsx`).
+- `tsconfig.json` is maximally strict: `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noPropertyAccessFromIndexSignature`, `verbatimModuleSyntax`, `erasableSyntaxOnly`. Two patterns follow from it — `process.env["NAME"]` (never dot access), and `{...(value === undefined ? {} : { value })}` when forwarding an optional prop that the target types as non-`undefined`.
+- Commits are gitmoji + conventional: `✨ feat:`, `🐛 fix:`, `♻️ refactor:`, `🔧 chore:`, `⬆️ chore:`.
+- **Commit straight to `main`.** Solo repo, no PR review flow — don't create feature branches, not even for dependency bumps.
+- Imports use the `@/*` alias rooted at the repo.
+- Pre-commit hook runs `biome check --staged` + `react-doctor --staged`; don't bypass with `--no-verify`.
+
+## Architecture
+
+- **RAWG never reaches the browser.** `convex/rawg.ts` holds the API key, applies the console-platform filter, validates that the client-supplied endpoint still resolves inside `https://api.rawg.io/api/`, and caches responses in the `rawgCache` table (6h TTL, purged daily by `convex/crons.ts`). The client side is `lib/rawg-client.ts` → `convexClient.action(api.rawg.get, …)`, wrapped by TanStack Query hooks in `hooks/use-games.ts` and `hooks/use-genres.ts`. Going direct would fail anyway: RAWG's `lists/*` endpoints send no CORS headers.
+- **Two data layers, on purpose.** Anything user-owned (library, wishlist, reviews, chat) is Convex and reactive (`useQuery` / `usePaginatedQuery`). Anything from RAWG is TanStack Query and cached. `useUserGameList` is the seam: Convex supplies the paginated game ids, RAWG hydrates them.
+- **One query-key factory per source** (`gameKeys`, `genreKeys`). Never give two different `queryFn` shapes the same key — an earlier version had `useGameByName` and `useGameSearch` both keyed on `["games","search",q]`, which made them clobber each other's cache entries.
+- `library` and `wishlist` are two tables with an identical shape, selected by the `list` argument in `convex/lists.ts`.
+- Auth is `@convex-dev/auth` (password + Discord + Google). `proxy.ts` (the Next 16 successor to `middleware.ts`) redirects unauthenticated users to `/` and authenticated users away from it, so `app/(main)/**` can assume a session and `app/page.tsx` can assume none.
+
+## Gotchas
+
+- **`Password<DataModel>` does not typecheck under `exactOptionalPropertyTypes`.** `authTables` generates `secret?: string | undefined`, which isn't assignable to Convex's `Record<string, Value>` index signature. `convex/auth.ts` uses the un-parameterised `Password({...})` and validates the profile with Zod instead. Don't re-add the generic.
+- **A Convex function that calls another function in the same module needs an explicit return type.** If a handler's *inferred* return type consumes the result of a same-module `ctx.runQuery`/`runMutation`/`runAction`, inference goes circular and TypeScript silently degrades the whole `api` object to `any`. The symptom is implicit-any errors in unrelated `components/**` files. Annotate the handler (`handler: async (ctx): Promise<T> => …`). A `returns:` validator does **not** fix it.
+- Convex functions **do not read `.env.local`** — `RAWG_API_KEY`, `AUTH_DISCORD_ID`/`AUTH_DISCORD_SECRET` and `AUTH_GOOGLE_ID`/`AUTH_GOOGLE_SECRET` are set with `bunx convex env set`. `.env.local` covers only the Next/CLI side (`NEXT_PUBLIC_CONVEX_URL`, `NEXT_PUBLIC_CONVEX_SITE_URL`, `CONVEX_SELF_HOSTED_URL`, `CONVEX_SELF_HOSTED_ADMIN_KEY`).
+- Deploys run `bunx convex deploy --cmd 'bun run build'` inside the `Dockerfile`, so backend functions and frontend always ship together. The admin key is passed as a BuildKit secret, never an `ARG`.
+- New external image hosts need an entry in `next.config.ts` `images.remotePatterns`.
+- **Never hardcode colors.** Three themes (`default`, `claude`, `rose` in `app/themes/*.css`) are swapped by a `data-theme` attribute, on top of a light/dark class. Use the semantic Tailwind tokens (`bg-background`, `text-muted-foreground`, `border-border`, `text-destructive`).
+- **Motion is lazy-loaded.** `lib/motion-provider.tsx` wraps the tree in `<LazyMotion features={domAnimation}>`, so animated components import `m` from `motion/react`, never `motion` — the eager import pulls the full bundle and react-doctor's `use-lazy-motion` will flag it. `domAnimation` has no layout or drag features; adding either means switching to `domMax`.
+- `components/ui/**` is vendored registry code (shadcn + `@magicui` — see `components.json`). We own it: it's edited in place and held to the same lint gates. Re-running `bunx shadcn add …` will clobber those edits, so diff before accepting. First-party components live directly under `components/**`.
+- **Theming is first-party, not `next-themes`.** `lib/theme-provider.tsx` (light/dark) and `lib/color-provider.tsx` (palette) both persist through `useLocalStorage` and animate the swap with the View Transitions API. A vendored component that imports `useTheme` from `next-themes` will silently get `undefined` — point it at `@/lib/theme-context` instead (`components/ui/sonner.tsx` is the precedent).

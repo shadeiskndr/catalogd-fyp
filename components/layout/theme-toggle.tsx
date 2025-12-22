@@ -1,16 +1,18 @@
-"use client"
+"use client";
 
-import { Moon, Sun } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
-import { useTheme } from "@/lib/theme-provider"
+import { Moon, Sun } from "lucide-react";
+import { useCallback } from "react";
+import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useTheme } from "@/lib/theme-context";
 
 export function ThemeToggle() {
-  const { resolvedTheme, setThemeWithTransition } = useTheme()
+  const { resolvedTheme, setThemeWithTransition } = useTheme();
+  const isDark = resolvedTheme === "dark";
+
+  const toggle = useCallback(() => {
+    setThemeWithTransition(isDark ? "light" : "dark");
+  }, [isDark, setThemeWithTransition]);
 
   return (
     <Tooltip>
@@ -18,20 +20,15 @@ export function ThemeToggle() {
         <Button
           variant="ghost"
           size="icon-sm"
-          onClick={() =>
-            setThemeWithTransition(resolvedTheme === "dark" ? "light" : "dark")
-          }
+          onClick={toggle}
+          aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
         >
-          {resolvedTheme === "dark" ? (
-            <Sun className="w-5 h-5" />
-          ) : (
-            <Moon className="w-5 h-5" />
-          )}
+          {isDark ? <Sun className="size-5" /> : <Moon className="size-5" />}
         </Button>
       </TooltipTrigger>
       <TooltipContent>
-        <p>Switch to {resolvedTheme === "dark" ? "light" : "dark"} mode</p>
+        <p>Switch to {isDark ? "light" : "dark"} mode</p>
       </TooltipContent>
     </Tooltip>
-  )
+  );
 }

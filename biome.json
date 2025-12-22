@@ -1,4 +1,5 @@
 {
+  "$schema": "https://biomejs.dev/schemas/2.5.12/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -14,102 +15,100 @@
       "!out",
       "!coverage",
       "!public",
-      "!docs",
       "!convex/_generated",
       "!**/*.md"
     ]
   },
   "formatter": {
     "enabled": true,
-    "formatWithErrors": false,
     "indentStyle": "space",
     "indentWidth": 2,
-    "lineEnding": "lf",
-    "lineWidth": 80,
-    "attributePosition": "auto",
-    "bracketSameLine": false,
-    "bracketSpacing": true,
-    "expand": "auto",
-    "useEditorconfig": true
+    "lineWidth": 100,
+    "lineEnding": "lf"
   },
   "javascript": {
     "formatter": {
-      "jsxQuoteStyle": "double",
-      "quoteProperties": "asNeeded",
-      "trailingCommas": "all",
-      "semicolons": "asNeeded",
-      "arrowParentheses": "always",
-      "bracketSameLine": false,
       "quoteStyle": "double",
-      "attributePosition": "auto",
-      "bracketSpacing": true
+      "jsxQuoteStyle": "double",
+      "semicolons": "always",
+      "trailingCommas": "es5",
+      "bracketSpacing": true,
+      "arrowParentheses": "always"
     }
   },
   "css": {
-    "parser": { "tailwindDirectives": true },
-    "formatter": null,
-    "linter": { "enabled": false },
-    "assist": null
-  },
-  "html": {
-    "formatter": {
-      "indentScriptAndStyle": false,
-      "selfCloseVoidElements": "always"
+    "parser": {
+      "cssModules": true,
+      "tailwindDirectives": true
     }
   },
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true,
+      "preset": "recommended",
+      "complexity": {
+        "useLiteralKeys": "off"
+      },
       "suspicious": {
-        "noEmptyInterface": "off",
+        "noEmptyInterface": "on",
         "noArrayIndexKey": "off"
       },
       "style": {
-        "noNonNullAssertion": "off"
+        "noNonNullAssertion": "error",
+        "useComponentExportOnlyModules": {
+          "level": "error",
+          "options": {
+            "allowExportNames": [
+              "metadata",
+              "generateMetadata",
+              "viewport",
+              "generateViewport",
+              "generateStaticParams",
+              "generateImageMetadata",
+              "alt",
+              "size",
+              "contentType",
+              "dynamic",
+              "dynamicParams",
+              "revalidate",
+              "fetchCache",
+              "runtime",
+              "preferredRegion",
+              "maxDuration"
+            ]
+          }
+        }
       },
       "performance": {
-        "noImgElement": "off"
+        "noImgElement": "error"
+      },
+      "nursery": {
+        "useSortedClasses": {
+          "level": "warn",
+          "fix": "safe",
+          "options": {
+            "attributes": ["className", "class"],
+            "functions": ["clsx", "cva", "cn", "tw", "twMerge"]
+          }
+        }
       }
+    },
+    "domains": {
+      "next": "all",
+      "react": "all"
     }
   },
   "overrides": [
     {
-      "includes": [
-        "**/*.config.js",
-        "**/*.config.mjs",
-        "**/*.config.cjs",
-        "**/*.config.ts"
-      ],
-      "formatter": { "enabled": false }
-    },
-    {
-      "includes": ["components/ui/**", "hooks/**"],
-      "linter": {
-        "rules": {
-          "a11y": {
-            "useSemanticElements": "off",
-            "useFocusableInteractive": "off",
-            "useAriaPropsForRole": "off",
-            "useKeyWithClickEvents": "off",
-            "noRedundantRoles": "off",
-            "useButtonType": "off",
-            "noStaticElementInteractions": "off",
-            "noSvgWithoutTitle": "off"
-          },
-          "correctness": {
-            "useExhaustiveDependencies": "off",
-            "noUnusedFunctionParameters": "off"
-          },
-          "security": {
-            "noDangerouslySetInnerHtml": "off"
-          },
-          "suspicious": {
-            "noExplicitAny": "off",
-            "noDocumentCookie": "off"
-          }
-        }
-      }
+      "includes": ["convex/**"],
+      "plugins": [
+        "./biome-plugins/convex-require-args-validator.grit",
+        "./biome-plugins/convex-no-old-registered-function-syntax.grit",
+        "./biome-plugins/convex-explicit-table-ids.grit",
+        "./biome-plugins/convex-no-filter-in-query.grit",
+        "./biome-plugins/convex-no-collect-in-query.grit",
+        "./biome-plugins/convex-no-top-of-hour-crons.grit"
+      ]
     }
   ]
 }

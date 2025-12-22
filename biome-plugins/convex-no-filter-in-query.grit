@@ -1,0 +1,49 @@
+// Port of @convex-dev/eslint-plugin `no-filter-in-query` (recommended: warn).
+//
+// `.filter()` on a Convex query is evaluated by scanning the documents the index
+// already selected, so it reads rows it then throws away. `.withIndex()` narrows
+// the read itself; for anything an index can't express, filter in JS after the read.
+//
+// The ESLint rule prefers type information and falls back to an AST heuristic when
+// it isn't available. GritQL has no type information, so this is a port of that
+// documented fallback: walk a member-call chain back to a `.db.query()` root.
+//
+// Deviation from upstream: the chain root also accepts `ctx.db.system`, which the
+// upstream fallback omits (it only knows `privateSystem`). Upstream catches those
+// calls via type information instead; without types, omitting it would silently miss
+// a full scan of a system table such as `_storage`.
+
+language js
+
+pattern terminal_method() {
+  or {
+    `collect`,
+    `take`,
+    `first`,
+    `unique`,
+    `paginate`
+  }
+}
+
+// A chain still in query-builder position. Terminal methods return arrays or
+// documents, so a `.filter()` after one of them is `Array.prototype.filter`.
+pattern db_query_chain() {
+  or {
+    `$base.query($...)` where {
+      $base <: or {
+        `$_.db`,
+        `db`,
+        `$_.db.privateSystem`,
+        `db.privateSystem`,
+        `$_.db.system`,
+        `db.system`
+      }
+    },
+    `$inner.$method($...)` where { $method <: not terminal_method(), $inner <: db_query_chain() }
+  }
+}
+
+`$recv.filter($_)` where {
+  $recv <: db_query_chain(),
+  register_diagnostic(span=$recv, message="Avoid `.filter()` on a Convex query; it reads rows it then discards. Prefer `.withIndex()`, or filter in JS after the read.", severity="warn")
+}

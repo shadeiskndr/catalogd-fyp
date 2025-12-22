@@ -1,72 +1,45 @@
-"use client"
+"use client";
 
-import { createContext, useContext, useEffect, useState } from "react"
-import { useLocalStorage } from "@/hooks/use-local-storage"
-import { useTimeout } from "@/hooks/use-timeout"
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useLocalStorage } from "@/hooks/use-local-storage";
+import { useTimeout } from "@/hooks/use-timeout";
+import { type ColorTheme, ColorThemeProviderContext } from "@/lib/color-context";
 
-type ColorTheme = "default" | "claude" | "rose"
+const TRANSITION_CLEANUP_MS = 3000;
 
 type ColorThemeProviderProps = {
-  children: React.ReactNode
-  defaultTheme?: ColorTheme
-  storageKey?: string
-}
-
-type ColorThemeProviderState = {
-  colorTheme: ColorTheme
-  setColorTheme: (theme: ColorTheme) => void
-  setColorThemeWithTransition: (theme: ColorTheme) => void
-}
-
-const initialState: ColorThemeProviderState = {
-  colorTheme: "default",
-  setColorTheme: () => null,
-  setColorThemeWithTransition: () => null,
-}
-
-const ColorThemeProviderContext =
-  createContext<ColorThemeProviderState>(initialState)
+  children: React.ReactNode;
+  defaultTheme?: ColorTheme;
+  storageKey?: string;
+};
 
 export function ColorThemeProvider({
   children,
   defaultTheme = "default",
-  storageKey = "vite-ui-color-theme",
-  ...props
+  storageKey = "app-color-theme",
 }: ColorThemeProviderProps) {
-  const [colorTheme, setColorTheme] = useLocalStorage<ColorTheme>(
-    storageKey,
-    defaultTheme,
-  )
-  const [styleId, setStyleId] = useState<string | null>(null)
+  const [colorTheme, setColorTheme] = useLocalStorage<ColorTheme>(storageKey, defaultTheme);
+  const [styleId, setStyleId] = useState<string | null>(null);
 
   useEffect(() => {
-    const root = window.document.documentElement
+    window.document.documentElement.setAttribute("data-theme", colorTheme);
+  }, [colorTheme]);
 
-    // Set the data-theme attribute
-    root.setAttribute("data-theme", colorTheme)
-  }, [colorTheme])
-
-  // Clean up animation styles after transition
   useTimeout(
     () => {
-      if (styleId) {
-        const styleEl = document.getElementById(styleId)
-        if (styleEl) {
-          styleEl.remove()
-        }
-        setStyleId(null)
-      }
+      if (styleId === null) return;
+      document.getElementById(styleId)?.remove();
+      setStyleId(null);
     },
-    styleId ? 3000 : null,
-  )
+    styleId === null ? null : TRANSITION_CLEANUP_MS
+  );
 
-  const setColorThemeWithTransition = (newTheme: ColorTheme) => {
-    // Inject polygon wipe animation styles
-    const newStyleId = `color-theme-transition-${Date.now()}`
-    const style = document.createElement("style")
-    style.id = newStyleId
-
-    const css = `
+  const setColorThemeWithTransition = useCallback(
+    (newTheme: ColorTheme) => {
+      const newStyleId = `color-theme-transition-${Date.now()}`;
+      const style = document.createElement("style");
+      style.id = newStyleId;
+      style.textContent = `
       @supports (view-transition-name: root) {
         ::view-transition-old(root) {
           animation: none;
@@ -83,40 +56,25 @@ export function ColorThemeProvider({
           }
         }
       }
-    `
+    `;
+      document.head.appendChild(style);
+      setStyleId(newStyleId);
 
-    style.textContent = css
-    document.head.appendChild(style)
-    setStyleId(newStyleId)
+      if ("startViewTransition" in document) {
+        document.startViewTransition(() => {
+          setColorTheme(newTheme);
+        });
+      } else {
+        setColorTheme(newTheme);
+      }
+    },
+    [setColorTheme]
+  );
 
-    // Use View Transitions API if supported
-    if ("startViewTransition" in document) {
-      document.startViewTransition(() => {
-        setColorTheme(newTheme)
-      })
-    } else {
-      setColorTheme(newTheme)
-    }
-  }
+  const value = useMemo(
+    () => ({ colorTheme, setColorTheme, setColorThemeWithTransition }),
+    [colorTheme, setColorTheme, setColorThemeWithTransition]
+  );
 
-  const value = {
-    colorTheme,
-    setColorTheme,
-    setColorThemeWithTransition,
-  }
-
-  return (
-    <ColorThemeProviderContext.Provider {...props} value={value}>
-      {children}
-    </ColorThemeProviderContext.Provider>
-  )
-}
-
-export const useColorTheme = () => {
-  const context = useContext(ColorThemeProviderContext)
-
-  if (context === undefined)
-    throw new Error("useColorTheme must be used within a ColorThemeProvider")
-
-  return context
+  return <ColorThemeProviderContext value={value}>{children}</ColorThemeProviderContext>;
 }

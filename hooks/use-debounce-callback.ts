@@ -1,51 +1,54 @@
-"use client"
-import debounce from "lodash.debounce"
-import * as React from "react"
-import { useUnmount } from "@/hooks/use-unmount"
+"use client";
+
+import debounce from "lodash.debounce";
+import { useEffect, useMemo, useRef } from "react";
 
 type DebounceOptions = {
-  leading?: boolean
-  trailing?: boolean
-  maxWait?: number
-}
-type ControlFunctions = {
-  cancel: () => void
-  flush: () => void
-  isPending: () => boolean
-}
-export type DebouncedState<T extends (...args: any) => ReturnType<T>> = ((
-  ...args: Parameters<T>
-) => ReturnType<T> | undefined) &
-  ControlFunctions
-export function useDebounceCallback<T extends (...args: any) => ReturnType<T>>(
-  func: T,
+  leading?: boolean;
+  trailing?: boolean;
+  maxWait?: number;
+};
+
+export type DebouncedCallback<Args extends unknown[]> = ((...args: Args) => void) & {
+  cancel: () => void;
+  flush: () => void;
+};
+
+export function useDebounceCallback<Args extends unknown[]>(
+  func: (...args: Args) => unknown,
   delay = 500,
-  options?: DebounceOptions,
-): DebouncedState<T> {
-  const debouncedFunc = React.useRef<ReturnType<typeof debounce>>(null)
-  useUnmount(() => {
-    if (debouncedFunc.current) {
-      debouncedFunc.current.cancel()
-    }
-  })
-  const debounced = React.useMemo(() => {
-    const debouncedFuncInstance = debounce(func, delay, options)
-    const wrappedFunc: DebouncedState<T> = (...args: Parameters<T>) => {
-      return debouncedFuncInstance(...args)
-    }
-    wrappedFunc.cancel = () => {
-      debouncedFuncInstance.cancel()
-    }
-    wrappedFunc.isPending = () => {
-      return !!debouncedFunc.current
-    }
-    wrappedFunc.flush = () => {
-      return debouncedFuncInstance.flush()
-    }
-    return wrappedFunc
-  }, [func, delay, options])
-  React.useEffect(() => {
-    debouncedFunc.current = debounce(func, delay, options)
-  }, [func, delay, options])
-  return debounced
+  options?: DebounceOptions
+): DebouncedCallback<Args> {
+  const funcRef = useRef(func);
+
+  useEffect(() => {
+    funcRef.current = func;
+  }, [func]);
+
+  const debounced = useMemo(() => {
+    const instance = debounce(
+      (...args: Args) => {
+        funcRef.current(...args);
+      },
+      delay,
+      options
+    );
+
+    const wrapped = ((...args: Args) => {
+      instance(...args);
+    }) as DebouncedCallback<Args>;
+
+    wrapped.cancel = () => {
+      instance.cancel();
+    };
+    wrapped.flush = () => {
+      instance.flush();
+    };
+
+    return wrapped;
+  }, [delay, options]);
+
+  useEffect(() => debounced.cancel, [debounced]);
+
+  return debounced;
 }

@@ -1,0 +1,33 @@
+// Port of @convex-dev/eslint-plugin `no-old-registered-function-syntax` (recommended: error).
+//
+// `query(async (ctx) => ...)` is the pre-validator calling convention. The object form
+// `query({ args, handler })` is the only one with somewhere to hang an args validator,
+// a returns validator, or a `use node` directive.
+
+language js
+
+pattern convex_registrar() {
+  or {
+    `query`,
+    `mutation`,
+    `action`,
+    `internalQuery`,
+    `internalMutation`,
+    `internalAction`
+  }
+}
+
+pattern function_like() {
+  or {
+    `($params) => $body`,
+    `async ($params) => $body`,
+    `function ($params) { $body }`,
+    `async function ($params) { $body }`
+  }
+}
+
+`export const $name = $reg($fn)` where {
+  $reg <: convex_registrar(),
+  $fn <: function_like(),
+  register_diagnostic(span=$fn, message="Use the object syntax for registered Convex functions: `{ args, handler }`.", severity="error")
+}

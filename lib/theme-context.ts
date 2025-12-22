@@ -1,0 +1,23 @@
+"use client";
+
+import { createContext, useContext } from "react";
+
+export type Theme = "dark" | "light" | "system";
+export type ResolvedTheme = "dark" | "light";
+
+export type ThemeProviderState = {
+  theme: Theme;
+  resolvedTheme: ResolvedTheme;
+  setTheme: (theme: Theme) => void;
+  setThemeWithTransition: (theme: Theme) => void;
+};
+
+export const ThemeProviderContext = createContext<ThemeProviderState | null>(null);
+
+export function useTheme() {
+  const context = useContext(ThemeProviderContext);
+  if (context === null) {
+    throw new Error("useTheme must be used within a ThemeProvider");
+  }
+  return context;
+}

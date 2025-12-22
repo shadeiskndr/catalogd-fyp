@@ -1,13 +1,11 @@
-import Featured from "@/components/dashboard/Featured"
-import Upcoming from "@/components/dashboard/Upcoming"
+import { Featured } from "@/components/dashboard/featured";
+import { Upcoming } from "@/components/dashboard/upcoming";
 
-function Home() {
+export default function DashboardPage() {
   return (
-    <div className="py-4 px-2 space-y-8">
+    <div className="space-y-8 px-2 py-4">
       <Featured />
       <Upcoming />
     </div>
-  )
+  );
 }
-
-export default Home
