@@ -1,32 +1,32 @@
-"use client";
-
-import { Pencil } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
-import { useParams } from "next/navigation";
+import { Suspense } from "react";
 import { Banner } from "@/components/game/banner";
 import { Info } from "@/components/game/info";
-import { ReviewCard } from "@/components/review-card";
-import { Spinner } from "@/components/ui/spinner";
-import { useGameDetails, useGameScreenshots } from "@/hooks/use-games";
-import { useGameReviews } from "@/hooks/use-reviews";
+import { ReviewsSection } from "@/components/game/reviews-section";
+import { Skeleton } from "@/components/ui/skeleton";
+import type { Game, Screenshot } from "@/lib/game-types";
+import { rawgFetchServer } from "@/lib/rawg-server";
 
-export default function GamePage() {
-  const params = useParams<{ slug: string }>();
-  const slug = params.slug;
+type Params = Promise<{ slug: string }>;
 
-  const { data: game, isLoading } = useGameDetails(slug);
-  const { data: screenshots } = useGameScreenshots(slug);
-  const { reviews, isLoading: isLoadingReviews } = useGameReviews(game?.name);
-
-  if (game === undefined) {
-    return (
-      <div className="flex items-center justify-center py-16">
-        <Spinner className="size-8 text-primary" />
-        <span className="sr-only">{isLoading ? "Loading game" : "Game not found"}</span>
+function GameDetailSkeleton() {
+  return (
+    <div className="space-y-6">
+      <Skeleton className="h-80 w-full" />
+      <div className="flex flex-col gap-4 lg:flex-row">
+        <Skeleton className="h-60 flex-1" />
+        <Skeleton className="h-60 lg:w-96" />
       </div>
-    );
-  }
+    </div>
+  );
+}
+
+async function GameDetail({ params }: { params: Params }) {
+  const { slug } = await params;
+  const [game, screenshots] = await Promise.all([
+    rawgFetchServer<Game>(`games/${slug}`),
+    rawgFetchServer<Screenshot>(`games/${slug}/screenshots`),
+  ]);
 
   return (
     <div>
@@ -36,45 +36,16 @@ export default function GamePage() {
         </div>
       ) : null}
       <Banner game={game} />
-      {screenshots === undefined ? (
-        <div className="flex items-center justify-center py-8">
-          <Spinner className="size-8 text-primary" />
-        </div>
-      ) : (
-        <Info game={game} screenshots={screenshots.results} />
-      )}
-
-      <section className="my-6 bg-indigo-100/10 p-6">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-semibold text-lg md:text-xl lg:text-2xl">Reviews</h2>
-          <Link href="/write-review" className="flex items-center text-sm hover:underline">
-            <Pencil className="mr-1 size-5" />
-            Add a Review
-          </Link>
-        </div>
-        {isLoadingReviews ? (
-          <div className="flex items-center justify-center py-8">
-            <Spinner className="size-8 text-primary" />
-          </div>
-        ) : null}
-        {!isLoadingReviews && reviews.length === 0 ? (
-          <p className="text-muted-foreground">No reviews available for this game.</p>
-        ) : null}
-        {reviews.length > 0 && (
-          <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-3">
-            {reviews.map((review) => (
-              <ReviewCard
-                key={`${review.userId}-${review.gameId}`}
-                variant="game"
-                userName={review.userName}
-                gameName={review.gameName}
-                rating={review.rating}
-                reviewText={review.review}
-              />
-            ))}
-          </div>
-        )}
-      </section>
+      <Info game={game} screenshots={screenshots.results} />
+      <ReviewsSection gameName={game.name} />
     </div>
+  );
+}
+
+export default function GamePage({ params }: { params: Params }) {
+  return (
+    <Suspense fallback={<GameDetailSkeleton />}>
+      <GameDetail params={params} />
+    </Suspense>
   );
 }

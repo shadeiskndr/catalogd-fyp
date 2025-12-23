@@ -6,7 +6,15 @@ import type { Game } from "@/lib/game-types";
 
 const PLACEHOLDER_IMAGE = "/imgs/img-placeholder.jpg";
 
-export function CarouselCard({ game }: { game: Game }) {
+export function CarouselCard({
+  game,
+  sizes,
+  priority = false,
+}: {
+  game: Game;
+  sizes: string;
+  priority?: boolean;
+}) {
   const { slug, id, name, released, background_image } = game;
   const releasedYear = released ? new Date(released).getFullYear() : "TBA";
 
@@ -18,6 +26,8 @@ export function CarouselCard({ game }: { game: Game }) {
           alt={name}
           width={800}
           height={400}
+          sizes={sizes}
+          priority={priority}
           className="h-48 w-full object-cover"
         />
         <CardFooter className="flex items-end justify-between gap-4 bg-linear-to-t from-primary/50 to-transparent px-4 py-4">

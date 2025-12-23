@@ -1,34 +1,42 @@
-"use client";
-
 import { CarouselCard } from "@/components/dashboard/carousel-card";
 import { Marquee } from "@/components/ui/magicui/marquee";
-import { Spinner } from "@/components/ui/spinner";
-import { useUpcomingGames } from "@/hooks/use-games";
+import { Skeleton } from "@/components/ui/skeleton";
+import { dedupeById, type Game, type ResponseSchema } from "@/lib/game-types";
+import { rawgFetchServer } from "@/lib/rawg-server";
 
-export function Upcoming() {
-  const { data: games, isLoading, error } = useUpcomingGames();
+const CARD_SIZES = "288px";
+
+export function UpcomingSkeleton() {
+  const placeholders = Array.from({ length: 6 }, (_, index) => `upcoming-${index}`);
 
   return (
-    <section>
-      <h2 className="font-bold text-xl md:text-3xl">New and Upcoming</h2>
-      {error !== null && <p className="text-destructive">Error loading games: {error.message}</p>}
-      {isLoading ? (
-        <div className="flex items-center justify-center py-8">
-          <Spinner className="size-8 text-primary" />
-        </div>
-      ) : null}
-      {games !== undefined && games.length > 0 && (
-        <div className="-mx-[calc((100vw-100%)/2)] w-screen overflow-hidden">
-          <Marquee className="py-8" pauseOnHover repeat={2}>
-            {games.map((game) => (
-              <div key={game.id} className="w-72 shrink-0">
-                <CarouselCard game={game} />
-              </div>
-            ))}
-          </Marquee>
-        </div>
-      )}
-      {!isLoading && error === null && games?.length === 0 ? <p>No games found.</p> : null}
-    </section>
+    <div className="flex gap-4 overflow-hidden py-8">
+      {placeholders.map((placeholder) => (
+        <Skeleton key={placeholder} className="h-72 w-72 shrink-0 rounded-xl" />
+      ))}
+    </div>
+  );
+}
+
+export async function Upcoming() {
+  const data = await rawgFetchServer<ResponseSchema<Game>>(
+    "games/lists/main?&page-size=8&ordering=-released&page=1"
+  );
+  const games = dedupeById(data.results);
+
+  if (games.length === 0) {
+    return <p>No games found.</p>;
+  }
+
+  return (
+    <div className="-mx-[calc((100vw-100%)/2)] w-screen overflow-hidden">
+      <Marquee className="py-8" pauseOnHover repeat={2}>
+        {games.map((game) => (
+          <div key={game.id} className="w-72 shrink-0">
+            <CarouselCard game={game} sizes={CARD_SIZES} />
+          </div>
+        ))}
+      </Marquee>
+    </div>
   );
 }

@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
-import { action, internalMutation, internalQuery } from "./_generated/server";
+import { type ActionCtx, action, internalMutation, internalQuery } from "./_generated/server";
 
 const RAWG_API_URL = "https://api.rawg.io/api/";
 
@@ -56,42 +56,45 @@ export const purgeExpired = internalMutation({
   },
 });
 
+async function fetchThroughCache(ctx: ActionCtx, endpoint: string): Promise<unknown> {
+  const apiKey = process.env["RAWG_API_KEY"];
+  if (!apiKey) {
+    throw new Error("RAWG_API_KEY is not set on the Convex deployment");
+  }
+
+  const isGameEndpoint = endpoint.includes("games");
+  const separator = endpoint.includes("?") ? "&" : "?";
+  const platformFilter = isGameEndpoint ? `&platforms=${CONSOLE_PLATFORMS}` : "";
+  const url = new URL(`${endpoint}${separator}key=${apiKey}${platformFilter}`, RAWG_API_URL);
+  if (url.origin !== "https://api.rawg.io" || !url.pathname.startsWith("/api/")) {
+    throw new Error("Invalid RAWG endpoint");
+  }
+
+  const cached = await ctx.runQuery(internal.rawg.getCached, { endpoint });
+  if (cached !== null && Date.now() - cached.fetchedAt <= CACHE_TTL_MS) {
+    return JSON.parse(cached.body);
+  }
+
+  const response = await fetch(url.toString());
+  if (!response.ok) {
+    throw new Error(`RAWG API Error: ${response.statusText}`);
+  }
+  const data = await response.json();
+
+  const body = JSON.stringify(data);
+  if (body.length <= MAX_CACHED_BODY_BYTES) {
+    await ctx.runMutation(internal.rawg.putCache, { endpoint, body });
+  }
+  return data;
+}
+
 export const get = action({
   args: { endpoint: v.string() },
-  handler: async (ctx, args): Promise<unknown> => {
-    const apiKey = process.env["RAWG_API_KEY"];
-    if (!apiKey) {
-      throw new Error("RAWG_API_KEY is not set on the Convex deployment");
-    }
+  handler: async (ctx, args): Promise<unknown> => await fetchThroughCache(ctx, args.endpoint),
+});
 
-    const isGameEndpoint = args.endpoint.includes("games");
-    const separator = args.endpoint.includes("?") ? "&" : "?";
-    const platformFilter = isGameEndpoint ? `&platforms=${CONSOLE_PLATFORMS}` : "";
-    const url = new URL(`${args.endpoint}${separator}key=${apiKey}${platformFilter}`, RAWG_API_URL);
-    if (url.origin !== "https://api.rawg.io" || !url.pathname.startsWith("/api/")) {
-      throw new Error("Invalid RAWG endpoint");
-    }
-
-    const cached = await ctx.runQuery(internal.rawg.getCached, {
-      endpoint: args.endpoint,
-    });
-    if (cached !== null && Date.now() - cached.fetchedAt <= CACHE_TTL_MS) {
-      return JSON.parse(cached.body);
-    }
-
-    const response = await fetch(url.toString());
-    if (!response.ok) {
-      throw new Error(`RAWG API Error: ${response.statusText}`);
-    }
-    const data = await response.json();
-
-    const body = JSON.stringify(data);
-    if (body.length <= MAX_CACHED_BODY_BYTES) {
-      await ctx.runMutation(internal.rawg.putCache, {
-        endpoint: args.endpoint,
-        body,
-      });
-    }
-    return data;
-  },
+export const getMany = action({
+  args: { endpoints: v.array(v.string()) },
+  handler: async (ctx, args): Promise<unknown[]> =>
+    await Promise.all(args.endpoints.map((endpoint) => fetchThroughCache(ctx, endpoint))),
 });

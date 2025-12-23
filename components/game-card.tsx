@@ -6,7 +6,7 @@ import type { Game } from "@/lib/game-types";
 
 const PLACEHOLDER_IMAGE = "/imgs/img-placeholder.jpg";
 
-export function GameCard({ game }: { game: Game }) {
+export function GameCard({ game, priority = false }: { game: Game; priority?: boolean }) {
   const { slug, id, name, released, background_image, genres } = game;
   const releasedDate = released ? new Date(released).toLocaleDateString() : "TBA";
   const genreList = genres.map((genre) => genre.name).join(", ");
@@ -19,6 +19,8 @@ export function GameCard({ game }: { game: Game }) {
           alt={name}
           width={800}
           height={400}
+          sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+          priority={priority}
           className="h-48 w-full object-cover"
         />
         <CardFooter className="flex flex-row items-start justify-between gap-4 bg-linear-to-t from-primary/50 to-transparent px-4 py-4">

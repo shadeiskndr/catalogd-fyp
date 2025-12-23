@@ -6,8 +6,8 @@ export function GameGrid({ games }: { games: Game[] }) {
   return (
     <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-3">
       {games.map((game, index) => (
-        <BlurFade key={game.id} delay={index * 0.1} inView>
-          <GameCard game={game} />
+        <BlurFade key={game.id} delay={Math.min(index, 8) * 0.04} inView>
+          <GameCard game={game} priority={index < 3} />
         </BlurFade>
       ))}
     </div>

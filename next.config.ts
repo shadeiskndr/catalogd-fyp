@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   output: "standalone",
   reactStrictMode: false,
   agentRules: false,
+  cacheComponents: true,
   experimental: {
     useTypeScriptCli: true,
   },
