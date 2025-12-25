@@ -3,6 +3,7 @@ import Link from "next/link";
 import { AddButton } from "@/components/add-button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import type { Game } from "@/lib/game-types";
+import { rawgImage } from "@/lib/rawg-image";
 
 const PLACEHOLDER_IMAGE = "/imgs/img-placeholder.jpg";
 
@@ -22,7 +23,7 @@ export function CarouselCard({
     <Card className="relative h-full overflow-hidden border-0 p-0 transition-[transform,box-shadow] duration-300 ease-in-out hover:scale-105 hover:shadow-lg">
       <CardContent className="p-0">
         <Image
-          src={background_image || PLACEHOLDER_IMAGE}
+          src={rawgImage(background_image || PLACEHOLDER_IMAGE, 1280)}
           alt={name}
           width={800}
           height={400}

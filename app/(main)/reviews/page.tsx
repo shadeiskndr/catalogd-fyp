@@ -26,6 +26,7 @@ export default function ReviewsPage() {
                 gameName={review.gameName}
                 rating={review.rating}
                 reviewText={review.review}
+                eager={index < 2}
               />
             </BlurFade>
           ))}

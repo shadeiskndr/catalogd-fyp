@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { api } from "@/convex/_generated/api";
 import type { Game } from "@/lib/game-types";
+import { rawgImage } from "@/lib/rawg-image";
 import { ratingColor } from "@/lib/review-rating";
 
 const PLACEHOLDER_IMAGE = "/imgs/img-placeholder.jpg";
@@ -112,7 +113,7 @@ export default function WriteReviewPage() {
               <CardHeader>
                 <div className="flex justify-center">
                   <Image
-                    src={selectedGame.background_image || PLACEHOLDER_IMAGE}
+                    src={rawgImage(selectedGame.background_image || PLACEHOLDER_IMAGE, 420)}
                     alt={selectedGame.name}
                     width={200}
                     height={100}

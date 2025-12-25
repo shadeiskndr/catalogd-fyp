@@ -15,6 +15,7 @@ import { useDebounceCallback } from "@/hooks/use-debounce-callback";
 import { useGameSearch } from "@/hooks/use-games";
 import type { Game } from "@/lib/game-types";
 import type { NavItem } from "@/lib/nav-items";
+import { rawgImage } from "@/lib/rawg-image";
 
 const MIN_QUERY_LENGTH = 3;
 const PLACEHOLDER_IMAGE = "/imgs/img-placeholder.jpg";
@@ -27,7 +28,7 @@ function GameCommandItem({ game, onSelect }: { game: Game; onSelect: (game: Game
   return (
     <CommandItem className="py-2" value={game.slug} onSelect={handleSelect}>
       <Image
-        src={game.background_image || PLACEHOLDER_IMAGE}
+        src={rawgImage(game.background_image || PLACEHOLDER_IMAGE, 200)}
         alt=""
         width={32}
         height={32}

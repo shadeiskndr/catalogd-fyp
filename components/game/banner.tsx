@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { AddButtonFull } from "@/components/add-button-full";
 import type { Game } from "@/lib/game-types";
+import { rawgImage } from "@/lib/rawg-image";
 
 const PLACEHOLDER_IMAGE = "/imgs/img-placeholder.jpg";
 
@@ -10,7 +11,7 @@ export function Banner({ game }: { game: Game }) {
       <div className="absolute inset-0">
         <Image
           className="h-full w-full object-cover object-top"
-          src={game.background_image || PLACEHOLDER_IMAGE}
+          src={rawgImage(game.background_image || PLACEHOLDER_IMAGE, 1920)}
           alt={`${game.name} cover art`}
           fill
           sizes="100vw"

@@ -1,9 +1,9 @@
 import "./globals.css";
-import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { ColorThemeProvider } from "@/lib/color-provider";
+import { ConvexAuthProvider } from "@/lib/convex-auth-provider";
 import { ConvexClientProvider } from "@/lib/convex-client-provider";
 import { MotionProvider } from "@/lib/motion-provider";
 import { QueryProvider } from "@/lib/query-provider";
@@ -19,7 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" suppressHydrationWarning>
       <body>
         <Suspense>
-          <ConvexAuthNextjsServerProvider>
+          <ConvexAuthProvider>
             <ConvexClientProvider>
               <ThemeProvider>
                 <ColorThemeProvider>
@@ -30,7 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 </ColorThemeProvider>
               </ThemeProvider>
             </ConvexClientProvider>
-          </ConvexAuthNextjsServerProvider>
+          </ConvexAuthProvider>
         </Suspense>
       </body>
     </html>

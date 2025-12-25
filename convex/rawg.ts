@@ -56,6 +56,17 @@ export const purgeExpired = internalMutation({
   },
 });
 
+function stripPaginationUrls(data: unknown): unknown {
+  if (data === null || typeof data !== "object") {
+    return data;
+  }
+  const record = data as Record<string, unknown>;
+  if (!("next" in record) && !("previous" in record)) {
+    return data;
+  }
+  return { ...record, next: null, previous: null };
+}
+
 async function fetchThroughCache(ctx: ActionCtx, endpoint: string): Promise<unknown> {
   const apiKey = process.env["RAWG_API_KEY"];
   if (!apiKey) {
@@ -79,7 +90,7 @@ async function fetchThroughCache(ctx: ActionCtx, endpoint: string): Promise<unkn
   if (!response.ok) {
     throw new Error(`RAWG API Error: ${response.statusText}`);
   }
-  const data = await response.json();
+  const data = stripPaginationUrls(await response.json());
 
   const body = JSON.stringify(data);
   if (body.length <= MAX_CACHED_BODY_BYTES) {

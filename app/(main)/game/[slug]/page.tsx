@@ -5,6 +5,7 @@ import { Info } from "@/components/game/info";
 import { ReviewsSection } from "@/components/game/reviews-section";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Game, Screenshot } from "@/lib/game-types";
+import { rawgImage } from "@/lib/rawg-image";
 import { rawgFetchServer } from "@/lib/rawg-server";
 
 type Params = Promise<{ slug: string }>;
@@ -32,7 +33,13 @@ async function GameDetail({ params }: { params: Params }) {
     <div>
       {game.background_image.length > 0 ? (
         <div className="pointer-events-none fixed inset-0 z-0 opacity-20 blur-sm">
-          <Image src={game.background_image} alt="" fill sizes="100vw" className="object-cover" />
+          <Image
+            src={rawgImage(game.background_image, 640)}
+            alt=""
+            fill
+            sizes="100vw"
+            className="object-cover"
+          />
         </div>
       ) : null}
       <Banner game={game} />

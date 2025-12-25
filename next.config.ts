@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: false,
   agentRules: false,
   cacheComponents: true,
+  partialPrefetching: true,
   experimental: {
     useTypeScriptCli: true,
   },

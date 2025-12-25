@@ -10,11 +10,14 @@ Guidance for coding agents working in this repository.
 bun run dev            # Next dev + `convex dev` together — use this, not dev:next alone
 bun run check          # biome check --write .  (lint + format + safe fixes) — the main gate
 bun run doctor         # react-doctor: React/Next health, perf, a11y, bundle, dead code
+bun run test:e2e       # Playwright end-to-end suite (starts/reuses the dev server)
 bun run typecheck      # tsc --noEmit (TS 7 native; `next build` also type-checks)
 bun run build          # next build
 ```
 
-**There is no test framework in this repo.** "Verified" means `bun run check`, `bun run typecheck`, `bun run doctor` (100/100), a successful `bun run build`, and — for anything touching data flow — clicking through the affected pages in a browser with the dev console open (Cache Components reports non-instant routes there).
+**Playwright is the only test framework here, and it is end-to-end only** — there are no unit tests. "Verified" means `bun run check`, `bun run typecheck`, `bun run doctor` (100/100), a successful `bun run build`, `bun run test:e2e`, and — for anything touching data flow — clicking through the affected pages in a browser with the dev console open (Cache Components reports non-instant routes there).
+
+The suite lives in `e2e/` and runs against the real Convex deployment and the real RAWG API, so it needs a working `.env.local` and network. `e2e/auth.setup.ts` signs a throwaway account in (creating it on first run) and saves `storageState` to the gitignored `e2e/.auth/user.json`; override the credentials with `E2E_EMAIL` / `E2E_PASSWORD`. `expect` timeouts are deliberately generous (20s) because a cold `next dev` compiles each route on first hit and will otherwise flake.
 
 `bunx convex dev` (or a deploy) must run after any change under `convex/`: the frontend calls the *deployed* functions, so a renamed module (`api.lists` vs `api.gameLists`) breaks at runtime until it is pushed, even though the build passes.
 

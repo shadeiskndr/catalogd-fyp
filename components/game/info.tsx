@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import type { Game, ScreenshotItem } from "@/lib/game-types";
+import { rawgImage } from "@/lib/rawg-image";
 
 const PLACEHOLDER_IMAGE = "/imgs/img-placeholder.jpg";
 
@@ -59,7 +60,7 @@ export function Info({ game, screenshots }: InfoProps) {
           {screenshots.map((screenshot) => (
             <Image
               key={screenshot.id}
-              src={screenshot.image || PLACEHOLDER_IMAGE}
+              src={rawgImage(screenshot.image || PLACEHOLDER_IMAGE, 1280)}
               alt={`${game.name} screenshot`}
               width={screenshot.width}
               height={screenshot.height}

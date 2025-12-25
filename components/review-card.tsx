@@ -1,11 +1,13 @@
 "use client";
 
 import { Star } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useState } from "react";
 import { ReviewDetailDialog } from "@/components/review-detail-dialog";
 import { Button } from "@/components/ui/button";
 import { useGameDetails, useGameSlugByName } from "@/hooks/use-games";
+import { rawgImage } from "@/lib/rawg-image";
 import { ratingColor, ratingTitle } from "@/lib/review-rating";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +19,7 @@ type ReviewCardProps = {
   rating: number;
   reviewText: string;
   variant?: "feed" | "game";
+  eager?: boolean;
 };
 
 export function ReviewCard({
@@ -25,6 +28,7 @@ export function ReviewCard({
   rating,
   reviewText,
   variant = "feed",
+  eager = false,
 }: ReviewCardProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const isFeed = variant === "feed";
@@ -46,16 +50,17 @@ export function ReviewCard({
         "hover:shadow-[0_12px_24px_rgb(0_0_0_/_0.2)] dark:hover:shadow-[0_12px_24px_rgb(0_0_0_/_0.35)]",
         "transition-shadow duration-300"
       )}
-      style={
-        gameDetails?.background_image
-          ? {
-              backgroundImage: `url('${gameDetails.background_image}')`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }
-          : undefined
-      }
     >
+      {gameDetails?.background_image ? (
+        <Image
+          src={rawgImage(gameDetails.background_image, 640)}
+          alt=""
+          fill
+          sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+          loading={eager ? "eager" : "lazy"}
+          className="object-cover"
+        />
+      ) : null}
       <div className="relative z-20 w-full rounded-xl p-5">
         <div className="flex items-start justify-between">
           <div className="font-medium text-sm">
