@@ -1,4 +1,5 @@
-import { v } from "convex/values";
+import { getAuthUserId } from "@convex-dev/auth/server";
+import { ConvexError, v } from "convex/values";
 import { internal } from "./_generated/api";
 import { type ActionCtx, action, internalMutation, internalQuery } from "./_generated/server";
 
@@ -56,6 +57,24 @@ export const purgeExpired = internalMutation({
   },
 });
 
+const PUBLIC_ENDPOINTS = [
+  /^genres$/,
+  /^games\/lists\/(?:main|popular)(?:\?|$)/,
+  /^games\/[a-z0-9._-]+(?:\/screenshots)?(?:\?|$)/,
+  /^games\?discover=true(?:&|$)/,
+];
+
+function isPublicEndpoint(endpoint: string): boolean {
+  return PUBLIC_ENDPOINTS.some((pattern) => pattern.test(endpoint));
+}
+
+async function requireUser(ctx: ActionCtx): Promise<void> {
+  const userId = await getAuthUserId(ctx);
+  if (userId === null) {
+    throw new ConvexError("Not authenticated");
+  }
+}
+
 function stripPaginationUrls(data: unknown): unknown {
   if (data === null || typeof data !== "object") {
     return data;
@@ -99,13 +118,28 @@ async function fetchThroughCache(ctx: ActionCtx, endpoint: string): Promise<unkn
   return data;
 }
 
+export const getPublic = action({
+  args: { endpoint: v.string() },
+  handler: async (ctx, args): Promise<unknown> => {
+    if (!isPublicEndpoint(args.endpoint)) {
+      throw new ConvexError("Endpoint is not available without authentication");
+    }
+    return await fetchThroughCache(ctx, args.endpoint);
+  },
+});
+
 export const get = action({
   args: { endpoint: v.string() },
-  handler: async (ctx, args): Promise<unknown> => await fetchThroughCache(ctx, args.endpoint),
+  handler: async (ctx, args): Promise<unknown> => {
+    await requireUser(ctx);
+    return await fetchThroughCache(ctx, args.endpoint);
+  },
 });
 
 export const getMany = action({
   args: { endpoints: v.array(v.string()) },
-  handler: async (ctx, args): Promise<unknown[]> =>
-    await Promise.all(args.endpoints.map((endpoint) => fetchThroughCache(ctx, endpoint))),
+  handler: async (ctx, args): Promise<unknown[]> => {
+    await requireUser(ctx);
+    return await Promise.all(args.endpoints.map((endpoint) => fetchThroughCache(ctx, endpoint)));
+  },
 });
