@@ -1,22 +1,29 @@
-import Image from "next/image";
 import { Suspense } from "react";
 import { Banner } from "@/components/game/banner";
 import { Info } from "@/components/game/info";
 import { ReviewsSection } from "@/components/game/reviews-section";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Game, Screenshot } from "@/lib/game-types";
-import { rawgImage } from "@/lib/rawg-image";
 import { rawgFetchServer } from "@/lib/rawg-server";
 
 type Params = Promise<{ slug: string }>;
 
 function GameDetailSkeleton() {
   return (
-    <div className="space-y-6">
-      <Skeleton className="h-80 w-full" />
-      <div className="flex flex-col gap-4 lg:flex-row">
-        <Skeleton className="h-60 flex-1" />
-        <Skeleton className="h-60 lg:w-96" />
+    <div className="space-y-8">
+      <div className="-mx-4 space-y-4 bg-muted/40 px-4 pt-24 pb-8 md:-mx-6 md:px-6 md:pt-36">
+        <Skeleton className="h-11 w-2/3 max-w-xl rounded-full" />
+        <Skeleton className="h-6 w-48 rounded-full" />
+        <Skeleton className="h-4 w-72 rounded-full" />
+      </div>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <Skeleton className="h-56 rounded-xl" />
+        <Skeleton className="h-56 rounded-xl" />
+      </div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <Skeleton className="aspect-video rounded-lg" />
+        <Skeleton className="aspect-video rounded-lg" />
+        <Skeleton className="aspect-video rounded-lg" />
       </div>
     </div>
   );
@@ -30,22 +37,11 @@ async function GameDetail({ params }: { params: Params }) {
   ]);
 
   return (
-    <div>
-      {game.background_image.length > 0 ? (
-        <div className="pointer-events-none fixed inset-0 z-0 opacity-20 blur-sm">
-          <Image
-            src={rawgImage(game.background_image, 640)}
-            alt=""
-            fill
-            sizes="100vw"
-            className="object-cover"
-          />
-        </div>
-      ) : null}
+    <>
       <Banner game={game} />
       <Info game={game} screenshots={screenshots.results} />
       <ReviewsSection gameName={game.name} />
-    </div>
+    </>
   );
 }
 

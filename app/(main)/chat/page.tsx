@@ -2,9 +2,18 @@
 
 import { useMutation } from "convex/react";
 import { ConvexError } from "convex/values";
+import { MessageCircle } from "lucide-react";
 import { type ChangeEvent, type FormEvent, useCallback, useState } from "react";
 import { toast } from "sonner";
 import { ChatMessageItem } from "@/components/chat/chat-message";
+import { PageHeader } from "@/components/layout/page-header";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import {
   Conversation,
   ConversationContent,
@@ -21,8 +30,10 @@ import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useMessages } from "@/hooks/use-messages";
+import { cn } from "@/lib/utils";
 
 const MAX_MESSAGE_LENGTH = 300;
+const GROUP_WINDOW_MS = 5 * 60 * 1000;
 
 export default function ChatPage() {
   const [draft, setDraft] = useState("");
@@ -34,6 +45,7 @@ export default function ChatPage() {
   const removeMessage = useMutation(api.messages.remove);
 
   const currentUserId = user?._id;
+  const remaining = MAX_MESSAGE_LENGTH - draft.length;
 
   const handleDraftChange = useCallback((event: ChangeEvent<HTMLTextAreaElement>) => {
     setDraft(event.target.value);
@@ -76,45 +88,90 @@ export default function ChatPage() {
     [removeMessage]
   );
 
-  return (
-    <div className="space-y-4 px-2 pt-4">
-      <h1 className="font-bold text-3xl">Chat Room</h1>
-      <div className="mx-auto flex h-230 w-full max-w-5xl flex-col rounded-lg border shadow-lg">
-        <Conversation className="flex-1">
-          <ConversationContent>
-            {isLoading ? (
-              <div className="flex h-full items-center justify-center">
-                <Spinner className="size-8 text-primary" />
-              </div>
-            ) : null}
-            {!isLoading && messages.length === 0 ? (
-              <div className="flex h-full items-center justify-center">
-                No messages yet. Start a conversation!
-              </div>
-            ) : null}
-            {messages.map((message) => (
-              <ChatMessageItem
-                key={message.id}
-                message={message}
-                isOwn={message.userId === currentUserId}
-                onDelete={handleDelete}
-              />
-            ))}
-          </ConversationContent>
-          <ConversationScrollButton />
-        </Conversation>
+  const isEmpty = !isLoading && messages.length === 0;
 
-        <div className="border-t p-4">
+  return (
+    <div className="flex min-h-0 flex-1 flex-col">
+      <PageHeader
+        title="Chat Room"
+        description="One shared room for everyone using Catalogd. Say hello."
+      />
+
+      <div className="flex min-h-96 flex-1 flex-col overflow-hidden rounded-xl border bg-card shadow-sm">
+        {isLoading ? (
+          <div className="flex flex-1 items-center justify-center">
+            <Spinner className="size-6 text-primary" />
+          </div>
+        ) : null}
+
+        {isEmpty ? (
+          <div className="flex flex-1 items-center justify-center p-6">
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <MessageCircle />
+                </EmptyMedia>
+                <EmptyTitle>No messages yet</EmptyTitle>
+                <EmptyDescription>
+                  Start the conversation — ask what everyone is playing this week.
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          </div>
+        ) : null}
+
+        {!(isLoading || isEmpty) ? (
+          <Conversation className="flex-1">
+            <ConversationContent className="flex min-h-full flex-col justify-end p-4 md:p-5">
+              {messages.map((message, index) => {
+                const previous = messages[index - 1];
+                const showAuthor =
+                  previous === undefined ||
+                  previous.userId !== message.userId ||
+                  message.createdAt - previous.createdAt > GROUP_WINDOW_MS;
+
+                return (
+                  <ChatMessageItem
+                    key={message.id}
+                    message={message}
+                    isOwn={message.userId === currentUserId}
+                    showAuthor={showAuthor}
+                    onDelete={handleDelete}
+                  />
+                );
+              })}
+            </ConversationContent>
+            <ConversationScrollButton />
+          </Conversation>
+        ) : null}
+
+        <div className="shrink-0 border-t p-3 md:p-4">
           <PromptInput onSubmit={handleSubmit}>
             <PromptInputTextarea
               value={draft}
               onChange={handleDraftChange}
               placeholder="Write your message..."
               maxLength={MAX_MESSAGE_LENGTH}
+              className="min-h-16"
             />
             <PromptInputToolbar>
-              <span />
-              <PromptInputSubmit title="Send Message" />
+              {draft.length === 0 ? (
+                <span />
+              ) : (
+                <span
+                  className={cn(
+                    "px-2 text-xs tabular-nums",
+                    remaining <= 30 ? "text-destructive" : "text-muted-foreground"
+                  )}
+                >
+                  {remaining} left
+                </span>
+              )}
+              <PromptInputSubmit
+                title="Send Message"
+                disabled={draft.trim().length === 0}
+                className="active:scale-90"
+              />
             </PromptInputToolbar>
           </PromptInput>
         </div>

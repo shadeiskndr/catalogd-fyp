@@ -1,5 +1,6 @@
 "use client";
 
+import { Search } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useState } from "react";
 import {
@@ -10,15 +11,37 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { Spinner } from "@/components/ui/spinner";
+import { Kbd } from "@/components/ui/kbd";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useDebounceCallback } from "@/hooks/use-debounce-callback";
 import { useGameSearch } from "@/hooks/use-games";
+import { formatReleaseYear } from "@/lib/format";
 import type { Game } from "@/lib/game-types";
 import type { NavItem } from "@/lib/nav-items";
 import { rawgImage } from "@/lib/rawg-image";
 
 const MIN_QUERY_LENGTH = 3;
 const PLACEHOLDER_IMAGE = "/imgs/img-placeholder.jpg";
+const SKELETON_ROWS = 5;
+
+function SearchSkeleton() {
+  const rows = Array.from({ length: SKELETON_ROWS }, (_, index) => `search-row-${index}`);
+
+  return (
+    <div className="space-y-1 p-2" aria-live="polite" aria-busy="true">
+      <span className="sr-only">Searching the game catalogue</span>
+      {rows.map((row) => (
+        <div key={row} className="flex items-center gap-2 px-2 py-2">
+          <Skeleton className="size-9 shrink-0 rounded" />
+          <div className="flex-1 space-y-1.5">
+            <Skeleton className="h-3.5 w-1/2 rounded-full" />
+            <Skeleton className="h-2.5 w-14 rounded-full" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 function GameCommandItem({ game, onSelect }: { game: Game; onSelect: (game: Game) => void }) {
   const handleSelect = useCallback(() => {
@@ -26,17 +49,21 @@ function GameCommandItem({ game, onSelect }: { game: Game; onSelect: (game: Game
   }, [game, onSelect]);
 
   return (
-    <CommandItem className="py-2" value={game.slug} onSelect={handleSelect}>
+    <CommandItem className="gap-2 py-2" value={game.slug} onSelect={handleSelect}>
       <Image
         src={rawgImage(game.background_image || PLACEHOLDER_IMAGE, 200)}
         alt=""
-        width={32}
-        height={32}
-        className="mr-2 size-8 rounded object-cover"
+        width={36}
+        height={36}
+        className="size-9 shrink-0 rounded object-cover"
       />
-      <div className="flex flex-col">
-        <span>{game.name}</span>
-        {game.released ? <span className="text-xs opacity-50">{game.released}</span> : null}
+      <div className="flex min-w-0 flex-col">
+        <span className="truncate">{game.name}</span>
+        {game.released ? (
+          <span className="text-muted-foreground text-xs tabular-nums">
+            {formatReleaseYear(game.released)}
+          </span>
+        ) : null}
       </div>
     </CommandItem>
   );
@@ -48,8 +75,8 @@ function NavCommandItem({ item, onSelect }: { item: NavItem; onSelect: (item: Na
   }, [item, onSelect]);
 
   return (
-    <CommandItem className="py-2" value={item.title} onSelect={handleSelect}>
-      <item.icon className="mr-2 size-4" />
+    <CommandItem className="gap-2 py-2" value={item.title} onSelect={handleSelect}>
+      <item.icon className="size-4 text-muted-foreground" />
       <span>{item.title}</span>
     </CommandItem>
   );
@@ -80,6 +107,7 @@ export function GameSearchDialog({
   const { data, isLoading } = useGameSearch(query);
   const games = data?.results ?? [];
   const isSearching = query.length >= MIN_QUERY_LENGTH;
+  const isTyping = searchTerm.length >= MIN_QUERY_LENGTH && searchTerm !== query;
 
   const handleOpenChange = useCallback(
     (nextOpen: boolean) => {
@@ -117,39 +145,54 @@ export function GameSearchDialog({
     [handleOpenChange, onSelectNavItem]
   );
 
+  const isPending = isTyping || (isSearching && isLoading);
+
   return (
-    <CommandDialog open={open} onOpenChange={handleOpenChange}>
+    <CommandDialog open={open} onOpenChange={handleOpenChange} shouldFilter={false}>
       <CommandInput placeholder={placeholder} value={searchTerm} onInput={handleInput} />
-      <CommandList>
-        {isSearching && isLoading ? (
-          <div className="flex flex-col items-center justify-center py-8 text-muted-foreground text-sm">
-            <Spinner className="mb-2" />
-            <span>Searching...</span>
-          </div>
-        ) : (
+      <CommandList className="max-h-[min(28rem,60vh)]">
+        {isPending ? <SearchSkeleton /> : null}
+
+        {isPending ? null : (
           <CommandEmpty>
-            {isSearching
-              ? "No results found."
-              : `Type at least ${MIN_QUERY_LENGTH} characters to search.`}
+            {isSearching ? (
+              <span className="text-muted-foreground text-sm">No games match “{query}”.</span>
+            ) : (
+              <span className="flex flex-col items-center gap-1 text-muted-foreground text-sm">
+                <Search className="size-4" />
+                <span>Type at least {MIN_QUERY_LENGTH} characters to search games.</span>
+              </span>
+            )}
           </CommandEmpty>
         )}
 
-        {navItems !== undefined && navItems.length > 0 && (
+        {navItems !== undefined && navItems.length > 0 && !isSearching ? (
           <CommandGroup heading="Navigation">
             {navItems.map((item) => (
               <NavCommandItem key={item.url} item={item} onSelect={handleSelectNavItem} />
             ))}
           </CommandGroup>
-        )}
+        ) : null}
 
-        {isSearching && games.length > 0 && (
+        {isSearching && !isPending && games.length > 0 ? (
           <CommandGroup heading="Games">
             {games.map((game) => (
               <GameCommandItem key={game.id} game={game} onSelect={handleSelectGame} />
             ))}
           </CommandGroup>
-        )}
+        ) : null}
       </CommandList>
+      <div className="flex items-center justify-between gap-2 border-t px-3 py-2 text-muted-foreground text-xs">
+        <span className="flex items-center gap-1">
+          <Kbd>↑</Kbd>
+          <Kbd>↓</Kbd>
+          <span>to navigate</span>
+        </span>
+        <span className="flex items-center gap-1">
+          <Kbd>Esc</Kbd>
+          <span>to close</span>
+        </span>
+      </div>
     </CommandDialog>
   );
 }

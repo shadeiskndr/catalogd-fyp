@@ -1,13 +1,17 @@
 import { GameCard } from "@/components/game-card";
+import { GAME_GRID_CLASSES } from "@/components/game-grid-classes";
 import { BlurFade } from "@/components/ui/magicui/blur-fade";
 import type { Game } from "@/lib/game-types";
 
+const STAGGER_STEP = 0.04;
+const STAGGER_CAP = 7;
+
 export function GameGrid({ games }: { games: Game[] }) {
   return (
-    <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-3">
+    <div className={GAME_GRID_CLASSES}>
       {games.map((game, index) => (
-        <BlurFade key={game.id} delay={Math.min(index, 8) * 0.04} inView>
-          <GameCard game={game} priority={index < 3} />
+        <BlurFade key={game.id} delay={Math.min(index, STAGGER_CAP) * STAGGER_STEP} inView>
+          <GameCard game={game} priority={index < 4} />
         </BlurFade>
       ))}
     </div>

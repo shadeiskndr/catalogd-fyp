@@ -7,6 +7,8 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@custom-variant hover-hover (@media (hover: hover) and (pointer: fine));
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -50,7 +52,6 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
-  /* Computed Shadow Variants */
   --shadow-2xs: var(--shadow-2xs);
   --shadow-xs: var(--shadow-xs);
   --shadow-sm: var(--shadow-sm);
@@ -66,6 +67,11 @@
   --tracking-wide: calc(var(--letter-spacing) + 0.025em);
   --tracking-wider: calc(var(--letter-spacing) + 0.05em);
   --tracking-widest: calc(var(--letter-spacing) + 0.1em);
+
+  --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out-strong: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
   --animate-marquee: marquee var(--duration) infinite linear;
   --animate-marquee-vertical: marquee-vertical var(--duration) linear infinite;
   @keyframes marquee {
@@ -95,9 +101,12 @@
   }
 }
 
+:root {
+  --letter-spacing: var(--tracking-normal, 0em);
+}
+
 * {
   color-scheme: light dark;
-  border-color: var(--color-border);
 }
 
 body {
@@ -107,6 +116,12 @@ body {
   letter-spacing: var(--letter-spacing);
 }
 
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
 @layer base {
   button:not(:disabled),
   [role="button"]:not(:disabled) {
@@ -114,7 +129,6 @@ body {
   }
 }
 
-/* View Transition Wave Effect */
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation: none;
@@ -122,34 +136,28 @@ body {
 }
 
 ::view-transition-old(root) {
-  /* Ensure the outgoing view (old theme) is beneath */
   z-index: 0;
 }
 
 ::view-transition-new(root) {
-  /* Ensure the incoming view (new theme) is always on top */
   z-index: 1;
 }
 
 @keyframes reveal {
   from {
-    /* Use CSS variables for the origin, defaulting to center if not set */
     clip-path: circle(0% at var(--x, 50%) var(--y, 50%));
     opacity: 0.7;
   }
   to {
-    /* Use CSS variables for the origin, defaulting to center if not set */
     clip-path: circle(150% at var(--x, 50%) var(--y, 50%));
     opacity: 1;
   }
 }
 
 ::view-transition-new(root) {
-  /* Apply the reveal animation */
   animation: reveal 0.4s ease-in-out forwards;
 }
 
-/* Mention styles */
 .mention {
   @apply bg-primary/10 rounded-md px-1 font-mono text-sm font-semibold;
 }
@@ -180,6 +188,31 @@ body {
   }
 }
 
+@keyframes route-enter {
+  from {
+    opacity: 0.55;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.route-enter {
+  animation: route-enter 180ms var(--ease-out-strong) both;
+}
+
+@utility edge-fade-x {
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    black var(--edge-fade, 6rem),
+    black calc(100% - var(--edge-fade, 6rem)),
+    transparent 100%
+  );
+}
+
 @utility scrollbar-gutter-stable {
   scrollbar-gutter: stable;
 }
@@ -188,7 +221,6 @@ body {
   scrollbar-gutter: stable both-edges;
 }
 
-/* Custom Scrollbar Styling - Webkit browsers (Chrome, Safari, Edge) */
 ::-webkit-scrollbar {
   width: 8px;
   height: 12px;
@@ -222,7 +254,6 @@ body {
   background: var(--background);
 }
 
-/* Add these styles for the grid layout */
 .grid-auto-flow-dense {
   grid-auto-flow: dense;
 }
@@ -231,9 +262,6 @@ body {
   break-inside: avoid;
 }
 
-/* WCAG 2.3.3: honour the OS "reduce motion" preference. Motion is decorative
-   throughout the app (view transitions, marquee, blur-fade, light rays), so it
-   is safe to collapse every animation and transition to a single frame. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

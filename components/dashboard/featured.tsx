@@ -1,12 +1,11 @@
 import { connection } from "next/server";
-import { CarouselCard } from "@/components/dashboard/carousel-card";
+import { GameCard } from "@/components/game-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { dedupeById, type Game, type ResponseSchema } from "@/lib/game-types";
 import { rawgFetchServer } from "@/lib/rawg-server";
 
 const FEATURED_COUNT = 3;
-const GRID_CLASSES = "grid auto-rows-max grid-cols-1 gap-4 py-8 md:grid-cols-2 lg:grid-cols-3";
-const CARD_SIZES = "(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw";
+const GRID_CLASSES = "grid auto-rows-fr grid-cols-1 gap-4 sm:grid-cols-2 md:gap-5 lg:grid-cols-3";
 
 export function FeaturedSkeleton() {
   const placeholders = Array.from({ length: FEATURED_COUNT }, (_, index) => `featured-${index}`);
@@ -14,7 +13,13 @@ export function FeaturedSkeleton() {
   return (
     <div className={GRID_CLASSES}>
       {placeholders.map((placeholder) => (
-        <Skeleton key={placeholder} className="h-72 w-full rounded-xl" />
+        <div key={placeholder} className="overflow-hidden rounded-xl border bg-card">
+          <Skeleton className="aspect-video w-full rounded-none" />
+          <div className="space-y-3 p-4 pt-3">
+            <Skeleton className="h-4 w-4/5 rounded-full" />
+            <Skeleton className="h-3 w-24 rounded-full" />
+          </div>
+        </div>
       ))}
     </div>
   );
@@ -34,13 +39,13 @@ export async function Featured() {
     .map((entry) => entry.game);
 
   if (picked.length === 0) {
-    return <p>No games found.</p>;
+    return <p className="text-muted-foreground">No games found.</p>;
   }
 
   return (
     <div className={GRID_CLASSES}>
       {picked.map((game) => (
-        <CarouselCard key={game.id} game={game} sizes={CARD_SIZES} priority />
+        <GameCard key={game.id} game={game} priority />
       ))}
     </div>
   );

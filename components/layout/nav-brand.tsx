@@ -5,14 +5,15 @@ export function NavBrand() {
   return (
     <Link
       href="/dashboard"
-      className="flex items-center gap-2 rounded-md p-1 transition-colors hover:bg-sidebar-accent"
+      prefetch
+      className="flex items-center gap-2 rounded-md py-1 transition-colors duration-150 ease-out hover:bg-sidebar-accent group-data-[collapsible=icon]:size-8 group-data-[collapsible=icon]:p-0"
     >
-      <span className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+      <span className="flex aspect-square size-8 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
         <CatalogdLogo className="size-5" />
       </span>
-      <span className="grid flex-1 text-left text-sm leading-tight">
+      <span className="grid min-w-0 flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
         <span className="truncate font-medium">Catalogd</span>
-        <span className="truncate text-xs">Game Catalog</span>
+        <span className="truncate text-muted-foreground text-xs">Game Catalog</span>
       </span>
     </Link>
   );

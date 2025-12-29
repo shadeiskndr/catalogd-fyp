@@ -1,39 +1,32 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 
 type LoadMoreProps = {
-  page?: number;
   hasMore: boolean;
   isLoading: boolean;
   onLoadMore: () => void;
-  onLoadPrevious?: () => void;
+  label?: string;
 };
 
-export function LoadMore({
-  page = 0,
-  hasMore,
-  isLoading,
-  onLoadMore,
-  onLoadPrevious,
-}: LoadMoreProps) {
-  if (isLoading) return null;
+export function LoadMore({ hasMore, isLoading, onLoadMore, label = "Load more" }: LoadMoreProps) {
+  if (!hasMore) {
+    return null;
+  }
 
-  const hasPrevious = page > 1 && onLoadPrevious !== undefined;
+  const buttonLabel = isLoading ? "Loading" : label;
 
   return (
-    <div className="flex items-center justify-center gap-3 pt-4">
-      {hasPrevious ? (
-        <Button onClick={onLoadPrevious} variant="outline" size="lg" className="gap-2">
-          <ChevronLeft className="size-4" />
-          <span>Previous</span>
-        </Button>
-      ) : null}
-      {hasMore ? (
-        <Button onClick={onLoadMore} size="lg" className="gap-2">
-          <span>Next</span>
-          <ChevronRight className="size-4" />
-        </Button>
-      ) : null}
+    <div className="flex items-center justify-center pt-10">
+      <Button
+        onClick={onLoadMore}
+        variant="outline"
+        disabled={isLoading}
+        className="min-w-40 gap-1.5 active:scale-[0.98]"
+      >
+        {isLoading ? <Spinner className="size-4" /> : <ChevronDown className="size-4" />}
+        <span>{buttonLabel}</span>
+      </Button>
     </div>
   );
 }

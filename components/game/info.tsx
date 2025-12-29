@@ -1,18 +1,24 @@
-import Image from "next/image";
+import { GameDescription } from "@/components/game/description";
+import { Screenshots } from "@/components/game/screenshots";
 import { Badge } from "@/components/ui/badge";
 import type { Game, ScreenshotItem } from "@/lib/game-types";
-import { rawgImage } from "@/lib/rawg-image";
-
-const PLACEHOLDER_IMAGE = "/imgs/img-placeholder.jpg";
 
 function BadgeList({ heading, values }: { heading: string; values: string[] }) {
+  if (values.length === 0) {
+    return null;
+  }
+
   return (
-    <div>
-      <h2 className="p-1 font-semibold text-md md:text-lg lg:text-xl">{heading}</h2>
-      <ul className="flex flex-wrap gap-2">
+    <div className="space-y-2">
+      <h3 className="font-medium text-muted-foreground text-xs uppercase tracking-wider">
+        {heading}
+      </h3>
+      <ul className="flex flex-wrap gap-1.5">
         {values.map((value) => (
           <li key={value}>
-            <Badge variant="secondary">{value}</Badge>
+            <Badge variant="secondary" className="font-normal">
+              {value}
+            </Badge>
           </li>
         ))}
       </ul>
@@ -27,18 +33,18 @@ type InfoProps = {
 
 export function Info({ game, screenshots }: InfoProps) {
   const { description_raw, platforms, developers, publishers } = game;
+  const description = (description_raw ?? "").split("###").join("\n\n").trim();
 
   return (
-    <div>
-      <div className="mt-6 flex flex-col space-y-10 lg:flex-row lg:space-x-4 lg:space-y-0">
-        <article className="flex-1 space-y-4 p-6 backdrop-blur-lg">
-          <h2 className="font-semibold text-lg md:text-xl lg:text-2xl">Description</h2>
-          <p className="scrollbar-thin h-40 overflow-y-scroll whitespace-pre-line md:h-60">
-            {(description_raw ?? "").split("###").join("\n\n").trim()}
-          </p>
-        </article>
+    <div className="space-y-8 pt-8">
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <section className="space-y-3 rounded-xl border bg-card/70 p-5 backdrop-blur-sm md:p-6">
+          <h2 className="font-semibold text-lg">About</h2>
+          <GameDescription text={description} />
+        </section>
 
-        <div className="space-y-4 p-6 backdrop-blur-sm lg:max-w-md">
+        <aside className="space-y-5 rounded-xl border bg-card/70 p-5 backdrop-blur-sm md:p-6">
+          <h2 className="font-semibold text-lg">Details</h2>
           <BadgeList
             heading="Platforms"
             values={(platforms ?? []).map((entry) => entry.platform.name)}
@@ -51,25 +57,18 @@ export function Info({ game, screenshots }: InfoProps) {
             heading="Publishers"
             values={(publishers ?? []).map((publisher) => publisher.name)}
           />
-        </div>
+        </aside>
       </div>
 
-      <div className="my-6 space-y-4 p-6">
-        <h2 className="font-semibold text-lg md:text-xl lg:text-2xl">Screenshots</h2>
-        <div className="scrollbar-thin grid h-80 grid-cols-1 gap-4 overflow-y-scroll drop-shadow-lg md:h-auto md:max-h-100 md:grid-cols-3">
-          {screenshots.map((screenshot) => (
-            <Image
-              key={screenshot.id}
-              src={rawgImage(screenshot.image || PLACEHOLDER_IMAGE, 1280)}
-              alt={`${game.name} screenshot`}
-              width={screenshot.width}
-              height={screenshot.height}
-              sizes="(min-width: 768px) 33vw, 100vw"
-              className="w-full object-cover"
-            />
-          ))}
+      <section className="space-y-4">
+        <div className="flex items-baseline justify-between gap-4">
+          <h2 className="font-semibold text-lg">Screenshots</h2>
+          {screenshots.length > 0 ? (
+            <span className="text-muted-foreground text-sm tabular-nums">{screenshots.length}</span>
+          ) : null}
         </div>
-      </div>
+        <Screenshots screenshots={screenshots} gameName={game.name} />
+      </section>
     </div>
   );
 }
