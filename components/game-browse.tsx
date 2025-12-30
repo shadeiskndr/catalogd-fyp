@@ -16,7 +16,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { formatCount } from "@/lib/format";
-import type { Game } from "@/lib/game-types";
+import type { CatalogGame } from "@/lib/game-types";
 
 type GameBrowseProps = {
   title: string;
@@ -24,7 +24,7 @@ type GameBrowseProps = {
   icon: LucideIcon;
   emptyTitle: string;
   emptyDescription: string;
-  games: Game[];
+  games: CatalogGame[];
   isLoading: boolean;
   isLoadingMore?: boolean;
   hasMore: boolean;

@@ -1,10 +1,10 @@
+import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Banner } from "@/components/game/banner";
 import { Info } from "@/components/game/info";
 import { ReviewsSection } from "@/components/game/reviews-section";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { Game, Screenshot } from "@/lib/game-types";
-import { rawgFetchServer } from "@/lib/rawg-server";
+import { getGameDetail } from "@/lib/catalog-server";
 
 type Params = Promise<{ slug: string }>;
 
@@ -31,15 +31,16 @@ function GameDetailSkeleton() {
 
 async function GameDetail({ params }: { params: Params }) {
   const { slug } = await params;
-  const [game, screenshots] = await Promise.all([
-    rawgFetchServer<Game>(`games/${slug}`),
-    rawgFetchServer<Screenshot>(`games/${slug}/screenshots`),
-  ]);
+  const game = await getGameDetail(slug);
+
+  if (game === null) {
+    notFound();
+  }
 
   return (
     <>
       <Banner game={game} />
-      <Info game={game} screenshots={screenshots.results} />
+      <Info game={game} screenshots={game.screenshots} />
       <ReviewsSection gameName={game.name} />
     </>
   );

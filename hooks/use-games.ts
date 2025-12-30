@@ -1,55 +1,56 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { usePaginatedQuery } from "convex/react";
+import { useQuery as useCachedQuery } from "@tanstack/react-query";
+import { usePaginatedQuery, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import type { Game, ResponseSchema } from "@/lib/game-types";
-import { rawgFetch, rawgFetchMany } from "@/lib/rawg-client";
+import { convexClient } from "@/lib/convex-client";
+import type { CatalogGame } from "@/lib/game-types";
 
 const MINUTE = 60 * 1000;
 const LIST_PAGE_SIZE = 25;
+const MIN_QUERY_LENGTH = 3;
+const MIN_LOCAL_RESULTS = 3;
 
 export const gameKeys = {
   all: ["games"] as const,
-  detail: (slug: string) => [...gameKeys.all, "detail", slug] as const,
-  search: (query: string) => [...gameKeys.all, "search", query] as const,
-  slugByName: (name: string) => [...gameKeys.all, "slug-by-name", name] as const,
-  userList: (list: string, gameIds: number[]) => [...gameKeys.all, list, gameIds] as const,
+  ensureDetail: (slug: string) => [...gameKeys.all, "ensure-detail", slug] as const,
+  ensureSearch: (query: string) => [...gameKeys.all, "ensure-search", query] as const,
+  ensureList: (list: string, rawgIds: number[]) =>
+    [...gameKeys.all, "ensure-list", list, rawgIds] as const,
 };
 
 export function useGameDetails(slug: string) {
-  return useQuery({
-    queryKey: gameKeys.detail(slug),
-    queryFn: () => rawgFetch<Game>(`games/${slug}`),
-    enabled: slug.length > 0,
+  const game = useQuery(api.catalog.gameBySlug, slug.length > 0 ? { slug } : "skip");
+
+  const ensured = useCachedQuery({
+    queryKey: gameKeys.ensureDetail(slug),
+    queryFn: () => convexClient.action(api.catalog.ensureGame, { slug }),
+    enabled: slug.length > 0 && game === null,
     staleTime: 10 * MINUTE,
   });
+
+  return {
+    game: game ?? ensured.data ?? null,
+    isLoading: slug.length > 0 && game === undefined,
+  };
 }
 
 export function useGameSearch(query: string) {
-  return useQuery({
-    queryKey: gameKeys.search(query),
-    queryFn: () =>
-      rawgFetch<ResponseSchema<Game>>(
-        `games?search=${encodeURIComponent(query)}&ordering=-added&search_exact=true`
-      ),
-    enabled: query.length > 2,
-    staleTime: 2 * MINUTE,
-  });
-}
+  const trimmed = query.trim();
+  const isEnabled = trimmed.length >= MIN_QUERY_LENGTH;
+  const local = useQuery(api.catalog.search, isEnabled ? { query: trimmed } : "skip");
 
-export function useGameSlugByName(gameName: string) {
-  return useQuery({
-    queryKey: gameKeys.slugByName(gameName),
-    queryFn: async () => {
-      const data = await rawgFetch<ResponseSchema<Game>>(
-        `games?search=${encodeURIComponent(gameName)}&search_exact=true`
-      );
-      return data.results[0]?.slug ?? null;
-    },
-    enabled: gameName.length > 0,
-    staleTime: 30 * MINUTE,
+  const ingested = useCachedQuery({
+    queryKey: gameKeys.ensureSearch(trimmed),
+    queryFn: () => convexClient.action(api.catalog.searchRemote, { query: trimmed }),
+    enabled: isEnabled && local !== undefined && local.length < MIN_LOCAL_RESULTS,
+    staleTime: 5 * MINUTE,
   });
+
+  return {
+    games: local ?? [],
+    isLoading: isEnabled && (local === undefined || (local.length === 0 && ingested.isFetching)),
+  };
 }
 
 export function useUserGameList(list: "library" | "wishlist") {
@@ -59,21 +60,28 @@ export function useUserGameList(list: "library" | "wishlist") {
     loadMore,
   } = usePaginatedQuery(api.lists.page, { list }, { initialNumItems: LIST_PAGE_SIZE });
 
-  const gameIds = Array.from(new Set(entries.map((entry) => entry.gameId)));
+  const missingIds = entries.filter((entry) => entry.game === null).map((entry) => entry.gameId);
 
-  const detailsQuery = useQuery({
-    queryKey: gameKeys.userList(list, gameIds),
-    queryFn: () => rawgFetchMany<Game>(gameIds.map((gameId) => `games/${gameId}`)),
-    enabled: gameIds.length > 0,
-    placeholderData: (previousData) => previousData,
+  const ensured = useCachedQuery({
+    queryKey: gameKeys.ensureList(list, missingIds),
+    queryFn: () => convexClient.action(api.catalog.ensureGames, { rawgIds: missingIds }),
+    enabled: missingIds.length > 0,
+    staleTime: 5 * MINUTE,
   });
 
+  const games: CatalogGame[] = [];
+  for (const entry of entries) {
+    if (entry.game !== null) {
+      games.push(entry.game);
+    }
+  }
+
   return {
-    games: gameIds.length > 0 ? (detailsQuery.data ?? []) : [],
-    isLoading: status === "LoadingFirstPage" || (gameIds.length > 0 && detailsQuery.isLoading),
-    isLoadingMore: status === "LoadingMore" || detailsQuery.isFetching,
+    games,
+    isLoading: status === "LoadingFirstPage",
+    isLoadingMore: status === "LoadingMore" || ensured.isFetching,
     hasMore: status === "CanLoadMore",
     loadMore: () => loadMore(LIST_PAGE_SIZE),
-    error: detailsQuery.error,
+    error: ensured.error,
   };
 }

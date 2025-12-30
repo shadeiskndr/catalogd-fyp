@@ -14,9 +14,8 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getGameList, getGenres } from "@/lib/catalog-server";
 import { formatCount } from "@/lib/format";
-import { dedupeById, type Game, type GenreSummary, type ResponseSchema } from "@/lib/game-types";
-import { rawgFetchServer } from "@/lib/rawg-server";
 import { parsePageParam } from "@/lib/utils";
 
 const PAGE_SIZE = 12;
@@ -49,14 +48,11 @@ async function GenreGames({
 }) {
   const [{ slug }, resolvedSearchParams] = await Promise.all([params, searchParams]);
   const page = parsePageParam(resolvedSearchParams.page);
-  const [genreList, data] = await Promise.all([
-    rawgFetchServer<ResponseSchema<GenreSummary>>("genres"),
-    rawgFetchServer<ResponseSchema<Game>>(
-      `games?discover=true&page-size=${PAGE_SIZE}&ordering=popularity&page=${page}&genres=${slug}`
-    ),
+  const [genreList, { games, count }] = await Promise.all([
+    getGenres(),
+    getGameList(`genre:${slug}:${page}`),
   ]);
-  const genre = genreList.results.find((candidate) => candidate.slug === slug);
-  const games = dedupeById(data.results);
+  const genre = genreList.find((candidate) => candidate.slug === slug);
 
   return (
     <>
@@ -69,7 +65,7 @@ async function GenreGames({
           : {
               actions: (
                 <span className="rounded-full bg-secondary px-3 py-1 font-medium text-secondary-foreground text-xs tabular-nums">
-                  {formatCount(genre.games_count)} games
+                  {formatCount(genre.gamesCount)} games
                 </span>
               ),
             })}
@@ -88,11 +84,7 @@ async function GenreGames({
       ) : (
         <>
           <GameGrid games={games} />
-          <PagerLinks
-            basePath={`/genres/${slug}`}
-            page={page}
-            hasMore={games.length >= PAGE_SIZE}
-          />
+          <PagerLinks basePath={`/genres/${slug}`} page={page} hasMore={page * PAGE_SIZE < count} />
         </>
       )}
     </>

@@ -1,8 +1,7 @@
 import { CarouselCard } from "@/components/dashboard/carousel-card";
 import { Marquee } from "@/components/ui/magicui/marquee";
 import { Skeleton } from "@/components/ui/skeleton";
-import { dedupeById, type Game, type ResponseSchema } from "@/lib/game-types";
-import { rawgFetchServer } from "@/lib/rawg-server";
+import { getGameList } from "@/lib/catalog-server";
 
 const CARD_SIZES = "(min-width: 640px) 288px, 256px";
 const CARD_CLASSES = "w-64 shrink-0 sm:w-72";
@@ -30,10 +29,7 @@ export function UpcomingSkeleton() {
 }
 
 export async function Upcoming() {
-  const data = await rawgFetchServer<ResponseSchema<Game>>(
-    "games/lists/main?&page-size=8&ordering=-released&page=1"
-  );
-  const games = dedupeById(data.results);
+  const { games } = await getGameList("upcoming:1");
 
   if (games.length === 0) {
     return <p className="text-muted-foreground">No games found.</p>;
@@ -43,7 +39,7 @@ export async function Upcoming() {
     <div className="edge-fade-x -mx-4 px-4 [--edge-fade:2rem] md:-mx-6 md:px-6 md:[--edge-fade:4rem]">
       <Marquee className="py-1 [--gap:1rem]" pauseOnHover repeat={2}>
         {games.map((game, index) => (
-          <div key={game.id} className={CARD_CLASSES}>
+          <div key={game.rawgId} className={CARD_CLASSES}>
             <CarouselCard game={game} sizes={CARD_SIZES} eager={index < EAGER_COUNT} />
           </div>
         ))}

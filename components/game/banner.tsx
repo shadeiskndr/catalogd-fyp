@@ -1,24 +1,24 @@
 import { Building2, CalendarDays, Gamepad2 } from "lucide-react";
 import Image from "next/image";
 import { AddButtonFull } from "@/components/add-button-full";
+import { catalogImage } from "@/lib/catalog-image";
 import { formatReleaseDate } from "@/lib/format";
-import type { Game } from "@/lib/game-types";
-import { rawgImage } from "@/lib/rawg-image";
+import type { CatalogGame } from "@/lib/game-types";
 import { metacriticSurfaceTone } from "@/lib/review-rating";
 import { cn } from "@/lib/utils";
 
 const PLACEHOLDER_IMAGE = "/imgs/img-placeholder.jpg";
 
-export function Banner({ game }: { game: Game }) {
-  const genres = game.genres.map((genre) => genre.name);
-  const developer = game.developers?.[0]?.name;
+export function Banner({ game }: { game: CatalogGame }) {
+  const genres = game.genres;
+  const developer = game.developers[0];
 
   return (
     <div className="relative -mx-4 overflow-hidden md:-mx-6">
       <div className="absolute inset-0">
         <Image
           className="object-cover object-top"
-          src={rawgImage(game.background_image || PLACEHOLDER_IMAGE, 1920)}
+          src={catalogImage(game.backgroundImage || PLACEHOLDER_IMAGE, 1920)}
           alt=""
           fill
           sizes="100vw"
@@ -80,7 +80,7 @@ export function Banner({ game }: { game: Game }) {
               </div>
             )}
 
-            {game.platforms === undefined || game.platforms.length === 0 ? null : (
+            {game.platforms.length === 0 ? null : (
               <div className="flex items-center gap-1.5">
                 <dt className="flex items-center gap-1.5 text-muted-foreground">
                   <Gamepad2 className="size-4" aria-hidden="true" />
@@ -93,8 +93,8 @@ export function Banner({ game }: { game: Game }) {
         </div>
 
         <div className="flex shrink-0 flex-wrap gap-2">
-          <AddButtonFull list="library" gameId={game.id} gameName={game.name} />
-          <AddButtonFull list="wishlist" gameId={game.id} gameName={game.name} />
+          <AddButtonFull list="library" gameId={game.rawgId} gameName={game.name} />
+          <AddButtonFull list="wishlist" gameId={game.rawgId} gameName={game.name} />
         </div>
       </div>
     </div>

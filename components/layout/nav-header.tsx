@@ -8,7 +8,7 @@ import { NavBrand } from "@/components/layout/nav-brand";
 import { Button } from "@/components/ui/button";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { SidebarHeader } from "@/components/ui/sidebar";
-import type { Game } from "@/lib/game-types";
+import type { CatalogGame } from "@/lib/game-types";
 import { NAV_ITEMS, type NavItem } from "@/lib/nav-items";
 
 export function NavHeader({ isCollapsed = false }: { isCollapsed?: boolean }) {
@@ -32,7 +32,7 @@ export function NavHeader({ isCollapsed = false }: { isCollapsed?: boolean }) {
   }, []);
 
   const handleSelectGame = useCallback(
-    (game: Game) => {
+    (game: CatalogGame) => {
       router.push(`/game/${game.slug}`);
     },
     [router]

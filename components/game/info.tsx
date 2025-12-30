@@ -1,7 +1,7 @@
 import { GameDescription } from "@/components/game/description";
 import { Screenshots } from "@/components/game/screenshots";
 import { Badge } from "@/components/ui/badge";
-import type { Game, ScreenshotItem } from "@/lib/game-types";
+import type { CatalogGame, CatalogScreenshot } from "@/lib/game-types";
 
 function BadgeList({ heading, values }: { heading: string; values: string[] }) {
   if (values.length === 0) {
@@ -27,13 +27,13 @@ function BadgeList({ heading, values }: { heading: string; values: string[] }) {
 }
 
 type InfoProps = {
-  game: Game;
-  screenshots: ScreenshotItem[];
+  game: CatalogGame;
+  screenshots: CatalogScreenshot[];
 };
 
 export function Info({ game, screenshots }: InfoProps) {
-  const { description_raw, platforms, developers, publishers } = game;
-  const description = (description_raw ?? "").split("###").join("\n\n").trim();
+  const { descriptionRaw, platforms, developers, publishers } = game;
+  const description = descriptionRaw.split("###").join("\n\n").trim();
 
   return (
     <div className="space-y-8 pt-8">
@@ -45,18 +45,9 @@ export function Info({ game, screenshots }: InfoProps) {
 
         <aside className="space-y-5 rounded-xl border bg-card/70 p-5 backdrop-blur-sm md:p-6">
           <h2 className="font-semibold text-lg">Details</h2>
-          <BadgeList
-            heading="Platforms"
-            values={(platforms ?? []).map((entry) => entry.platform.name)}
-          />
-          <BadgeList
-            heading="Developers"
-            values={(developers ?? []).map((developer) => developer.name)}
-          />
-          <BadgeList
-            heading="Publishers"
-            values={(publishers ?? []).map((publisher) => publisher.name)}
-          />
+          <BadgeList heading="Platforms" values={platforms} />
+          <BadgeList heading="Developers" values={developers} />
+          <BadgeList heading="Publishers" values={publishers} />
         </aside>
       </div>
 

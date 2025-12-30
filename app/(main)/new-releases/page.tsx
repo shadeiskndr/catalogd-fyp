@@ -11,8 +11,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { dedupeById, type Game, type ResponseSchema } from "@/lib/game-types";
-import { rawgFetchServer } from "@/lib/rawg-server";
+import { getGameList } from "@/lib/catalog-server";
 import { parsePageParam } from "@/lib/utils";
 
 const PAGE_SIZE = 12;
@@ -21,10 +20,7 @@ type SearchParams = Promise<{ page?: string }>;
 
 async function NewReleaseGames({ searchParams }: { searchParams: SearchParams }) {
   const page = parsePageParam((await searchParams).page);
-  const data = await rawgFetchServer<ResponseSchema<Game>>(
-    `games/lists/main?&page=${page}&ordering=-released&page-size=${PAGE_SIZE}`
-  );
-  const games = dedupeById(data.results);
+  const { games, count } = await getGameList(`new-releases:${page}`);
 
   if (games.length === 0) {
     return (
@@ -43,7 +39,7 @@ async function NewReleaseGames({ searchParams }: { searchParams: SearchParams })
   return (
     <>
       <GameGrid games={games} />
-      <PagerLinks basePath="/new-releases" page={page} hasMore={games.length >= PAGE_SIZE} />
+      <PagerLinks basePath="/new-releases" page={page} hasMore={page * PAGE_SIZE < count} />
     </>
   );
 }

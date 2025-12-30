@@ -4,22 +4,42 @@ import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "./_generated/dataModel";
 import type { QueryCtx } from "./_generated/server";
 import { mutation, query } from "./_generated/server";
+import { ensureGameIngested } from "./ingest";
 
-async function withUserNames(ctx: QueryCtx, reviews: Doc<"reviews">[]) {
+async function withGameAndUser(ctx: QueryCtx, reviews: Doc<"reviews">[]) {
   const userIds = Array.from(new Set(reviews.map((review) => review.userId)));
   const users = await Promise.all(userIds.map((userId) => ctx.db.get("users", userId)));
   const names = new Map<Id<"users">, string>(
     userIds.map((userId, index) => [userId, users[index]?.name ?? "Unknown"])
   );
-  return reviews.map((review) => ({
-    userId: review.userId,
-    userName: names.get(review.userId) ?? "Unknown",
-    gameId: review.gameId,
-    gameName: review.gameName,
-    rating: review.rating,
-    review: review.review,
-    createdAt: review._creationTime,
-  }));
+
+  const gameIds = Array.from(new Set(reviews.map((review) => review.gameId)));
+  const docs = await Promise.all(
+    gameIds.map((gameId) =>
+      ctx.db
+        .query("games")
+        .withIndex("by_rawgId", (q) => q.eq("rawgId", gameId))
+        .first()
+    )
+  );
+  const games = new Map<number, Doc<"games"> | null>(
+    gameIds.map((gameId, index) => [gameId, docs[index] ?? null])
+  );
+
+  return reviews.map((review) => {
+    const game = games.get(review.gameId) ?? null;
+    return {
+      userId: review.userId,
+      userName: names.get(review.userId) ?? "Unknown",
+      gameId: review.gameId,
+      gameName: review.gameName,
+      gameSlug: game?.slug ?? null,
+      gameImage: game?.backgroundImage ?? "",
+      rating: review.rating,
+      review: review.review,
+      createdAt: review._creationTime,
+    };
+  });
 }
 
 export const list = query({
@@ -37,7 +57,7 @@ export const list = query({
             .order("desc")
             .paginate(args.paginationOpts)
         : await ctx.db.query("reviews").order("desc").paginate(args.paginationOpts);
-    return { ...results, page: await withUserNames(ctx, results.page) };
+    return { ...results, page: await withGameAndUser(ctx, results.page) };
   },
 });
 
@@ -73,5 +93,6 @@ export const create = mutation({
       rating: args.rating,
       review: args.review.trim(),
     });
+    await ensureGameIngested(ctx, args.gameId);
   },
 });

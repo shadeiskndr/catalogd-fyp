@@ -1,79 +1,46 @@
-import { getAuthUserId } from "@convex-dev/auth/server";
-import { ConvexError, v } from "convex/values";
-import { internal } from "./_generated/api";
-import { type ActionCtx, action, internalMutation, internalQuery } from "./_generated/server";
+import { internalMutation } from "./_generated/server";
 
 const RAWG_API_URL = "https://api.rawg.io/api/";
-
+const RAWG_API_ORIGIN = "https://api.rawg.io";
 const CONSOLE_PLATFORMS = "1,7,18,187,186,16,17,14";
+const LEGACY_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
+const PURGE_BATCH_SIZE = 500;
 
-const CACHE_TTL_MS = 6 * 60 * 60 * 1000;
-const MAX_CACHED_BODY_BYTES = 900_000;
+const SLUG_PATTERN = /^[a-z0-9][a-z0-9._-]*$/;
+const MAX_SLUG_LENGTH = 120;
+const MAX_LIST_PAGE = 100;
 
-export const getCached = internalQuery({
-  args: { endpoint: v.string() },
-  handler: async (ctx, args): Promise<{ body: string; fetchedAt: number } | null> => {
-    const entry = await ctx.db
-      .query("rawgCache")
-      .withIndex("by_endpoint", (q) => q.eq("endpoint", args.endpoint))
-      .first();
-    if (entry === null) {
-      return null;
-    }
-    return { body: entry.body, fetchedAt: entry.fetchedAt };
-  },
-});
+export type RawgNamed = { name?: string | null };
+export type RawgPlatformEntry = { platform?: RawgNamed | null };
+export type RawgScreenshot = { id?: number | null; image?: string | null };
 
-export const putCache = internalMutation({
-  args: { endpoint: v.string(), body: v.string() },
-  handler: async (ctx, args): Promise<void> => {
-    const entry = {
-      endpoint: args.endpoint,
-      body: args.body,
-      fetchedAt: Date.now(),
-    };
-    const existing = await ctx.db
-      .query("rawgCache")
-      .withIndex("by_endpoint", (q) => q.eq("endpoint", args.endpoint))
-      .first();
-    if (existing !== null) {
-      await ctx.db.replace("rawgCache", existing._id, entry);
-    } else {
-      await ctx.db.insert("rawgCache", entry);
-    }
-  },
-});
+export type RawgGame = {
+  id?: number | null;
+  slug?: string | null;
+  name?: string | null;
+  released?: string | null;
+  background_image?: string | null;
+  metacritic?: number | null;
+  ratings_count?: number | null;
+  description_raw?: string | null;
+  website?: string | null;
+  genres?: RawgNamed[] | null;
+  platforms?: RawgPlatformEntry[] | null;
+  parent_platforms?: RawgPlatformEntry[] | null;
+  developers?: RawgNamed[] | null;
+  publishers?: RawgNamed[] | null;
+  short_screenshots?: RawgScreenshot[] | null;
+};
 
-export const purgeExpired = internalMutation({
-  args: {},
-  handler: async (ctx) => {
-    const cutoff = Date.now() - CACHE_TTL_MS;
-    const expired = await ctx.db
-      .query("rawgCache")
-      .withIndex("by_fetchedAt", (q) => q.lt("fetchedAt", cutoff))
-      .take(1000);
-    await Promise.all(expired.map((entry) => ctx.db.delete("rawgCache", entry._id)));
-    return expired.length;
-  },
-});
+export type RawgGenre = {
+  id?: number | null;
+  slug?: string | null;
+  name?: string | null;
+  games_count?: number | null;
+  image_background?: string | null;
+};
 
-const PUBLIC_ENDPOINTS = [
-  /^genres$/,
-  /^games\/lists\/(?:main|popular)(?:\?|$)/,
-  /^games\/[a-z0-9._-]+(?:\/screenshots)?(?:\?|$)/,
-  /^games\?discover=true(?:&|$)/,
-];
-
-function isPublicEndpoint(endpoint: string): boolean {
-  return PUBLIC_ENDPOINTS.some((pattern) => pattern.test(endpoint));
-}
-
-async function requireUser(ctx: ActionCtx): Promise<void> {
-  const userId = await getAuthUserId(ctx);
-  if (userId === null) {
-    throw new ConvexError("Not authenticated");
-  }
-}
+export type RawgListResponse<T> = { count?: number | null; results?: T[] | null };
 
 function stripPaginationUrls(data: unknown): unknown {
   if (data === null || typeof data !== "object") {
@@ -86,7 +53,62 @@ function stripPaginationUrls(data: unknown): unknown {
   return { ...record, next: null, previous: null };
 }
 
-async function fetchThroughCache(ctx: ActionCtx, endpoint: string): Promise<unknown> {
+export function isValidSlug(value: string): boolean {
+  return value.length > 0 && value.length <= MAX_SLUG_LENGTH && SLUG_PATTERN.test(value);
+}
+
+function parsePage(value: string | undefined): number | null {
+  if (value === undefined || !/^[1-9][0-9]*$/.test(value)) {
+    return null;
+  }
+  const page = Number.parseInt(value, 10);
+  return page <= MAX_LIST_PAGE ? page : null;
+}
+
+export const LIST_PAGE_SIZE = 12;
+export const UPCOMING_PAGE_SIZE = 8;
+export const FEATURED_PAGE_SIZE = 30;
+
+export function resolveListEndpoint(key: string): string | null {
+  const parts = key.split(":");
+  const kind = parts[0];
+
+  if (kind === "genre") {
+    if (parts.length !== 3) {
+      return null;
+    }
+    const slug = parts[1] ?? "";
+    const page = parsePage(parts[2]);
+    if (page === null || !isValidSlug(slug)) {
+      return null;
+    }
+    return `games?discover=true&page-size=${LIST_PAGE_SIZE}&ordering=popularity&page=${page}&genres=${slug}`;
+  }
+
+  if (parts.length !== 2) {
+    return null;
+  }
+  const page = parsePage(parts[1]);
+  if (page === null) {
+    return null;
+  }
+
+  if (kind === "popular") {
+    return `games/lists/popular?discover=true&page=${page}&page-size=${LIST_PAGE_SIZE}&ordering=popularity`;
+  }
+  if (kind === "new-releases") {
+    return `games/lists/main?&page=${page}&ordering=-released&page-size=${LIST_PAGE_SIZE}`;
+  }
+  if (kind === "upcoming") {
+    return `games/lists/main?&page-size=${UPCOMING_PAGE_SIZE}&ordering=-released&page=${page}`;
+  }
+  if (kind === "featured") {
+    return `games/lists/popular?discover=true&page-size=${FEATURED_PAGE_SIZE}&page=${page}`;
+  }
+  return null;
+}
+
+async function rawgResponse(endpoint: string): Promise<Response> {
   const apiKey = process.env["RAWG_API_KEY"];
   if (!apiKey) {
     throw new Error("RAWG_API_KEY is not set on the Convex deployment");
@@ -96,50 +118,40 @@ async function fetchThroughCache(ctx: ActionCtx, endpoint: string): Promise<unkn
   const separator = endpoint.includes("?") ? "&" : "?";
   const platformFilter = isGameEndpoint ? `&platforms=${CONSOLE_PLATFORMS}` : "";
   const url = new URL(`${endpoint}${separator}key=${apiKey}${platformFilter}`, RAWG_API_URL);
-  if (url.origin !== "https://api.rawg.io" || !url.pathname.startsWith("/api/")) {
+  if (url.origin !== RAWG_API_ORIGIN || !url.pathname.startsWith("/api/")) {
     throw new Error("Invalid RAWG endpoint");
   }
-
-  const cached = await ctx.runQuery(internal.rawg.getCached, { endpoint });
-  if (cached !== null && Date.now() - cached.fetchedAt <= CACHE_TTL_MS) {
-    return JSON.parse(cached.body);
-  }
-
-  const response = await fetch(url.toString());
-  if (!response.ok) {
-    throw new Error(`RAWG API Error: ${response.statusText}`);
-  }
-  const data = stripPaginationUrls(await response.json());
-
-  const body = JSON.stringify(data);
-  if (body.length <= MAX_CACHED_BODY_BYTES) {
-    await ctx.runMutation(internal.rawg.putCache, { endpoint, body });
-  }
-  return data;
+  return await fetch(url.toString());
 }
 
-export const getPublic = action({
-  args: { endpoint: v.string() },
-  handler: async (ctx, args): Promise<unknown> => {
-    if (!isPublicEndpoint(args.endpoint)) {
-      throw new ConvexError("Endpoint is not available without authentication");
-    }
-    return await fetchThroughCache(ctx, args.endpoint);
-  },
-});
+export async function rawgRequest<T>(endpoint: string): Promise<T> {
+  const response = await rawgResponse(endpoint);
+  if (!response.ok) {
+    throw new Error(`RAWG API Error: ${response.status} ${response.statusText}`);
+  }
+  return stripPaginationUrls(await response.json()) as T;
+}
 
-export const get = action({
-  args: { endpoint: v.string() },
-  handler: async (ctx, args): Promise<unknown> => {
-    await requireUser(ctx);
-    return await fetchThroughCache(ctx, args.endpoint);
-  },
-});
+export async function rawgRequestOptional<T>(endpoint: string): Promise<T | null> {
+  const response = await rawgResponse(endpoint);
+  if (response.status === 404) {
+    return null;
+  }
+  if (!response.ok) {
+    throw new Error(`RAWG API Error: ${response.status} ${response.statusText}`);
+  }
+  return stripPaginationUrls(await response.json()) as T;
+}
 
-export const getMany = action({
-  args: { endpoints: v.array(v.string()) },
-  handler: async (ctx, args): Promise<unknown[]> => {
-    await requireUser(ctx);
-    return await Promise.all(args.endpoints.map((endpoint) => fetchThroughCache(ctx, endpoint)));
+export const purgeExpired = internalMutation({
+  args: {},
+  handler: async (ctx): Promise<number> => {
+    const cutoff = Date.now() - LEGACY_CACHE_TTL_MS;
+    const expired = await ctx.db
+      .query("rawgCache")
+      .withIndex("by_fetchedAt", (q) => q.lt("fetchedAt", cutoff))
+      .take(PURGE_BATCH_SIZE);
+    await Promise.all(expired.map((entry) => ctx.db.delete("rawgCache", entry._id)));
+    return expired.length;
   },
 });

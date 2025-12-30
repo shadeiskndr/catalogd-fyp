@@ -9,8 +9,11 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as catalog from "../catalog.js";
 import type * as crons from "../crons.js";
 import type * as http from "../http.js";
+import type * as images from "../images.js";
+import type * as ingest from "../ingest.js";
 import type * as lists from "../lists.js";
 import type * as messages from "../messages.js";
 import type * as rawg from "../rawg.js";
@@ -25,8 +28,11 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  catalog: typeof catalog;
   crons: typeof crons;
   http: typeof http;
+  images: typeof images;
+  ingest: typeof ingest;
   lists: typeof lists;
   messages: typeof messages;
   rawg: typeof rawg;

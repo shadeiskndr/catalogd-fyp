@@ -15,10 +15,10 @@ import { Kbd } from "@/components/ui/kbd";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDebounceCallback } from "@/hooks/use-debounce-callback";
 import { useGameSearch } from "@/hooks/use-games";
+import { catalogImage } from "@/lib/catalog-image";
 import { formatReleaseYear } from "@/lib/format";
-import type { Game } from "@/lib/game-types";
+import type { CatalogGame } from "@/lib/game-types";
 import type { NavItem } from "@/lib/nav-items";
-import { rawgImage } from "@/lib/rawg-image";
 
 const MIN_QUERY_LENGTH = 3;
 const PLACEHOLDER_IMAGE = "/imgs/img-placeholder.jpg";
@@ -43,7 +43,13 @@ function SearchSkeleton() {
   );
 }
 
-function GameCommandItem({ game, onSelect }: { game: Game; onSelect: (game: Game) => void }) {
+function GameCommandItem({
+  game,
+  onSelect,
+}: {
+  game: CatalogGame;
+  onSelect: (game: CatalogGame) => void;
+}) {
   const handleSelect = useCallback(() => {
     onSelect(game);
   }, [game, onSelect]);
@@ -51,7 +57,7 @@ function GameCommandItem({ game, onSelect }: { game: Game; onSelect: (game: Game
   return (
     <CommandItem className="gap-2 py-2" value={game.slug} onSelect={handleSelect}>
       <Image
-        src={rawgImage(game.background_image || PLACEHOLDER_IMAGE, 200)}
+        src={catalogImage(game.backgroundImage || PLACEHOLDER_IMAGE, 200)}
         alt=""
         width={36}
         height={36}
@@ -85,7 +91,7 @@ function NavCommandItem({ item, onSelect }: { item: NavItem; onSelect: (item: Na
 type GameSearchDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSelectGame: (game: Game) => void;
+  onSelectGame: (game: CatalogGame) => void;
   onSelectNavItem?: (item: NavItem) => void;
   navItems?: readonly NavItem[];
   placeholder?: string;
@@ -104,8 +110,7 @@ export function GameSearchDialog({
 
   const debouncedSetQuery = useDebounceCallback(setQuery, 400);
 
-  const { data, isLoading } = useGameSearch(query);
-  const games = data?.results ?? [];
+  const { games, isLoading } = useGameSearch(query);
   const isSearching = query.length >= MIN_QUERY_LENGTH;
   const isTyping = searchTerm.length >= MIN_QUERY_LENGTH && searchTerm !== query;
 
@@ -130,7 +135,7 @@ export function GameSearchDialog({
   );
 
   const handleSelectGame = useCallback(
-    (game: Game) => {
+    (game: CatalogGame) => {
       handleOpenChange(false);
       onSelectGame(game);
     },
@@ -177,7 +182,7 @@ export function GameSearchDialog({
         {isSearching && !isPending && games.length > 0 ? (
           <CommandGroup heading="Games">
             {games.map((game) => (
-              <GameCommandItem key={game.id} game={game} onSelect={handleSelectGame} />
+              <GameCommandItem key={game.rawgId} game={game} onSelect={handleSelectGame} />
             ))}
           </CommandGroup>
         ) : null}

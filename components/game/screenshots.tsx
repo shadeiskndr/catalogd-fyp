@@ -5,11 +5,11 @@ import Image from "next/image";
 import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import type { ScreenshotItem } from "@/lib/game-types";
-import { rawgImage } from "@/lib/rawg-image";
+import { catalogImage } from "@/lib/catalog-image";
+import type { CatalogScreenshot } from "@/lib/game-types";
 
 type ScreenshotThumbProps = {
-  screenshot: ScreenshotItem;
+  screenshot: CatalogScreenshot;
   index: number;
   gameName: string;
   priority: boolean;
@@ -29,7 +29,7 @@ function ScreenshotThumb({ screenshot, index, gameName, priority, onOpen }: Scre
       className="ease relative aspect-video overflow-hidden rounded-lg border bg-muted transition-[border-color,box-shadow] duration-150 hover-hover:hover:border-ring/60 hover-hover:hover:shadow-md focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 active:scale-[0.99]"
     >
       <Image
-        src={rawgImage(screenshot.image, 640)}
+        src={catalogImage(screenshot.image, 640)}
         alt=""
         fill
         sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
@@ -44,7 +44,7 @@ export function Screenshots({
   screenshots,
   gameName,
 }: {
-  screenshots: ScreenshotItem[];
+  screenshots: CatalogScreenshot[];
   gameName: string;
 }) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
@@ -118,7 +118,7 @@ export function Screenshots({
           {active === undefined ? null : (
             <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-black">
               <Image
-                src={rawgImage(active.image, 1280)}
+                src={catalogImage(active.image, 1280)}
                 alt={`${gameName} screenshot`}
                 fill
                 sizes="96vw"

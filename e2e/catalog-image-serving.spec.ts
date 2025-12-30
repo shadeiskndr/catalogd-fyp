@@ -1,6 +1,6 @@
 import { expect, type Page, test } from "@playwright/test";
 
-const RAWG_RESIZE = /^https:\/\/media\.rawg\.io\/media\/resize\/(200|420|600|640|1280|1920)\/-\//;
+const CATALOG_IMAGE_PATH = /^\/img\/(200|420|600|640|1280|1920)\/[A-Za-z0-9][A-Za-z0-9/._-]*$/;
 
 function watchImages(page: Page) {
   const direct: string[] = [];
@@ -26,7 +26,7 @@ function watchImages(page: Page) {
 const ROUTES = ["/genres", "/dashboard", "/popular"];
 
 for (const route of ROUTES) {
-  test(`${route} routes every RAWG image through the Next optimizer`, async ({ page }) => {
+  test(`${route} serves game art from the catalogue backend`, async ({ page }) => {
     const traffic = watchImages(page);
 
     await page.goto(route);
@@ -35,10 +35,12 @@ for (const route of ROUTES) {
     expect(traffic.direct).toEqual([]);
     expect(traffic.optimized.length).toBeGreaterThan(0);
 
-    const rawgSources = traffic.optimized.filter((src) => src.startsWith("https://media.rawg.io/"));
-    expect(rawgSources.length).toBeGreaterThan(0);
-    for (const source of rawgSources) {
-      expect(source).toMatch(RAWG_RESIZE);
+    const remoteSources = traffic.optimized.filter((source) => source.startsWith("http"));
+    expect(remoteSources.length).toBeGreaterThan(0);
+    for (const source of remoteSources) {
+      const upstream = new URL(source);
+      expect(upstream.hostname).not.toBe("media.rawg.io");
+      expect(upstream.pathname).toMatch(CATALOG_IMAGE_PATH);
     }
   });
 }

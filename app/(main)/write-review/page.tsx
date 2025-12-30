@@ -16,9 +16,9 @@ import { Slider } from "@/components/ui/slider";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/convex/_generated/api";
+import { catalogImage } from "@/lib/catalog-image";
 import { formatReleaseDate } from "@/lib/format";
-import type { Game } from "@/lib/game-types";
-import { rawgImage } from "@/lib/rawg-image";
+import type { CatalogGame } from "@/lib/game-types";
 import { ratingColor, ratingTitle } from "@/lib/review-rating";
 import { cn } from "@/lib/utils";
 
@@ -29,7 +29,7 @@ const MAX_REVIEW_LENGTH = 2000;
 export default function WriteReviewPage() {
   const reviewId = useId();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [selectedGame, setSelectedGame] = useState<Game | null>(null);
+  const [selectedGame, setSelectedGame] = useState<CatalogGame | null>(null);
   const [rating, setRating] = useState(DEFAULT_RATING);
   const [review, setReview] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -64,7 +64,7 @@ export default function WriteReviewPage() {
       setIsSubmitting(true);
       try {
         await createReview({
-          gameId: selectedGame.id,
+          gameId: selectedGame.rawgId,
           gameName: selectedGame.name,
           rating,
           review,
@@ -115,7 +115,7 @@ export default function WriteReviewPage() {
             <div className="flex items-center gap-3 rounded-lg border bg-card p-3">
               <div className="relative aspect-video w-28 shrink-0 overflow-hidden rounded-md bg-muted">
                 <Image
-                  src={rawgImage(selectedGame.background_image || PLACEHOLDER_IMAGE, 420)}
+                  src={catalogImage(selectedGame.backgroundImage || PLACEHOLDER_IMAGE, 420)}
                   alt={selectedGame.name}
                   fill
                   sizes="112px"

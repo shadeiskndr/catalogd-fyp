@@ -6,9 +6,8 @@ import Link from "next/link";
 import { useCallback, useState } from "react";
 import { ReviewDetailDialog } from "@/components/review-detail-dialog";
 import { Button } from "@/components/ui/button";
-import { useGameDetails, useGameSlugByName } from "@/hooks/use-games";
+import { catalogImage } from "@/lib/catalog-image";
 import { formatTimestamp } from "@/lib/format";
-import { rawgImage } from "@/lib/rawg-image";
 import { ratingColor, ratingLabel } from "@/lib/review-rating";
 import { cn } from "@/lib/utils";
 
@@ -24,7 +23,7 @@ function ReviewBackdrop({ image, eager }: { image: string; eager: boolean }) {
   return (
     <>
       <Image
-        src={rawgImage(image, 640)}
+        src={catalogImage(image, 640)}
         alt=""
         fill
         sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
@@ -74,6 +73,8 @@ function ReviewHeading({ label, href }: { label: string; href: string | null }) 
 type ReviewCardProps = {
   userName: string;
   gameName: string;
+  gameSlug: string | null;
+  gameImage: string;
   rating: number;
   reviewText: string;
   createdAt?: number;
@@ -84,6 +85,8 @@ type ReviewCardProps = {
 export function ReviewCard({
   userName,
   gameName,
+  gameSlug,
+  gameImage,
   rating,
   reviewText,
   createdAt,
@@ -93,13 +96,10 @@ export function ReviewCard({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const isFeed = variant === "feed";
 
-  const { data: slug } = useGameSlugByName(isFeed ? gameName : "");
-  const { data: gameDetails } = useGameDetails(slug ?? "");
-
-  const image = gameDetails?.background_image ?? "";
+  const image = isFeed ? gameImage : "";
   const heading = isFeed ? gameName : userName;
   const subheading = isFeed ? userName : ratingLabel(rating);
-  const href = isFeed && slug !== null && slug !== undefined ? `/game/${slug}` : null;
+  const href = isFeed && gameSlug !== null ? `/game/${gameSlug}` : null;
 
   const openDialog = useCallback(() => {
     setIsDialogOpen(true);

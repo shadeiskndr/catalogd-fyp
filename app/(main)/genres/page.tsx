@@ -3,8 +3,7 @@ import { GenreCard } from "@/components/genres/genre-card";
 import { PageHeader } from "@/components/layout/page-header";
 import { BlurFade } from "@/components/ui/magicui/blur-fade";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { GenreSummary, ResponseSchema } from "@/lib/game-types";
-import { rawgFetchServer } from "@/lib/rawg-server";
+import { getGenres } from "@/lib/catalog-server";
 
 const GRID_CLASSES = "grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-4 lg:grid-cols-4 xl:grid-cols-5";
 const PRIORITY_COUNT = 5;
@@ -25,21 +24,21 @@ function GenreGridSkeleton() {
 }
 
 async function GenreGrid() {
-  const data = await rawgFetchServer<ResponseSchema<GenreSummary>>("genres");
+  const genres = await getGenres();
 
-  if (data.results.length === 0) {
+  if (genres.length === 0) {
     return <p className="text-muted-foreground">No genres found.</p>;
   }
 
   return (
     <div className={GRID_CLASSES}>
-      {data.results.map((genre, index) => (
-        <BlurFade key={genre.id} inView delay={Math.min(index, STAGGER_CAP) * STAGGER_STEP}>
+      {genres.map((genre, index) => (
+        <BlurFade key={genre.rawgId} inView delay={Math.min(index, STAGGER_CAP) * STAGGER_STEP}>
           <GenreCard
             name={genre.name}
-            image={genre.image_background}
+            image={genre.imageBackground}
             slug={genre.slug}
-            gamesCount={genre.games_count}
+            gamesCount={genre.gamesCount}
             loadingStrategy={
               index < PRIORITY_COUNT ? "priority" : index < EAGER_COUNT ? "eager" : "lazy"
             }

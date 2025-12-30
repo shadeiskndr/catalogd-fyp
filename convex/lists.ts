@@ -1,22 +1,51 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { paginationOptsValidator } from "convex/server";
 import { ConvexError, v } from "convex/values";
+import type { CatalogGame } from "@/lib/game-types";
 import { mutation, query } from "./_generated/server";
+import { toCatalogGame } from "./catalog";
+import { ensureGameIngested } from "./ingest";
 
 const listArg = v.union(v.literal("library"), v.literal("wishlist"));
+
+export type ListEntry = {
+  gameId: number;
+  gameName: string;
+  game: CatalogGame | null;
+};
 
 export const page = query({
   args: { list: listArg, paginationOpts: paginationOptsValidator },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (userId === null) {
-      return { page: [], isDone: true, continueCursor: "" };
+      return { page: [] as ListEntry[], isDone: true, continueCursor: "" };
     }
-    return await ctx.db
+    const results = await ctx.db
       .query(args.list)
       .withIndex("by_user", (q) => q.eq("userId", userId))
       .order("desc")
       .paginate(args.paginationOpts);
+
+    const docs = await Promise.all(
+      results.page.map((entry) =>
+        ctx.db
+          .query("games")
+          .withIndex("by_rawgId", (q) => q.eq("rawgId", entry.gameId))
+          .first()
+      )
+    );
+
+    const page: ListEntry[] = results.page.map((entry, index) => {
+      const doc = docs[index] ?? null;
+      return {
+        gameId: entry.gameId,
+        gameName: entry.gameName,
+        game: doc === null ? null : toCatalogGame(doc),
+      };
+    });
+
+    return { ...results, page };
   },
 });
 
@@ -54,6 +83,7 @@ export const add = mutation({
       gameId: args.gameId,
       gameName: args.gameName,
     });
+    await ensureGameIngested(ctx, args.gameId);
   },
 });
 

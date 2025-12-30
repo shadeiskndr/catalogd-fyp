@@ -1,8 +1,7 @@
 import { connection } from "next/server";
 import { GameCard } from "@/components/game-card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { dedupeById, type Game, type ResponseSchema } from "@/lib/game-types";
-import { rawgFetchServer } from "@/lib/rawg-server";
+import { getGameList } from "@/lib/catalog-server";
 
 const FEATURED_COUNT = 3;
 const GRID_CLASSES = "grid auto-rows-fr grid-cols-1 gap-4 sm:grid-cols-2 md:gap-5 lg:grid-cols-3";
@@ -28,10 +27,8 @@ export function FeaturedSkeleton() {
 export async function Featured() {
   await connection();
   const pageNumber = Math.floor(Math.random() * 3) + 1;
-  const data = await rawgFetchServer<ResponseSchema<Game>>(
-    `games/lists/popular?discover=true&page-size=30&page=${pageNumber}`
-  );
-  const candidates = dedupeById(data.results.filter((game) => game.metacritic > 40));
+  const { games } = await getGameList(`featured:${pageNumber}`);
+  const candidates = games.filter((game) => game.metacritic > 40);
   const picked = candidates
     .map((game) => ({ game, order: Math.random() }))
     .sort((first, second) => first.order - second.order)
@@ -45,7 +42,7 @@ export async function Featured() {
   return (
     <div className={GRID_CLASSES}>
       {picked.map((game) => (
-        <GameCard key={game.id} game={game} priority />
+        <GameCard key={game.rawgId} game={game} priority />
       ))}
     </div>
   );

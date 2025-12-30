@@ -85,6 +85,8 @@ export function ReviewsSection({ gameName }: { gameName: string }) {
                 variant="game"
                 userName={review.userName}
                 gameName={review.gameName}
+                gameSlug={review.gameSlug}
+                gameImage={review.gameImage}
                 rating={review.rating}
                 reviewText={review.review}
                 createdAt={review.createdAt}

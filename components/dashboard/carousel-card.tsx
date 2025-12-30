@@ -3,9 +3,9 @@ import Link from "next/link";
 import { AddButton } from "@/components/add-button";
 import { MetacriticBadge } from "@/components/metacritic-badge";
 import { Card } from "@/components/ui/card";
+import { catalogImage } from "@/lib/catalog-image";
 import { formatReleaseYear } from "@/lib/format";
-import type { Game } from "@/lib/game-types";
-import { rawgImage } from "@/lib/rawg-image";
+import type { CatalogGame } from "@/lib/game-types";
 
 const PLACEHOLDER_IMAGE = "/imgs/img-placeholder.jpg";
 
@@ -14,17 +14,17 @@ export function CarouselCard({
   sizes,
   eager = false,
 }: {
-  game: Game;
+  game: CatalogGame;
   sizes: string;
   eager?: boolean;
 }) {
-  const { slug, id, name, released, background_image, metacritic } = game;
+  const { slug, rawgId, name, released, backgroundImage, metacritic } = game;
 
   return (
     <Card className="ease relative flex h-full flex-col gap-0 overflow-hidden p-0 transition-[border-color,box-shadow] duration-150 hover-hover:hover:border-ring/60 hover-hover:hover:shadow-md">
       <div className="relative aspect-video overflow-hidden bg-muted">
         <Image
-          src={rawgImage(background_image || PLACEHOLDER_IMAGE, 1280)}
+          src={catalogImage(backgroundImage || PLACEHOLDER_IMAGE, 1280)}
           alt={name}
           fill
           sizes={sizes}
@@ -53,7 +53,7 @@ export function CarouselCard({
           </p>
         </div>
         <div className="relative z-10 shrink-0">
-          <AddButton list="wishlist" gameId={id} gameName={name} />
+          <AddButton list="wishlist" gameId={rawgId} gameName={name} />
         </div>
       </div>
     </Card>

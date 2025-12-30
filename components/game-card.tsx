@@ -3,15 +3,15 @@ import Link from "next/link";
 import { AddButton } from "@/components/add-button";
 import { MetacriticBadge } from "@/components/metacritic-badge";
 import { Card } from "@/components/ui/card";
+import { catalogImage } from "@/lib/catalog-image";
 import { formatReleaseDate } from "@/lib/format";
-import type { Game } from "@/lib/game-types";
-import { rawgImage } from "@/lib/rawg-image";
+import type { CatalogGame } from "@/lib/game-types";
 
 const PLACEHOLDER_IMAGE = "/imgs/img-placeholder.jpg";
 const MAX_GENRES = 2;
 
-export function GameCard({ game, priority = false }: { game: Game; priority?: boolean }) {
-  const { slug, id, name, released, background_image, genres, metacritic } = game;
+export function GameCard({ game, priority = false }: { game: CatalogGame; priority?: boolean }) {
+  const { slug, rawgId, name, released, backgroundImage, genres, metacritic } = game;
   const shownGenres = genres.slice(0, MAX_GENRES);
   const extraGenres = genres.length - shownGenres.length;
 
@@ -19,7 +19,7 @@ export function GameCard({ game, priority = false }: { game: Game; priority?: bo
     <Card className="ease relative flex h-full flex-col gap-0 overflow-hidden p-0 transition-[border-color,box-shadow] duration-150 hover-hover:hover:border-ring/60 hover-hover:hover:shadow-md">
       <div className="relative aspect-video overflow-hidden bg-muted">
         <Image
-          src={rawgImage(background_image || PLACEHOLDER_IMAGE, 1280)}
+          src={catalogImage(backgroundImage || PLACEHOLDER_IMAGE, 1280)}
           alt={name}
           fill
           sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
@@ -52,10 +52,10 @@ export function GameCard({ game, priority = false }: { game: Game; priority?: bo
               <ul className="flex flex-wrap items-center gap-1">
                 {shownGenres.map((genre) => (
                   <li
-                    key={genre.name}
+                    key={genre}
                     className="rounded-full bg-secondary px-2 py-0.5 text-[0.6875rem] text-secondary-foreground leading-4"
                   >
-                    {genre.name}
+                    {genre}
                   </li>
                 ))}
                 {extraGenres > 0 ? (
@@ -68,8 +68,8 @@ export function GameCard({ game, priority = false }: { game: Game; priority?: bo
           </div>
 
           <div className="relative z-10 flex shrink-0 items-center gap-0.5">
-            <AddButton list="library" gameId={id} gameName={name} />
-            <AddButton list="wishlist" gameId={id} gameName={name} />
+            <AddButton list="library" gameId={rawgId} gameName={name} />
+            <AddButton list="wishlist" gameId={rawgId} gameName={name} />
           </div>
         </div>
       </div>
