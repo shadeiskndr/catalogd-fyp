@@ -29,7 +29,7 @@ function ScreenshotThumb({ screenshot, index, gameName, priority, onOpen }: Scre
       className="ease relative aspect-video overflow-hidden rounded-lg border bg-muted transition-[border-color,box-shadow] duration-150 hover-hover:hover:border-ring/60 hover-hover:hover:shadow-md focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 active:scale-[0.99]"
     >
       <Image
-        src={catalogImage(screenshot.image, 640)}
+        src={catalogImage(screenshot.image)}
         alt=""
         fill
         sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
@@ -118,7 +118,7 @@ export function Screenshots({
           {active === undefined ? null : (
             <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-black">
               <Image
-                src={catalogImage(active.image, 1280)}
+                src={catalogImage(active.image)}
                 alt={`${gameName} screenshot`}
                 fill
                 sizes="96vw"

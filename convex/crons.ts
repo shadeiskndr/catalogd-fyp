@@ -12,7 +12,6 @@ crons.interval(
   internal.ingest.backfillReferencedGames,
   {}
 );
-crons.interval("evict cold image assets", { hours: 6 }, internal.images.evict, {});
-crons.interval("purge legacy RAWG cache", { hours: 24 }, internal.rawg.purgeExpired, {});
+crons.interval("evict cold optimized images", { hours: 6 }, internal.images.cacheEvict, {});
 
 export default crons;

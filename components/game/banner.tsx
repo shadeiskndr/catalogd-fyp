@@ -18,7 +18,7 @@ export function Banner({ game }: { game: CatalogGame }) {
       <div className="absolute inset-0">
         <Image
           className="object-cover object-top"
-          src={catalogImage(game.backgroundImage || PLACEHOLDER_IMAGE, 1920)}
+          src={catalogImage(game.backgroundImage || PLACEHOLDER_IMAGE)}
           alt=""
           fill
           sizes="100vw"

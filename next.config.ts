@@ -1,3 +1,4 @@
+import path from "node:path";
 import type { NextConfig } from "next";
 
 type RemotePatterns = NonNullable<NonNullable<NextConfig["images"]>["remotePatterns"]>;
@@ -30,8 +31,10 @@ const nextConfig: NextConfig = {
   experimental: {
     useTypeScriptCli: true,
   },
+  cacheHandler: path.join(import.meta.dirname, "cache-handler.mjs"),
   images: {
     remotePatterns,
+    customCacheHandler: true,
   },
 };
 

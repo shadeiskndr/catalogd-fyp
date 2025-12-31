@@ -1,9 +1,6 @@
 export const RAWG_MEDIA_PREFIX = "https://media.rawg.io/media/";
-export const RAWG_MEDIA_ORIGIN = "https://media.rawg.io";
 
-export const IMAGE_WIDTHS = [200, 420, 600, 640, 1280, 1920] as const;
-
-export type ImageWidth = (typeof IMAGE_WIDTHS)[number];
+export const MASTER_WIDTH = 1920;
 
 const VARIANT_PATTERNS = [/^resize\/\d+\/-\//, /^crop\/\d+\/\d+\//];
 const SAFE_PATH = /^[A-Za-z0-9][A-Za-z0-9/._-]*$/;
@@ -30,10 +27,6 @@ export function normalizeRawgMediaPath(url: string): string | null {
   return isSafeMediaPath(path) ? path : null;
 }
 
-export function isImageWidth(value: number): value is ImageWidth {
-  return (IMAGE_WIDTHS as readonly number[]).includes(value);
-}
-
-export function rawgVariantUrl(sourcePath: string, width: ImageWidth): string {
-  return `${RAWG_MEDIA_PREFIX}resize/${width}/-/${sourcePath}`;
+export function rawgMasterUrl(sourcePath: string): string {
+  return `${RAWG_MEDIA_PREFIX}resize/${MASTER_WIDTH}/-/${sourcePath}`;
 }

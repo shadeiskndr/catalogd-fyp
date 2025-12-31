@@ -1,6 +1,6 @@
 import { expect, type Page, test } from "@playwright/test";
 
-const CATALOG_IMAGE_PATH = /^\/img\/(200|420|600|640|1280|1920)\/[A-Za-z0-9][A-Za-z0-9/._-]*$/;
+const CATALOG_IMAGE_PATH = /^\/img\/[A-Za-z0-9][A-Za-z0-9/._-]*$/;
 
 function watchImages(page: Page) {
   const direct: string[] = [];

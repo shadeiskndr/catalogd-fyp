@@ -23,7 +23,7 @@ function ReviewBackdrop({ image, eager }: { image: string; eager: boolean }) {
   return (
     <>
       <Image
-        src={catalogImage(image, 640)}
+        src={catalogImage(image)}
         alt=""
         fill
         sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"

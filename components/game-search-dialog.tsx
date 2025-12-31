@@ -57,7 +57,7 @@ function GameCommandItem({
   return (
     <CommandItem className="gap-2 py-2" value={game.slug} onSelect={handleSelect}>
       <Image
-        src={catalogImage(game.backgroundImage || PLACEHOLDER_IMAGE, 200)}
+        src={catalogImage(game.backgroundImage || PLACEHOLDER_IMAGE)}
         alt=""
         width={36}
         height={36}

@@ -24,7 +24,7 @@ export function CarouselCard({
     <Card className="ease relative flex h-full flex-col gap-0 overflow-hidden p-0 transition-[border-color,box-shadow] duration-150 hover-hover:hover:border-ring/60 hover-hover:hover:shadow-md">
       <div className="relative aspect-video overflow-hidden bg-muted">
         <Image
-          src={catalogImage(backgroundImage || PLACEHOLDER_IMAGE, 1280)}
+          src={catalogImage(backgroundImage || PLACEHOLDER_IMAGE)}
           alt={name}
           fill
           sizes={sizes}

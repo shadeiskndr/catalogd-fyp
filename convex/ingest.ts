@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import type { CatalogGame, CatalogGenre, CatalogList, CatalogScreenshot } from "@/lib/game-types";
-import { type ImageWidth, normalizeRawgMediaPath } from "@/lib/rawg-image-path";
+import { normalizeRawgMediaPath } from "@/lib/rawg-image-path";
 import { internal } from "./_generated/api";
 import type { ActionCtx, MutationCtx } from "./_generated/server";
 import { internalAction, internalMutation, internalQuery } from "./_generated/server";
@@ -16,12 +16,6 @@ import {
   rawgRequestOptional,
   resolveListEndpoint,
 } from "./rawg";
-
-const LIST_IMAGE_WIDTHS: ImageWidth[] = [1280];
-const DETAIL_IMAGE_WIDTHS: ImageWidth[] = [1920, 1280, 640];
-const SCREENSHOT_IMAGE_WIDTHS: ImageWidth[] = [640, 1280];
-const GENRE_IMAGE_WIDTHS: ImageWidth[] = [600];
-const SEARCH_IMAGE_WIDTHS: ImageWidth[] = [200, 420];
 
 const MAX_GENRES = 100;
 const MAX_ENSURE_GAMES = 30;
@@ -236,11 +230,7 @@ function detailToCatalog(input: GameDetailInput): CatalogGame {
   return { ...input, hasDetail: true };
 }
 
-async function scheduleImageWarm(
-  ctx: ActionCtx,
-  urls: string[],
-  widths: ImageWidth[]
-): Promise<void> {
+async function scheduleImageWarm(ctx: ActionCtx, urls: string[]): Promise<void> {
   const seen = new Set<string>();
   const paths: string[] = [];
   for (const url of urls) {
@@ -253,7 +243,7 @@ async function scheduleImageWarm(
   if (paths.length === 0) {
     return;
   }
-  await ctx.scheduler.runAfter(0, internal.images.warm, { sourcePaths: paths, widths });
+  await ctx.scheduler.runAfter(0, internal.images.warm, { sourcePaths: paths });
 }
 
 async function touchSync(ctx: MutationCtx, key: string): Promise<void> {
@@ -458,8 +448,7 @@ export const refreshList = internalAction({
     });
     await scheduleImageWarm(
       ctx,
-      summaries.map((summary) => summary.backgroundImage),
-      LIST_IMAGE_WIDTHS
+      summaries.map((summary) => summary.backgroundImage)
     );
 
     return { games: summaries.map(summaryToCatalog), count };
@@ -484,12 +473,10 @@ export const refreshGame = internalAction({
       return null;
     }
     await ctx.runMutation(internal.ingest.saveDetails, { games: [detail] });
-    await scheduleImageWarm(ctx, [detail.backgroundImage], DETAIL_IMAGE_WIDTHS);
-    await scheduleImageWarm(
-      ctx,
-      detail.screenshots.map((shot) => shot.image),
-      SCREENSHOT_IMAGE_WIDTHS
-    );
+    await scheduleImageWarm(ctx, [
+      detail.backgroundImage,
+      ...detail.screenshots.map((shot) => shot.image),
+    ]);
     return detailToCatalog(detail);
   },
 });
@@ -517,8 +504,7 @@ export const refreshGamesByIds = internalAction({
     await ctx.runMutation(internal.ingest.saveDetails, { games: details });
     await scheduleImageWarm(
       ctx,
-      details.map((detail) => detail.backgroundImage),
-      LIST_IMAGE_WIDTHS
+      details.map((detail) => detail.backgroundImage)
     );
     return details.map(detailToCatalog);
   },
@@ -541,8 +527,7 @@ export const ingestSearch = internalAction({
     await ctx.runMutation(internal.ingest.saveSummaries, { games: summaries });
     await scheduleImageWarm(
       ctx,
-      summaries.map((summary) => summary.backgroundImage),
-      SEARCH_IMAGE_WIDTHS
+      summaries.map((summary) => summary.backgroundImage)
     );
     return summaries.length;
   },
@@ -559,8 +544,7 @@ export const refreshGenres = internalAction({
     await ctx.runMutation(internal.ingest.saveGenres, { genres });
     await scheduleImageWarm(
       ctx,
-      genres.map((genre) => genre.imageBackground),
-      GENRE_IMAGE_WIDTHS
+      genres.map((genre) => genre.imageBackground)
     );
     return genres;
   },

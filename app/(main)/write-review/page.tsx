@@ -115,7 +115,7 @@ export default function WriteReviewPage() {
             <div className="flex items-center gap-3 rounded-lg border bg-card p-3">
               <div className="relative aspect-video w-28 shrink-0 overflow-hidden rounded-md bg-muted">
                 <Image
-                  src={catalogImage(selectedGame.backgroundImage || PLACEHOLDER_IMAGE, 420)}
+                  src={catalogImage(selectedGame.backgroundImage || PLACEHOLDER_IMAGE)}
                   alt={selectedGame.name}
                   fill
                   sizes="112px"

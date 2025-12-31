@@ -1,10 +1,6 @@
-import { internalMutation } from "./_generated/server";
-
 const RAWG_API_URL = "https://api.rawg.io/api/";
 const RAWG_API_ORIGIN = "https://api.rawg.io";
 const CONSOLE_PLATFORMS = "1,7,18,187,186,16,17,14";
-const LEGACY_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
-const PURGE_BATCH_SIZE = 500;
 
 const SLUG_PATTERN = /^[a-z0-9][a-z0-9._-]*$/;
 const MAX_SLUG_LENGTH = 120;
@@ -142,16 +138,3 @@ export async function rawgRequestOptional<T>(endpoint: string): Promise<T | null
   }
   return stripPaginationUrls(await response.json()) as T;
 }
-
-export const purgeExpired = internalMutation({
-  args: {},
-  handler: async (ctx): Promise<number> => {
-    const cutoff = Date.now() - LEGACY_CACHE_TTL_MS;
-    const expired = await ctx.db
-      .query("rawgCache")
-      .withIndex("by_fetchedAt", (q) => q.lt("fetchedAt", cutoff))
-      .take(PURGE_BATCH_SIZE);
-    await Promise.all(expired.map((entry) => ctx.db.delete("rawgCache", entry._id)));
-    return expired.length;
-  },
-});

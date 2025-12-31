@@ -73,19 +73,19 @@ export default defineSchema({
   }).index("by_key", ["key"]),
   imageAssets: defineTable({
     sourcePath: v.string(),
-    width: v.number(),
     storageId: v.id("_storage"),
     bytes: v.number(),
     contentType: v.string(),
-    lastAccessedAt: v.number(),
+  }).index("by_source", ["sourcePath"]),
+  imageCache: defineTable({
+    key: v.string(),
+    storageId: v.id("_storage"),
+    etag: v.string(),
+    upstreamEtag: v.string(),
+    extension: v.string(),
+    revalidate: v.number(),
+    lastModified: v.number(),
   })
-    .index("by_source_width", ["sourcePath", "width"])
-    .index("by_lastAccessedAt", ["lastAccessedAt"]),
-  rawgCache: defineTable({
-    endpoint: v.string(),
-    body: v.string(),
-    fetchedAt: v.number(),
-  })
-    .index("by_endpoint", ["endpoint"])
-    .index("by_fetchedAt", ["fetchedAt"]),
+    .index("by_key", ["key"])
+    .index("by_lastModified", ["lastModified"]),
 });

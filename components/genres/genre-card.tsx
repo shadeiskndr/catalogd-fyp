@@ -29,7 +29,7 @@ export function GenreCard({
       className="ease relative flex aspect-4/3 overflow-hidden rounded-xl border bg-muted transition-[border-color,box-shadow] duration-150 hover-hover:hover:border-ring/60 hover-hover:hover:shadow-md focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 active:scale-[0.99]"
     >
       <Image
-        src={catalogImage(image || PLACEHOLDER_IMAGE, 600)}
+        src={catalogImage(image || PLACEHOLDER_IMAGE)}
         alt=""
         fill
         sizes="(min-width: 1280px) 20vw, (min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
