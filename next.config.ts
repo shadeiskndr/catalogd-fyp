@@ -35,6 +35,22 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns,
     customCacheHandler: true,
+    // AVIF is worth its slower encode now that `cache-handler.mjs` keeps optimizer
+    // output in Convex: the cost is paid once per (image, width) for the life of the
+    // deployment instead of on every deploy.
+    formats: ["image/avif", "image/webp"],
+    // Trimmed from Next's defaults. `getWidths` builds the srcset from
+    // [...deviceSizes, ...imageSizes] filtered by `deviceSizes[0] * smallestRatio`,
+    // so the default lists gave a 25vw card grid 10 candidate widths and the 112px
+    // write-review thumbnail all 17. Every candidate is a separate RAWG-master pull
+    // and a separate Convex row on a cold cache.
+    //
+    // Nothing above 1920 is listed on purpose: `images.ts` stores a single 1920
+    // master, and sharp upscales rather than caps, so 2048/3840 entries were larger
+    // files carrying no extra detail. `imageSizes` keeps 128/256 only to cover the
+    // 112px thumbnail at 1x/2x.
+    deviceSizes: [640, 828, 1200, 1920],
+    imageSizes: [128, 256],
   },
 };
 

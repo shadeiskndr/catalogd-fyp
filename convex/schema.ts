@@ -73,9 +73,10 @@ export default defineSchema({
   }).index("by_key", ["key"]),
   imageAssets: defineTable({
     sourcePath: v.string(),
-    storageId: v.id("_storage"),
+    storageId: v.optional(v.id("_storage")),
     bytes: v.number(),
     contentType: v.string(),
+    claimedAt: v.optional(v.number()),
   }).index("by_source", ["sourcePath"]),
   imageCache: defineTable({
     key: v.string(),
