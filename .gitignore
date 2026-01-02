@@ -52,3 +52,6 @@ skills-lock.json
 /blob-report/
 /playwright/.cache/
 e2e/.auth/
+
+# planning drafts, not part of the repo
+/docs

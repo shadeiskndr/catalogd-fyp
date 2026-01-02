@@ -4,6 +4,7 @@
 @import "./themes/default.css";
 @import "./themes/claude.css";
 @import "./themes/rose.css";
+@source "../node_modules/streamdown/dist/*.js";
 
 @custom-variant dark (&:is(.dark *));
 

@@ -5,8 +5,10 @@ const CONSOLE_PLATFORMS = "1,7,18,187,186,16,17,14";
 const SLUG_PATTERN = /^[a-z0-9][a-z0-9._-]*$/;
 const MAX_SLUG_LENGTH = 120;
 const MAX_LIST_PAGE = 100;
+const MAX_SWEEP_PAGE = 800;
 
 export type RawgNamed = { name?: string | null };
+export type RawgTag = RawgNamed & { language?: string | null };
 export type RawgPlatformEntry = { platform?: RawgNamed | null };
 export type RawgScreenshot = { id?: number | null; image?: string | null };
 
@@ -18,6 +20,8 @@ export type RawgGame = {
   background_image?: string | null;
   metacritic?: number | null;
   ratings_count?: number | null;
+  playtime?: number | null;
+  tags?: RawgTag[] | null;
   description_raw?: string | null;
   website?: string | null;
   genres?: RawgNamed[] | null;
@@ -61,9 +65,21 @@ function parsePage(value: string | undefined): number | null {
   return page <= MAX_LIST_PAGE ? page : null;
 }
 
+export const SWEEP_PAGE_SIZE = 40;
 export const LIST_PAGE_SIZE = 12;
 export const UPCOMING_PAGE_SIZE = 8;
 export const FEATURED_PAGE_SIZE = 30;
+
+export function resolveSweepEndpoint(page: number, year?: number): string | null {
+  if (!Number.isInteger(page) || page < 1 || page > MAX_SWEEP_PAGE) {
+    return null;
+  }
+  if (year !== undefined && (!Number.isInteger(year) || year < 1970 || year > 2100)) {
+    return null;
+  }
+  const dates = year === undefined ? "" : `&dates=${year}-01-01,${year}-12-31`;
+  return `games?page_size=${SWEEP_PAGE_SIZE}&page=${page}&ordering=-added${dates}`;
+}
 
 export function resolveListEndpoint(key: string): string | null {
   const parts = key.split(":");
@@ -78,7 +94,7 @@ export function resolveListEndpoint(key: string): string | null {
     if (page === null || !isValidSlug(slug)) {
       return null;
     }
-    return `games?discover=true&page-size=${LIST_PAGE_SIZE}&ordering=popularity&page=${page}&genres=${slug}`;
+    return `games?discover=true&page_size=${LIST_PAGE_SIZE}&ordering=popularity&page=${page}&genres=${slug}`;
   }
 
   if (parts.length !== 2) {
@@ -90,16 +106,16 @@ export function resolveListEndpoint(key: string): string | null {
   }
 
   if (kind === "popular") {
-    return `games/lists/popular?discover=true&page=${page}&page-size=${LIST_PAGE_SIZE}&ordering=popularity`;
+    return `games/lists/popular?discover=true&page=${page}&page_size=${LIST_PAGE_SIZE}&ordering=popularity`;
   }
   if (kind === "new-releases") {
-    return `games/lists/main?&page=${page}&ordering=-released&page-size=${LIST_PAGE_SIZE}`;
+    return `games/lists/main?&page=${page}&ordering=-released&page_size=${LIST_PAGE_SIZE}`;
   }
   if (kind === "upcoming") {
-    return `games/lists/main?&page-size=${UPCOMING_PAGE_SIZE}&ordering=-released&page=${page}`;
+    return `games/lists/main?&page_size=${UPCOMING_PAGE_SIZE}&ordering=-released&page=${page}`;
   }
   if (kind === "featured") {
-    return `games/lists/popular?discover=true&page-size=${FEATURED_PAGE_SIZE}&page=${page}`;
+    return `games/lists/popular?discover=true&page_size=${FEATURED_PAGE_SIZE}&page=${page}`;
   }
   return null;
 }

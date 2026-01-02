@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Banner } from "@/components/game/banner";
 import { Info } from "@/components/game/info";
+import { MoreLikeThis } from "@/components/game/more-like-this";
 import { ReviewsSection } from "@/components/game/reviews-section";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getGameDetail } from "@/lib/catalog-server";
@@ -42,6 +43,7 @@ async function GameDetail({ params }: { params: Params }) {
       <Banner game={game} />
       <Info game={game} screenshots={game.screenshots} />
       <ReviewsSection gameName={game.name} />
+      <MoreLikeThis rawgId={game.rawgId} />
     </>
   );
 }

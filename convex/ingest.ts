@@ -12,9 +12,12 @@ import {
   type RawgNamed,
   type RawgPlatformEntry,
   type RawgScreenshot,
+  type RawgTag,
   rawgRequest,
   rawgRequestOptional,
   resolveListEndpoint,
+  resolveSweepEndpoint,
+  SWEEP_PAGE_SIZE,
 } from "./rawg";
 
 const MAX_GENRES = 100;
@@ -24,6 +27,8 @@ const BACKFILL_BATCH_SIZE = 60;
 const MIN_SEARCH_LENGTH = 3;
 const SEARCH_PAGE_SIZE = 20;
 const WARM_STAGGER_MS = 3000;
+const EMBED_DELAY_MS = 2000;
+const EMBED_BATCH_LIMIT = 60;
 
 const HOT_LIST_KEYS = [
   "popular:1",
@@ -47,6 +52,8 @@ const summaryFields = {
   ratingsCount: v.number(),
   genres: v.array(v.string()),
   platforms: v.array(v.string()),
+  tags: v.array(v.string()),
+  playtime: v.number(),
 };
 
 const detailFields = {
@@ -76,6 +83,8 @@ type GameSummaryInput = {
   ratingsCount: number;
   genres: string[];
   platforms: string[];
+  tags: string[];
+  playtime: number;
 };
 
 type GameDetailInput = GameSummaryInput & {
@@ -100,6 +109,24 @@ function namedList(values: RawgNamed[] | null | undefined): string[] {
   }
   const names: string[] = [];
   for (const entry of values) {
+    const name = text(entry.name);
+    if (name.length > 0) {
+      names.push(name);
+    }
+  }
+  return names;
+}
+
+function tagList(values: RawgTag[] | null | undefined): string[] {
+  if (!Array.isArray(values)) {
+    return [];
+  }
+  const names: string[] = [];
+  for (const entry of values) {
+    const language = text(entry.language);
+    if (language.length > 0 && language !== "eng") {
+      continue;
+    }
     const name = text(entry.name);
     if (name.length > 0) {
       names.push(name);
@@ -156,6 +183,8 @@ function mapSummary(raw: RawgGame): GameSummaryInput | null {
     ratingsCount: numeric(raw.ratings_count),
     genres: namedList(raw.genres),
     platforms: platforms.length > 0 ? platforms : platformList(raw.parent_platforms),
+    tags: tagList(raw.tags),
+    playtime: numeric(raw.playtime),
   };
 }
 
@@ -244,6 +273,15 @@ async function scheduleImageWarm(ctx: ActionCtx, urls: string[]): Promise<void> 
     return;
   }
   await ctx.scheduler.runAfter(0, internal.images.warm, { sourcePaths: paths });
+}
+
+async function scheduleEmbed(ctx: MutationCtx, rawgIds: number[]): Promise<void> {
+  if (rawgIds.length === 0) {
+    return;
+  }
+  await ctx.scheduler.runAfter(EMBED_DELAY_MS, internal.rag.embedGames, {
+    rawgIds: rawgIds.slice(0, EMBED_BATCH_LIMIT),
+  });
 }
 
 async function touchSync(ctx: MutationCtx, key: string): Promise<void> {
@@ -356,6 +394,10 @@ export const saveSummaries = internalMutation({
         return ctx.db.patch("games", current._id, { ...game, summaryFetchedAt: now });
       })
     );
+    await scheduleEmbed(
+      ctx,
+      args.games.map((game) => game.rawgId)
+    );
   },
 });
 
@@ -380,6 +422,10 @@ export const saveDetails = internalMutation({
         }
         return ctx.db.patch("games", current._id, fields);
       })
+    );
+    await scheduleEmbed(
+      ctx,
+      args.games.map((game) => game.rawgId)
     );
   },
 });
@@ -455,6 +501,80 @@ export const refreshList = internalAction({
   },
 });
 
+export type SweepPageResult = {
+  page: number;
+  received: number;
+  saved: number;
+  withVector: number;
+  newToCatalog: number;
+  tagsPerGame: number;
+  hasMore: boolean;
+};
+
+export const sweepPage = internalAction({
+  args: { page: v.number(), year: v.optional(v.number()) },
+  handler: async (ctx, args): Promise<SweepPageResult> => {
+    const endpoint = resolveSweepEndpoint(args.page, args.year);
+    if (endpoint === null) {
+      throw new Error(`Invalid sweep page: ${args.page}`);
+    }
+    const payload = await rawgRequest<RawgListResponse<RawgGame>>(endpoint);
+    const summaries = mapSummaries(payload.results);
+    const stats: { withVector: number; newToCatalog: number } = await ctx.runQuery(
+      internal.ingest.sweepStats,
+      { rawgIds: summaries.map((summary) => summary.rawgId) }
+    );
+    if (summaries.length > 0) {
+      await ctx.runMutation(internal.ingest.saveSummaries, { games: summaries });
+    }
+    const tagCount = summaries.reduce((total, summary) => total + summary.tags.length, 0);
+    return {
+      page: args.page,
+      received: Array.isArray(payload.results) ? payload.results.length : 0,
+      saved: summaries.length,
+      withVector: stats.withVector,
+      newToCatalog: stats.newToCatalog,
+      tagsPerGame: summaries.length === 0 ? 0 : tagCount / summaries.length,
+      hasMore: summaries.length > 0 && numeric(payload.count) > args.page * SWEEP_PAGE_SIZE,
+    };
+  },
+});
+
+export const sweepStats = internalQuery({
+  args: { rawgIds: v.array(v.number()) },
+  handler: async (ctx, args): Promise<{ withVector: number; newToCatalog: number }> => {
+    const [vectors, games] = await Promise.all([
+      Promise.all(
+        args.rawgIds.map((rawgId) =>
+          ctx.db
+            .query("gameVectors")
+            .withIndex("by_rawgId", (q) => q.eq("rawgId", rawgId))
+            .first()
+        )
+      ),
+      Promise.all(
+        args.rawgIds.map((rawgId) =>
+          ctx.db
+            .query("games")
+            .withIndex("by_rawgId", (q) => q.eq("rawgId", rawgId))
+            .first()
+        )
+      ),
+    ]);
+    let withVector = 0;
+    let newToCatalog = 0;
+    for (let index = 0; index < args.rawgIds.length; index += 1) {
+      if ((vectors[index] ?? null) !== null) {
+        withVector += 1;
+      }
+      if ((games[index] ?? null) === null) {
+        newToCatalog += 1;
+      }
+    }
+    return { withVector, newToCatalog };
+  },
+});
+
 export const refreshGame = internalAction({
   args: { slug: v.string() },
   handler: async (ctx, args): Promise<CatalogGame | null> => {
@@ -518,7 +638,7 @@ export const ingestSearch = internalAction({
       return 0;
     }
     const payload = await rawgRequest<RawgListResponse<RawgGame>>(
-      `games?search=${encodeURIComponent(trimmed)}&ordering=-added&search_exact=true&page-size=${SEARCH_PAGE_SIZE}`
+      `games?search=${encodeURIComponent(trimmed)}&ordering=-added&search_exact=true&page_size=${SEARCH_PAGE_SIZE}`
     );
     const summaries = mapSummaries(payload.results);
     if (summaries.length === 0) {

@@ -37,6 +37,8 @@ export function toCatalogGame(doc: Doc<"games">): CatalogGame {
     descriptionRaw: doc.descriptionRaw,
     website: doc.website,
     screenshots: doc.screenshots,
+    tags: doc.tags ?? [],
+    playtime: doc.playtime ?? 0,
     hasDetail: doc.detailFetchedAt > 0,
   };
 }

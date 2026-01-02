@@ -18,6 +18,8 @@ export type CatalogGame = {
   descriptionRaw: string;
   website: string;
   screenshots: CatalogScreenshot[];
+  tags: string[];
+  playtime: number;
   hasDetail: boolean;
 };
 

@@ -6,12 +6,19 @@ import type { CatalogGame } from "@/lib/game-types";
 const STAGGER_STEP = 0.04;
 const STAGGER_CAP = 7;
 
-export function GameGrid({ games }: { games: CatalogGame[] }) {
+const DEFAULT_PRIORITY_COUNT = 4;
+
+type GameGridProps = {
+  games: CatalogGame[];
+  priorityCount?: number;
+};
+
+export function GameGrid({ games, priorityCount = DEFAULT_PRIORITY_COUNT }: GameGridProps) {
   return (
     <div className={GAME_GRID_CLASSES}>
       {games.map((game, index) => (
         <BlurFade key={game.rawgId} delay={Math.min(index, STAGGER_CAP) * STAGGER_STEP} inView>
-          <GameCard game={game} priority={index < 4} />
+          <GameCard game={game} priority={index < priorityCount} />
         </BlurFade>
       ))}
     </div>

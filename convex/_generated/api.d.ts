@@ -8,6 +8,8 @@
  * @module
  */
 
+import type * as agent from "../agent.js";
+import type * as aiRec from "../aiRec.js";
 import type * as auth from "../auth.js";
 import type * as catalog from "../catalog.js";
 import type * as crons from "../crons.js";
@@ -15,7 +17,10 @@ import type * as http from "../http.js";
 import type * as images from "../images.js";
 import type * as ingest from "../ingest.js";
 import type * as lists from "../lists.js";
+import type * as media from "../media.js";
 import type * as messages from "../messages.js";
+import type * as rag from "../rag.js";
+import type * as rateLimits from "../rateLimits.js";
 import type * as rawg from "../rawg.js";
 import type * as reviews from "../reviews.js";
 import type * as users from "../users.js";
@@ -27,6 +32,8 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  agent: typeof agent;
+  aiRec: typeof aiRec;
   auth: typeof auth;
   catalog: typeof catalog;
   crons: typeof crons;
@@ -34,7 +41,10 @@ declare const fullApi: ApiFromModules<{
   images: typeof images;
   ingest: typeof ingest;
   lists: typeof lists;
+  media: typeof media;
   messages: typeof messages;
+  rag: typeof rag;
+  rateLimits: typeof rateLimits;
   rawg: typeof rawg;
   reviews: typeof reviews;
   users: typeof users;
@@ -66,4 +76,7 @@ export declare const internal: FilterApi<
   FunctionReference<any, "internal">
 >;
 
-export declare const components: {};
+export declare const components: {
+  agent: import("@convex-dev/agent/_generated/component.js").ComponentApi<"agent">;
+  rateLimiter: import("@convex-dev/rate-limiter/_generated/component.js").ComponentApi<"rateLimiter">;
+};

@@ -13,5 +13,14 @@ crons.interval(
   {}
 );
 crons.interval("evict cold optimized images", { hours: 6 }, internal.images.cacheEvict, {});
+crons.interval("drain recommender warm queue", { minutes: 30 }, internal.rag.drainWarmQueue, {});
+crons.daily(
+  "backfill missing game vectors",
+  { hourUTC: 4, minuteUTC: 23 },
+  internal.rag.backfillMissingVectors,
+  {}
+);
+
+crons.daily("prune ai-rec threads", { hourUTC: 3, minuteUTC: 17 }, internal.aiRec.pruneThreads, {});
 
 export default crons;

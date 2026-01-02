@@ -1,27 +1,13 @@
 import { connection } from "next/server";
+import { CardGridSkeleton } from "@/components/dashboard/card-grid-skeleton";
 import { GameCard } from "@/components/game-card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { getGameList } from "@/lib/catalog-server";
 
 const FEATURED_COUNT = 3;
 const GRID_CLASSES = "grid auto-rows-fr grid-cols-1 gap-4 sm:grid-cols-2 md:gap-5 lg:grid-cols-3";
 
 export function FeaturedSkeleton() {
-  const placeholders = Array.from({ length: FEATURED_COUNT }, (_, index) => `featured-${index}`);
-
-  return (
-    <div className={GRID_CLASSES}>
-      {placeholders.map((placeholder) => (
-        <div key={placeholder} className="overflow-hidden rounded-xl border bg-card">
-          <Skeleton className="aspect-video w-full rounded-none" />
-          <div className="space-y-3 p-4 pt-3">
-            <Skeleton className="h-4 w-4/5 rounded-full" />
-            <Skeleton className="h-3 w-24 rounded-full" />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
+  return <CardGridSkeleton count={FEATURED_COUNT} prefix="featured" className={GRID_CLASSES} />;
 }
 
 export async function Featured() {

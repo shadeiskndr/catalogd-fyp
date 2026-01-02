@@ -3,7 +3,7 @@
 import { useMutation } from "convex/react";
 import { ConvexError } from "convex/values";
 import { MessageCircle } from "lucide-react";
-import { type ChangeEvent, type FormEvent, useCallback, useState } from "react";
+import { type ChangeEvent, useCallback, useState } from "react";
 import { toast } from "sonner";
 import { ChatMessageItem } from "@/components/chat/chat-message";
 import { PageHeader } from "@/components/layout/page-header";
@@ -21,9 +21,10 @@ import {
 } from "@/components/ui/shadcn-io/conversation";
 import {
   PromptInput,
+  PromptInputBody,
+  PromptInputFooter,
   PromptInputSubmit,
   PromptInputTextarea,
-  PromptInputToolbar,
 } from "@/components/ui/shadcn-io/prompt-input";
 import { Spinner } from "@/components/ui/spinner";
 import { api } from "@/convex/_generated/api";
@@ -51,29 +52,24 @@ export default function ChatPage() {
     setDraft(event.target.value);
   }, []);
 
-  const handleSubmit = useCallback(
-    async (event: FormEvent) => {
-      event.preventDefault();
+  const handleSubmit = useCallback(async () => {
+    if (draft.trim().length === 0) {
+      toast.error("Message cannot be empty.");
+      return;
+    }
 
-      if (draft.trim().length === 0) {
-        toast.error("Message cannot be empty.");
-        return;
-      }
-
-      try {
-        await sendMessage({ body: draft });
-        setDraft("");
-      } catch (error) {
-        console.error("Error sending message:", error);
-        toast.error(
-          error instanceof ConvexError && typeof error.data === "string"
-            ? error.data
-            : "Error sending message."
-        );
-      }
-    },
-    [draft, sendMessage]
-  );
+    try {
+      await sendMessage({ body: draft });
+      setDraft("");
+    } catch (error) {
+      console.error("Error sending message:", error);
+      toast.error(
+        error instanceof ConvexError && typeof error.data === "string"
+          ? error.data
+          : "Error sending message."
+      );
+    }
+  }, [draft, sendMessage]);
 
   const handleDelete = useCallback(
     async (messageId: Id<"messages">) => {
@@ -147,14 +143,16 @@ export default function ChatPage() {
 
         <div className="shrink-0 border-t p-3 md:p-4">
           <PromptInput onSubmit={handleSubmit}>
-            <PromptInputTextarea
-              value={draft}
-              onChange={handleDraftChange}
-              placeholder="Write your message..."
-              maxLength={MAX_MESSAGE_LENGTH}
-              className="min-h-16"
-            />
-            <PromptInputToolbar>
+            <PromptInputBody>
+              <PromptInputTextarea
+                value={draft}
+                onChange={handleDraftChange}
+                placeholder="Write your message..."
+                maxLength={MAX_MESSAGE_LENGTH}
+                className="min-h-16"
+              />
+            </PromptInputBody>
+            <PromptInputFooter>
               {draft.length === 0 ? (
                 <span />
               ) : (
@@ -172,7 +170,7 @@ export default function ChatPage() {
                 disabled={draft.trim().length === 0}
                 className="active:scale-90"
               />
-            </PromptInputToolbar>
+            </PromptInputFooter>
           </PromptInput>
         </div>
       </div>

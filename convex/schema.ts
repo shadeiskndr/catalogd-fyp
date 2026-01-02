@@ -46,12 +46,69 @@ export default defineSchema({
     descriptionRaw: v.string(),
     website: v.string(),
     screenshots: v.array(v.object({ id: v.number(), image: v.string() })),
+    tags: v.optional(v.array(v.string())),
+    playtime: v.optional(v.number()),
     summaryFetchedAt: v.number(),
     detailFetchedAt: v.number(),
   })
     .index("by_rawgId", ["rawgId"])
     .index("by_slug", ["slug"])
     .searchIndex("search_name", { searchField: "name" }),
+  gameVectors: defineTable({
+    rawgId: v.number(),
+    modality: v.union(v.literal("text"), v.literal("image")),
+    embedding: v.array(v.float64()),
+    docHash: v.string(),
+    templateVersion: v.number(),
+    source: v.union(v.literal("corpus"), v.literal("rawg")),
+    embeddedAt: v.number(),
+  })
+    .index("by_rawgId", ["rawgId"])
+    .index("by_rawgId_modality", ["rawgId", "modality"])
+    .vectorIndex("by_embedding", {
+      vectorField: "embedding",
+      dimensions: 1024,
+      filterFields: ["modality"],
+    }),
+  aiRecThreads: defineTable({
+    userId: v.id("users"),
+    threadId: v.string(),
+    lastActiveAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_thread", ["threadId"])
+    .index("by_lastActiveAt", ["lastActiveAt"]),
+  aiRecAttachments: defineTable({
+    userId: v.id("users"),
+    threadId: v.optional(v.string()),
+    storageId: v.id("_storage"),
+    filename: v.string(),
+    mediaType: v.string(),
+    bytes: v.number(),
+    description: v.optional(v.string()),
+  })
+    .index("by_user", ["userId"])
+    .index("by_thread", ["threadId"]),
+  ragUsage: defineTable({
+    userId: v.id("users"),
+    threadId: v.string(),
+    kind: v.union(v.literal("turn"), v.literal("describe"), v.literal("embed")),
+    model: v.string(),
+    inputTokens: v.number(),
+    outputTokens: v.number(),
+    costUsd: v.number(),
+    toolCalls: v.number(),
+    durationMs: v.number(),
+  })
+    .index("by_thread", ["threadId"])
+    .index("by_user", ["userId"]),
+  warmQueue: defineTable({
+    rawgId: v.number(),
+    hits: v.number(),
+    firstSeen: v.number(),
+  })
+    .index("by_rawgId", ["rawgId"])
+    .index("by_hits", ["hits"]),
   gameLists: defineTable({
     key: v.string(),
     rawgIds: v.array(v.number()),

@@ -1,4 +1,10 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
+import {
+  AiRecConversation,
+  AiRecConversationSkeleton,
+} from "@/components/ai-rec/ai-rec-conversation";
+import { PageHeader } from "@/components/layout/page-header";
 
 export const metadata: Metadata = {
   title: "AI Recommender | Catalogd",
@@ -6,16 +12,14 @@ export const metadata: Metadata = {
 
 export default function AiRecPage() {
   return (
-    <div className="space-y-4 px-2 py-4">
-      <h1 className="font-bold text-3xl">AI Recommender</h1>
-      <iframe
-        title="AI Game Recommender"
-        src="https://ai-game-recommender.netlify.app"
-        // react-doctor-disable-next-line react-doctor/iframe-missing-sandbox
-        sandbox="allow-scripts allow-same-origin allow-forms"
-        className="h-[1050px] w-full border-0"
-        allowFullScreen
+    <div className="flex min-h-0 flex-1 flex-col">
+      <PageHeader
+        title="AI Recommender"
+        description="Tell it what you feel like playing. It searches 21,000 console games by meaning and can save picks straight to your lists."
       />
+      <Suspense fallback={<AiRecConversationSkeleton />}>
+        <AiRecConversation />
+      </Suspense>
     </div>
   );
 }

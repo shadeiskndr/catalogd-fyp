@@ -2,7 +2,7 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { paginationOptsValidator } from "convex/server";
 import { ConvexError, v } from "convex/values";
 import type { CatalogGame } from "@/lib/game-types";
-import { mutation, query } from "./_generated/server";
+import { internalMutation, mutation, query } from "./_generated/server";
 import { toCatalogGame } from "./catalog";
 import { ensureGameIngested } from "./ingest";
 
@@ -84,6 +84,26 @@ export const add = mutation({
       gameName: args.gameName,
     });
     await ensureGameIngested(ctx, args.gameId);
+  },
+});
+
+export const addForUser = internalMutation({
+  args: { userId: v.id("users"), list: listArg, gameId: v.number(), gameName: v.string() },
+  handler: async (ctx, args): Promise<boolean> => {
+    const existing = await ctx.db
+      .query(args.list)
+      .withIndex("by_user_game", (q) => q.eq("userId", args.userId).eq("gameId", args.gameId))
+      .first();
+    if (existing !== null) {
+      return false;
+    }
+    await ctx.db.insert(args.list, {
+      userId: args.userId,
+      gameId: args.gameId,
+      gameName: args.gameName,
+    });
+    await ensureGameIngested(ctx, args.gameId);
+    return true;
   },
 });
 

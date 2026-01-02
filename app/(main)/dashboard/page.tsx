@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { Featured, FeaturedSkeleton } from "@/components/dashboard/featured";
+import { Recommended } from "@/components/dashboard/recommended";
 import { Upcoming, UpcomingSkeleton } from "@/components/dashboard/upcoming";
 import { PageHeader } from "@/components/layout/page-header";
 import { SectionHeader } from "@/components/layout/section-header";
@@ -23,6 +24,7 @@ export default function DashboardPage() {
             <Featured />
           </Suspense>
         </section>
+        <Recommended />
         <section className="space-y-4">
           <SectionHeader
             title="New and Upcoming"
