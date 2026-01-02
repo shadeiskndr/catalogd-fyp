@@ -7,6 +7,42 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { catalogImage } from "@/lib/catalog-image";
 import type { CatalogScreenshot } from "@/lib/game-types";
+import { cn } from "@/lib/utils";
+
+const THUMB_SIZES = "(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw";
+const LIGHTBOX_SIZES = "(min-width: 1250px) 1200px, 96vw";
+
+function LightboxImage({ image, gameName }: { image: string; gameName: string }) {
+  const [loaded, setLoaded] = useState(false);
+  const handleLoad = useCallback(() => {
+    setLoaded(true);
+  }, []);
+  const src = catalogImage(image);
+
+  return (
+    <>
+      <Image
+        src={src}
+        alt=""
+        aria-hidden
+        fill
+        sizes={THUMB_SIZES}
+        className="scale-110 object-cover blur-2xl"
+      />
+      <Image
+        src={src}
+        alt={`${gameName} screenshot`}
+        fill
+        sizes={LIGHTBOX_SIZES}
+        onLoad={handleLoad}
+        className={cn(
+          "object-contain transition-opacity duration-200 ease-out-strong",
+          loaded ? "opacity-100" : "opacity-0"
+        )}
+      />
+    </>
+  );
+}
 
 type ScreenshotThumbProps = {
   screenshot: CatalogScreenshot;
@@ -32,7 +68,7 @@ function ScreenshotThumb({ screenshot, index, gameName, priority, onOpen }: Scre
         src={catalogImage(screenshot.image)}
         alt=""
         fill
-        sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+        sizes={THUMB_SIZES}
         loading={priority ? "eager" : "lazy"}
         className="object-cover"
       />
@@ -117,13 +153,7 @@ export function Screenshots({
           </DialogTitle>
           {active === undefined ? null : (
             <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-black">
-              <Image
-                src={catalogImage(active.image)}
-                alt={`${gameName} screenshot`}
-                fill
-                sizes="96vw"
-                className="object-contain"
-              />
+              <LightboxImage key={active.image} image={active.image} gameName={gameName} />
               {screenshots.length > 1 ? (
                 <>
                   <Button
